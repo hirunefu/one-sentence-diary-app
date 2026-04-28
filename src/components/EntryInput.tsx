@@ -58,7 +58,8 @@ export function EntryInput({
         placeholder={placeholder}
         placeholderTextColor={colors.textPlaceholder}
         autoFocus={autoFocus}
-        multiline={false}
+        multiline
+        textAlignVertical="top"
         style={[styles.input, { color: colors.text }]}
       />
     </View>
