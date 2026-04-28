@@ -68,7 +68,6 @@ export function EntryInput({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    flex: 1,
   },
   input: {
     fontSize: typography.size.body,
