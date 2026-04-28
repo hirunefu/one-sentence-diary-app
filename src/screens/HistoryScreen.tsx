@@ -1,5 +1,14 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import {
+  Animated,
+  FlatList,
+  LayoutChangeEvent,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,6 +29,20 @@ export function HistoryScreen() {
   const [marked, setMarked] = useState<Record<string, { marked: boolean; dotColor?: string }>>({});
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
+
+  const indicatorAnim = useRef(
+    new Animated.Value(settings.viewMode === 'calendar' ? 0 : 1)
+  ).current;
+  const [tabsWidth, setTabsWidth] = useState(0);
+
+  useEffect(() => {
+    Animated.spring(indicatorAnim, {
+      toValue: settings.viewMode === 'calendar' ? 0 : 1,
+      useNativeDriver: true,
+      speed: 18,
+      bounciness: 6,
+    }).start();
+  }, [settings.viewMode, indicatorAnim]);
 
   const loadMonth = useCallback(
     async (y: number, m: number) => {
@@ -57,32 +80,49 @@ export function HistoryScreen() {
     indicatorColor: colors.primary,
   };
 
+  const tabWidth = tabsWidth / 2;
+  const indicatorTranslate = indicatorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, tabWidth],
+  });
+
+  const onTabsLayout = (e: LayoutChangeEvent) => {
+    setTabsWidth(e.nativeEvent.layout.width);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.toggleRow}>
-        <Pressable
-          onPress={() => updateSettings({ viewMode: 'calendar' })}
-          style={[
-            styles.tab,
-            { borderBottomColor: settings.viewMode === 'calendar' ? colors.primary : 'transparent' },
-          ]}
-        >
-          <Text style={[styles.tabText, { color: colors.text }]}>カレンダー</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => updateSettings({ viewMode: 'timeline' })}
-          style={[
-            styles.tab,
-            { borderBottomColor: settings.viewMode === 'timeline' ? colors.primary : 'transparent' },
-          ]}
-        >
-          <Text style={[styles.tabText, { color: colors.text }]}>タイムライン</Text>
-        </Pressable>
+      <View style={styles.toggleWrapper} onLayout={onTabsLayout}>
+        <View style={styles.toggleRow}>
+          <Pressable
+            onPress={() => updateSettings({ viewMode: 'calendar' })}
+            style={styles.tab}
+          >
+            <Text style={[styles.tabText, { color: colors.text }]}>カレンダー</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => updateSettings({ viewMode: 'timeline' })}
+            style={styles.tab}
+          >
+            <Text style={[styles.tabText, { color: colors.text }]}>タイムライン</Text>
+          </Pressable>
+        </View>
+        {tabsWidth > 0 && (
+          <Animated.View
+            style={[
+              styles.indicator,
+              {
+                width: tabWidth,
+                backgroundColor: colors.primary,
+                transform: [{ translateX: indicatorTranslate }],
+              },
+            ]}
+          />
+        )}
       </View>
 
       {settings.viewMode === 'calendar' ? (
         <Calendar
-          // theme key triggers re-render when colors change
           key={colors.background}
           markedDates={marked}
           theme={calendarTheme}
@@ -108,13 +148,20 @@ export function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  toggleRow: { flexDirection: 'row', padding: 8 },
+  toggleWrapper: { paddingTop: 8, position: 'relative' },
+  toggleRow: { flexDirection: 'row', paddingHorizontal: 8 },
   tab: {
     flex: 1,
     paddingVertical: 8,
     alignItems: 'center',
-    borderBottomWidth: 2,
   },
   tabText: { fontSize: 14 },
+  indicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 8,
+    height: 2,
+    borderRadius: 1,
+  },
   empty: { textAlign: 'center', marginTop: 32 },
 });

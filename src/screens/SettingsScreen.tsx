@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
@@ -8,6 +8,7 @@ import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
 import { exportEntries } from '../services/exportService';
 import { useColors } from '../theme/useColors';
+import { PressableScale } from '../components/PressableScale';
 import type { ThemePreference } from '../types';
 
 const THEME_OPTIONS: ReadonlyArray<{
@@ -76,7 +77,7 @@ export function SettingsScreen() {
         {THEME_OPTIONS.map((option) => {
           const isSelected = settings.themePreference === option.value;
           return (
-            <Pressable
+            <PressableScale
               key={option.value}
               onPress={() => updateSettings({ themePreference: option.value })}
               style={rowStyle}
@@ -93,7 +94,7 @@ export function SettingsScreen() {
               {isSelected && (
                 <Ionicons name="checkmark" size={22} color={colors.primary} />
               )}
-            </Pressable>
+            </PressableScale>
           );
         })}
 
@@ -114,10 +115,10 @@ export function SettingsScreen() {
         </View>
 
         {settings.reminderEnabled && (
-          <Pressable onPress={() => setShowPicker(true)} style={rowStyle}>
+          <PressableScale onPress={() => setShowPicker(true)} style={rowStyle}>
             <Text style={[styles.label, { color: colors.text }]}>通知時刻</Text>
             <Text style={[styles.value, { color: colors.textMuted }]}>{reminderTimeLabel}</Text>
-          </Pressable>
+          </PressableScale>
         )}
 
         {showPicker && (
@@ -130,9 +131,12 @@ export function SettingsScreen() {
           />
         )}
 
-        <Pressable onPress={handleExport} style={[styles.exportButton, { backgroundColor: colors.primary }]}>
+        <PressableScale
+          onPress={handleExport}
+          style={[styles.exportButton, { backgroundColor: colors.primary }]}
+        >
           <Text style={[styles.exportText, { color: colors.primaryText }]}>データをエクスポート</Text>
-        </Pressable>
+        </PressableScale>
 
         <Text style={[styles.version, { color: colors.textMuted }]}>
           バージョン: {Constants.expoConfig?.version ?? '1.0.0'}

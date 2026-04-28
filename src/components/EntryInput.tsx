@@ -11,6 +11,9 @@ type Props = {
   autoFocus?: boolean;
 };
 
+const WARNING_THRESHOLD = 20;
+const DANGER_THRESHOLD = 10;
+
 export function EntryInput({
   value,
   onChangeText,
@@ -29,6 +32,15 @@ export function EntryInput({
   );
 
   const remaining = MAX_TEXT_LENGTH - countChars(value);
+
+  let countColor = colors.textMuted;
+  let countWeight: '400' | '600' = '400';
+  if (remaining <= DANGER_THRESHOLD) {
+    countColor = colors.danger;
+    countWeight = '600';
+  } else if (remaining <= WARNING_THRESHOLD) {
+    countColor = colors.warning;
+  }
 
   return (
     <View style={styles.container}>
@@ -49,7 +61,10 @@ export function EntryInput({
           },
         ]}
       />
-      <Text testID="remaining-count" style={[styles.count, { color: colors.textMuted }]}>
+      <Text
+        testID="remaining-count"
+        style={[styles.count, { color: countColor, fontWeight: countWeight }]}
+      >
         残り {remaining} 字
       </Text>
     </View>

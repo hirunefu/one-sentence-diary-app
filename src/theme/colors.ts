@@ -10,6 +10,7 @@ export type Colors = {
   primary: string;
   primaryText: string;
   success: string;
+  warning: string;
   danger: string;
   disabled: string;
   streakBg: string;
@@ -30,6 +31,7 @@ export const lightColors: Colors = {
   primary: '#1976d2',
   primaryText: '#ffffff',
   success: '#388e3c',
+  warning: '#ef6c00',
   danger: '#c62828',
   disabled: '#bbbbbb',
   streakBg: '#fff3e0',
@@ -50,6 +52,7 @@ export const darkColors: Colors = {
   primary: '#64b5f6',
   primaryText: '#0b1116',
   success: '#66bb6a',
+  warning: '#ffb74d',
   danger: '#ef5350',
   disabled: '#555555',
   streakBg: '#3e2723',

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EntryInput } from '../components/EntryInput';
+import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useColors } from '../theme/useColors';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -77,17 +77,20 @@ export function EntryEditorModal({ route, navigation }: Props) {
       <EntryInput value={text} onChangeText={setText} autoFocus />
       <View style={styles.row}>
         {exists && (
-          <Pressable onPress={handleDelete} style={[styles.button, { backgroundColor: colors.danger }]}>
+          <PressableScale
+            onPress={handleDelete}
+            style={[styles.button, { backgroundColor: colors.danger }]}
+          >
             <Text style={[styles.buttonText, { color: colors.primaryText }]}>削除</Text>
-          </Pressable>
+          </PressableScale>
         )}
-        <Pressable
+        <PressableScale
           onPress={handleSave}
           disabled={isEmpty}
           style={[styles.button, { backgroundColor: saveBg }]}
         >
           <Text style={[styles.buttonText, { color: colors.primaryText }]}>保存</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

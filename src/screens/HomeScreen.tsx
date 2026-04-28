@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { EntryInput } from '../components/EntryInput';
 import { StreakBadge } from '../components/StreakBadge';
+import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { today } from '../utils/date';
 import { useColors } from '../theme/useColors';
@@ -44,9 +44,9 @@ export function HomeScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={[styles.errorText, { color: colors.error }]}>{initError}</Text>
-        <Pressable onPress={retryInit} style={[styles.button, { backgroundColor: colors.primary }]}>
+        <PressableScale onPress={retryInit} style={[styles.button, { backgroundColor: colors.primary }]}>
           <Text style={[styles.buttonText, { color: colors.primaryText }]}>再試行</Text>
-        </Pressable>
+        </PressableScale>
       </SafeAreaView>
     );
   }
@@ -99,17 +99,13 @@ export function HomeScreen() {
       <View style={styles.body}>
         <EntryInput value={text} onChangeText={handleChangeText} autoFocus />
       </View>
-      <Pressable
+      <PressableScale
         onPress={handleSave}
         disabled={buttonDisabled}
-        style={({ pressed }) => [
-          styles.button,
-          { backgroundColor: buttonBg },
-          pressed && styles.pressed,
-        ]}
+        style={[styles.button, { backgroundColor: buttonBg }]}
       >
         <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
-      </Pressable>
+      </PressableScale>
     </SafeAreaView>
   );
 }
@@ -125,7 +121,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
   },
-  pressed: { opacity: 0.8 },
   buttonText: { fontSize: 16, fontWeight: '600' },
   errorText: { marginBottom: 16, textAlign: 'center' },
 });
