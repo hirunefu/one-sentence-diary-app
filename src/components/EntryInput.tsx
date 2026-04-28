@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
+import { useColors } from '../theme/useColors';
 
 type Props = {
   value: string;
@@ -16,6 +17,8 @@ export function EntryInput({
   placeholder = '今日の一文を書く',
   autoFocus,
 }: Props) {
+  const colors = useColors();
+
   const handleChange = useCallback(
     (next: string) => {
       const cleaned = stripNewlines(next);
@@ -34,11 +37,19 @@ export function EntryInput({
         value={value}
         onChangeText={handleChange}
         placeholder={placeholder}
+        placeholderTextColor={colors.textPlaceholder}
         autoFocus={autoFocus}
         multiline={false}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            borderColor: colors.inputBorder,
+            color: colors.text,
+            backgroundColor: colors.surface,
+          },
+        ]}
       />
-      <Text testID="remaining-count" style={styles.count}>
+      <Text testID="remaining-count" style={[styles.count, { color: colors.textMuted }]}>
         残り {remaining} 字
       </Text>
     </View>
@@ -51,7 +62,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -60,7 +70,6 @@ const styles = StyleSheet.create({
   count: {
     alignSelf: 'flex-end',
     marginTop: 4,
-    color: '#888',
     fontSize: 12,
   },
 });

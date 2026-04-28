@@ -6,8 +6,10 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
 import { exportEntries } from '../services/exportService';
+import { useColors } from '../theme/useColors';
 
 export function SettingsScreen() {
+  const colors = useColors();
   const { settings, updateSettings } = useSettings();
   const { entries } = useEntries();
   const [showPicker, setShowPicker] = useState(false);
@@ -53,16 +55,18 @@ export function SettingsScreen() {
   const pickerDate = new Date();
   pickerDate.setHours(settings.reminderHour, settings.reminderMinute, 0, 0);
 
+  const rowStyle = [styles.row, { borderBottomColor: colors.divider }];
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.row}>
-          <Text style={styles.label}>生体認証ロック</Text>
+        <View style={rowStyle}>
+          <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
           <Switch value={settings.lockEnabled} onValueChange={toggleLock} />
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>リマインダー通知</Text>
+        <View style={rowStyle}>
+          <Text style={[styles.label, { color: colors.text }]}>リマインダー通知</Text>
           <Switch
             value={settings.reminderEnabled}
             onValueChange={(v) => updateSettings({ reminderEnabled: v })}
@@ -70,9 +74,9 @@ export function SettingsScreen() {
         </View>
 
         {settings.reminderEnabled && (
-          <Pressable onPress={() => setShowPicker(true)} style={styles.row}>
-            <Text style={styles.label}>通知時刻</Text>
-            <Text style={styles.value}>{reminderTimeLabel}</Text>
+          <Pressable onPress={() => setShowPicker(true)} style={rowStyle}>
+            <Text style={[styles.label, { color: colors.text }]}>通知時刻</Text>
+            <Text style={[styles.value, { color: colors.textMuted }]}>{reminderTimeLabel}</Text>
           </Pressable>
         )}
 
@@ -86,11 +90,11 @@ export function SettingsScreen() {
           />
         )}
 
-        <Pressable onPress={handleExport} style={styles.exportButton}>
-          <Text style={styles.exportText}>データをエクスポート</Text>
+        <Pressable onPress={handleExport} style={[styles.exportButton, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.exportText, { color: colors.primaryText }]}>データをエクスポート</Text>
         </Pressable>
 
-        <Text style={styles.version}>
+        <Text style={[styles.version, { color: colors.textMuted }]}>
           バージョン: {Constants.expoConfig?.version ?? '1.0.0'}
         </Text>
       </ScrollView>
@@ -99,7 +103,7 @@ export function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fafafa' },
+  container: { flex: 1 },
   content: { padding: 16 },
   row: {
     flexDirection: 'row',
@@ -107,17 +111,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   label: { fontSize: 16 },
-  value: { fontSize: 16, color: '#666' },
+  value: { fontSize: 16 },
   exportButton: {
     marginTop: 32,
-    backgroundColor: '#1976d2',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  exportText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  version: { textAlign: 'center', marginTop: 32, color: '#888', fontSize: 12 },
+  exportText: { fontSize: 16, fontWeight: '600' },
+  version: { textAlign: 'center', marginTop: 32, fontSize: 12 },
 });

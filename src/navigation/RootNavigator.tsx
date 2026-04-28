@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { EntryEditorModal } from '../screens/EntryEditorModal';
 import { LockScreen } from '../screens/LockScreen';
 import { useAuthLock } from '../contexts/AuthLockContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useColors, useIsDark } from '../theme/useColors';
 import { View, Text } from 'react-native';
 
 export type RootStackParamList = {
@@ -27,8 +28,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabsParamList>();
 
 function MainTabs() {
+  const colors = useColors();
   return (
-    <Tabs.Navigator>
+    <Tabs.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.divider },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTitleStyle: { color: colors.text },
+        headerTintColor: colors.text,
+      }}
+    >
       <Tabs.Screen
         name="Home"
         component={HomeScreen}
@@ -63,14 +74,31 @@ function MainTabs() {
   );
 }
 
+function buildNavTheme(isDark: boolean, colors: ReturnType<typeof useColors>) {
+  const base = isDark ? DarkTheme : DefaultTheme;
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.divider,
+    },
+  };
+}
+
 export function RootNavigator() {
+  const colors = useColors();
+  const isDark = useIsDark();
   const { isLocked } = useAuthLock();
   const { ready } = useSettings();
 
   if (!ready) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>起動中…</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <Text style={{ color: colors.loadingMessage }}>起動中…</Text>
       </View>
     );
   }
@@ -79,9 +107,17 @@ export function RootNavigator() {
     return <LockScreen />;
   }
 
+  const navTheme = buildNavTheme(isDark, colors);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
+    <NavigationContainer theme={navTheme}>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.text },
+          headerTintColor: colors.text,
+        }}
+      >
         <Stack.Screen
           name="MainTabs"
           component={MainTabs}

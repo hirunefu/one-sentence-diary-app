@@ -10,11 +10,13 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EntryInput } from '../components/EntryInput';
 import { useEntries } from '../contexts/EntriesContext';
+import { useColors } from '../theme/useColors';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EntryEditor'>;
 
 export function EntryEditorModal({ route, navigation }: Props) {
+  const colors = useColors();
   const { date } = route.params;
   const { getByDate, upsert, remove } = useEntries();
   const [text, setText] = useState('');
@@ -60,32 +62,31 @@ export function EntryEditorModal({ route, navigation }: Props) {
 
   if (!loaded) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text>読み込み中…</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.loadingMessage }}>読み込み中…</Text>
       </SafeAreaView>
     );
   }
 
+  const isEmpty = text.trim().length === 0;
+  const saveBg = isEmpty ? colors.disabled : colors.primary;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.date}>{date}</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
       <EntryInput value={text} onChangeText={setText} autoFocus />
       <View style={styles.row}>
         {exists && (
-          <Pressable onPress={handleDelete} style={[styles.button, styles.delete]}>
-            <Text style={styles.buttonText}>削除</Text>
+          <Pressable onPress={handleDelete} style={[styles.button, { backgroundColor: colors.danger }]}>
+            <Text style={[styles.buttonText, { color: colors.primaryText }]}>削除</Text>
           </Pressable>
         )}
         <Pressable
           onPress={handleSave}
-          disabled={text.trim().length === 0}
-          style={[
-            styles.button,
-            styles.save,
-            text.trim().length === 0 && styles.disabled,
-          ]}
+          disabled={isEmpty}
+          style={[styles.button, { backgroundColor: saveBg }]}
         >
-          <Text style={styles.buttonText}>保存</Text>
+          <Text style={[styles.buttonText, { color: colors.primaryText }]}>保存</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -93,12 +94,9 @@ export function EntryEditorModal({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fafafa' },
+  container: { flex: 1, padding: 16 },
   date: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
   row: { flexDirection: 'row', marginTop: 16, gap: 8 },
   button: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  save: { backgroundColor: '#1976d2' },
-  delete: { backgroundColor: '#c62828' },
-  disabled: { backgroundColor: '#bbb' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { fontSize: 16, fontWeight: '600' },
 });

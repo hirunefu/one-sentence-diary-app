@@ -11,10 +11,12 @@ import { EntryInput } from '../components/EntryInput';
 import { StreakBadge } from '../components/StreakBadge';
 import { useEntries } from '../contexts/EntriesContext';
 import { today } from '../utils/date';
+import { useColors } from '../theme/useColors';
 
 const SAVED_FEEDBACK_MS = 1500;
 
 export function HomeScreen() {
+  const colors = useColors();
   const { ready, initError, retryInit, getByDate, upsert, streak } = useEntries();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -40,10 +42,10 @@ export function HomeScreen() {
 
   if (initError) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>{initError}</Text>
-        <Pressable onPress={retryInit} style={styles.button}>
-          <Text style={styles.buttonText}>再試行</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.error }]}>{initError}</Text>
+        <Pressable onPress={retryInit} style={[styles.button, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.buttonText, { color: colors.primaryText }]}>再試行</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -51,8 +53,8 @@ export function HomeScreen() {
 
   if (!ready || !loaded) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text>読み込み中…</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.loadingMessage }}>読み込み中…</Text>
       </SafeAreaView>
     );
   }
@@ -82,10 +84,16 @@ export function HomeScreen() {
   const buttonDisabled = saving || justSaved || isEmpty;
   const buttonLabel = saving ? '保存中…' : justSaved ? '✓ 保存しました' : '保存';
 
+  const buttonBg = justSaved
+    ? colors.success
+    : saving || isEmpty
+      ? colors.disabled
+      : colors.primary;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={styles.date}>{todayStr}</Text>
+        <Text style={[styles.date, { color: colors.text }]}>{todayStr}</Text>
         <StreakBadge days={streak} />
       </View>
       <View style={styles.body}>
@@ -96,32 +104,28 @@ export function HomeScreen() {
         disabled={buttonDisabled}
         style={({ pressed }) => [
           styles.button,
-          justSaved && styles.buttonSaved,
-          !justSaved && (saving || isEmpty) && styles.buttonDisabled,
+          { backgroundColor: buttonBg },
           pressed && styles.pressed,
         ]}
       >
-        <Text style={styles.buttonText}>{buttonLabel}</Text>
+        <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
       </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fafafa' },
+  container: { flex: 1, padding: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   date: { fontSize: 18, fontWeight: '600' },
   body: { flex: 1 },
   button: {
-    backgroundColor: '#1976d2',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 16,
   },
-  buttonDisabled: { backgroundColor: '#bbb' },
-  buttonSaved: { backgroundColor: '#388e3c' },
   pressed: { opacity: 0.8 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  errorText: { color: '#c00', marginBottom: 16, textAlign: 'center' },
+  buttonText: { fontSize: 16, fontWeight: '600' },
+  errorText: { marginBottom: 16, textAlign: 'center' },
 });

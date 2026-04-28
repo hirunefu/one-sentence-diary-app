@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { authenticate, isLocalAuthAvailable } from '../services/localAuth';
 import { useAuthLock } from '../contexts/AuthLockContext';
+import { useColors } from '../theme/useColors';
 
 export function LockScreen() {
+  const colors = useColors();
   const { unlock } = useAuthLock();
   const [error, setError] = useState<string | null>(null);
   const [authenticating, setAuthenticating] = useState(false);
@@ -33,16 +35,20 @@ export function LockScreen() {
   }, [tryAuth]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={styles.title}>🔒 ロックされています</Text>
-        {error && <Text style={styles.error}>{error}</Text>}
+        <Text style={[styles.title, { color: colors.text }]}>🔒 ロックされています</Text>
+        {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
         <Pressable
           onPress={tryAuth}
           disabled={authenticating}
-          style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.button,
+            { backgroundColor: colors.primary },
+            pressed && styles.pressed,
+          ]}
         >
-          <Text style={styles.buttonText}>
+          <Text style={[styles.buttonText, { color: colors.primaryText }]}>
             {authenticating ? '認証中…' : '認証する'}
           </Text>
         </Pressable>
@@ -52,16 +58,15 @@ export function LockScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fafafa' },
+  container: { flex: 1 },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
   title: { fontSize: 24, marginBottom: 32 },
-  error: { color: '#c00', marginBottom: 16 },
+  error: { marginBottom: 16 },
   button: {
-    backgroundColor: '#1976d2',
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 8,
   },
   pressed: { opacity: 0.8 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { fontSize: 16, fontWeight: '600' },
 });
