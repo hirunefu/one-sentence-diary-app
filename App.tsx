@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 import { EntriesProvider } from './src/contexts/EntriesContext';
 import { AuthLockProvider } from './src/contexts/AuthLockContext';
+import { ReminderScheduler } from './src/components/ReminderScheduler';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
 // Expo Go (Android, SDK 53+) はリモート Push 通知非対応の警告を出すが、
@@ -19,6 +20,7 @@ export default function App() {
       <SettingsProvider>
         <EntriesProvider>
           <AuthLockProvider>
+            <ReminderScheduler />
             <StatusBar style="auto" />
             <RootNavigator />
           </AuthLockProvider>

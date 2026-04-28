@@ -10,11 +10,7 @@ import { Alert } from 'react-native';
 import type { Settings } from '../types';
 import { DEFAULT_SETTINGS } from '../types';
 import { loadSettings, saveSettings } from '../repositories/settingsRepository';
-import {
-  rescheduleDailyReminder,
-  cancelAllReminders,
-  requestNotificationPermission,
-} from '../services/notifications';
+import { requestNotificationPermission } from '../services/notifications';
 
 type SettingsContextValue = {
   settings: Settings;
@@ -59,16 +55,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
       setSettings(next);
       await saveSettings(next);
-
-      try {
-        if (next.reminderEnabled) {
-          await rescheduleDailyReminder(next.reminderHour, next.reminderMinute);
-        } else {
-          await cancelAllReminders();
-        }
-      } catch (e) {
-        console.error('Failed to reschedule reminder', e);
-      }
+      // 通知の (再)スケジュールは ReminderScheduler コンポーネントが
+      // settings + entries の変化を監視して自動で実行する
     },
     [settings]
   );
