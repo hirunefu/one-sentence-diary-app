@@ -8,6 +8,11 @@ import {
   ViewStyle,
 } from 'react-native';
 
+// Pressable 自身を Animated 要素にし、style と transform を同じ要素に適用する。
+// 旧実装のように Animated.View でラップすると、flex 等の layout プロパティが
+// 外側ラッパーに伝わらず横並びレイアウトが崩れるため。
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 type Props = Omit<PressableProps, 'style'> & {
   style?: StyleProp<ViewStyle>;
   pressedScale?: number;
@@ -49,13 +54,11 @@ export function PressableScale({
   );
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Pressable
-        {...rest}
-        style={style}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-      />
-    </Animated.View>
+    <AnimatedPressable
+      {...rest}
+      style={[style, { transform: [{ scale }] }]}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    />
   );
 }
