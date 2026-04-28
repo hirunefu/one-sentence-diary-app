@@ -60,7 +60,7 @@ export function LockScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
-  title: { fontSize: 24, marginBottom: 32 },
+  title: { fontSize: 18, fontWeight: '500', marginBottom: 32 },
   error: { marginBottom: 16 },
   button: {
     paddingVertical: 12,
