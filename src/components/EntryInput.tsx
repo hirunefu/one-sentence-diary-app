@@ -39,7 +39,7 @@ export function EntryInput({
         style={styles.input}
       />
       <Text testID="remaining-count" style={styles.count}>
-        {remaining}
+        残り {remaining} 字
       </Text>
     </View>
   );

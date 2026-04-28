@@ -4,11 +4,11 @@ import { EntryInput } from './EntryInput';
 
 describe('EntryInput', () => {
   test('shows initial value and remaining count', () => {
-    const { getByDisplayValue, getByTestId } = render(
+    const { getByDisplayValue, getByText } = render(
       <EntryInput value="hello" onChangeText={() => {}} />
     );
     expect(getByDisplayValue('hello')).toBeTruthy();
-    expect(getByTestId('remaining-count').props.children).toBe(135);
+    expect(getByText('残り 135 字')).toBeTruthy();
   });
 
   test('strips newlines from input', () => {
@@ -31,10 +31,10 @@ describe('EntryInput', () => {
   });
 
   test('counts emoji as 1 in remaining count', () => {
-    const { getByTestId } = render(
+    const { getByText } = render(
       <EntryInput value="😀😀😀" onChangeText={() => {}} />
     );
-    expect(getByTestId('remaining-count').props.children).toBe(137);
+    expect(getByText('残り 137 字')).toBeTruthy();
   });
 
   test('allows input that fits exactly at the limit', () => {
