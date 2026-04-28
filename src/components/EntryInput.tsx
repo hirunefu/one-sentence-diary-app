@@ -74,7 +74,6 @@ const styles = StyleSheet.create({
     fontSize: typography.size.body,
     lineHeight: typography.size.body * typography.lineHeight.body,
     padding: 0,
-    flex: 1,
   },
   count: {
     alignSelf: 'flex-end',
