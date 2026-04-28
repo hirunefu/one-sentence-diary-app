@@ -1,5 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Alert,
+  Animated,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
@@ -11,6 +19,8 @@ import { space } from '../theme/spacing';
 import { radius } from '../theme/radius';
 
 const SAVED_FEEDBACK_MS = 1500;
+const BG_TRANSITION_MS = 250;
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function formatJpDate(dateStr: string): { md: string; dow: string } {
   const [y, m, d] = dateStr.split('-').map(Number) as [number, number, number];
@@ -29,8 +39,13 @@ export function HomeScreen() {
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const todayStr = today();
 
+  // 保存ボタンのアニメーション
+  // bgPhase: 0 = primary (有効), 1 = disabled (無効/保存中), 2 = success (保存しました)
+  const bgPhase = useRef(new Animated.Value(0)).current;
+  const tapScale = useRef(new Animated.Value(1)).current;
+
+  const todayStr = today();
   const { md, dow } = formatJpDate(todayStr);
 
   const last7: StreakDay[] = useMemo(() => {
@@ -55,6 +70,37 @@ export function HomeScreen() {
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
     };
   }, []);
+
+  const isEmpty = text.trim().length === 0;
+
+  useEffect(() => {
+    let target = 0;
+    if (justSaved) target = 2;
+    else if (saving || isEmpty) target = 1;
+    Animated.timing(bgPhase, {
+      toValue: target,
+      duration: BG_TRANSITION_MS,
+      useNativeDriver: false,
+    }).start();
+  }, [saving, justSaved, isEmpty, bgPhase]);
+
+  const handlePressIn = useCallback(() => {
+    Animated.spring(tapScale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  }, [tapScale]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(tapScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 8,
+    }).start();
+  }, [tapScale]);
 
   if (initError) {
     return (
@@ -99,14 +145,13 @@ export function HomeScreen() {
     }
   };
 
-  const isEmpty = text.trim().length === 0;
   const buttonDisabled = saving || justSaved || isEmpty;
   const buttonLabel = saving ? '保存中…' : justSaved ? '✓ 保存しました' : '保存';
-  const buttonBg = justSaved
-    ? colors.success
-    : saving || isEmpty
-      ? colors.disabled
-      : colors.primary;
+
+  const animatedBg = bgPhase.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: [colors.primary, colors.disabled, colors.success],
+  });
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -123,13 +168,18 @@ export function HomeScreen() {
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
-        <PressableScale
+        <AnimatedPressable
           onPress={handleSave}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
           disabled={buttonDisabled}
-          style={[styles.saveButton, { backgroundColor: buttonBg }]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: animatedBg, transform: [{ scale: tapScale }] },
+          ]}
         >
           <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
-        </PressableScale>
+        </AnimatedPressable>
       </View>
     </SafeAreaView>
   );
@@ -169,6 +219,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: space.xl,
     borderRadius: radius.md,
+    minWidth: 132,
+    alignItems: 'center',
   },
   retryButton: {
     paddingVertical: space.md,
