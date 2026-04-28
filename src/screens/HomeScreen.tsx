@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -12,11 +12,15 @@ import { StreakBadge } from '../components/StreakBadge';
 import { useEntries } from '../contexts/EntriesContext';
 import { today } from '../utils/date';
 
+const SAVED_FEEDBACK_MS = 1500;
+
 export function HomeScreen() {
   const { ready, initError, retryInit, getByDate, upsert, streak } = useEntries();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const todayStr = today();
 
   useEffect(() => {
@@ -27,6 +31,12 @@ export function HomeScreen() {
       setLoaded(true);
     })();
   }, [ready, todayStr, getByDate]);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   if (initError) {
     return (
@@ -47,12 +57,19 @@ export function HomeScreen() {
     );
   }
 
+  const handleChangeText = (next: string) => {
+    setText(next);
+    if (justSaved) setJustSaved(false);
+  };
+
   const handleSave = async () => {
     if (text.trim().length === 0) return;
     try {
       setSaving(true);
       await upsert(todayStr, text);
-      Alert.alert('保存しました');
+      setJustSaved(true);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setJustSaved(false), SAVED_FEEDBACK_MS);
     } catch (e) {
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
@@ -61,6 +78,10 @@ export function HomeScreen() {
     }
   };
 
+  const isEmpty = text.trim().length === 0;
+  const buttonDisabled = saving || justSaved || isEmpty;
+  const buttonLabel = saving ? '保存中…' : justSaved ? '✓ 保存しました' : '保存';
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -68,18 +89,19 @@ export function HomeScreen() {
         <StreakBadge days={streak} />
       </View>
       <View style={styles.body}>
-        <EntryInput value={text} onChangeText={setText} autoFocus />
+        <EntryInput value={text} onChangeText={handleChangeText} autoFocus />
       </View>
       <Pressable
         onPress={handleSave}
-        disabled={saving || text.trim().length === 0}
+        disabled={buttonDisabled}
         style={({ pressed }) => [
           styles.button,
-          (saving || text.trim().length === 0) && styles.buttonDisabled,
+          justSaved && styles.buttonSaved,
+          !justSaved && (saving || isEmpty) && styles.buttonDisabled,
           pressed && styles.pressed,
         ]}
       >
-        <Text style={styles.buttonText}>保存</Text>
+        <Text style={styles.buttonText}>{buttonLabel}</Text>
       </Pressable>
     </SafeAreaView>
   );
@@ -98,6 +120,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   buttonDisabled: { backgroundColor: '#bbb' },
+  buttonSaved: { backgroundColor: '#388e3c' },
   pressed: { opacity: 0.8 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   errorText: { color: '#c00', marginBottom: 16, textAlign: 'center' },
