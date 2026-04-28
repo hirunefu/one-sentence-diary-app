@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -28,9 +29,36 @@ const Tabs = createBottomTabNavigator<MainTabsParamList>();
 function MainTabs() {
   return (
     <Tabs.Navigator>
-      <Tabs.Screen name="Home" component={HomeScreen} options={{ title: '今日' }} />
-      <Tabs.Screen name="History" component={HistoryScreen} options={{ title: '履歴' }} />
-      <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: '設定' }} />
+      <Tabs.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: '今日',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'create' : 'create-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          title: '履歴',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: '設定',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs.Navigator>
   );
 }
