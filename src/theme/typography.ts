@@ -3,7 +3,7 @@ export const typography = {
     body: 22,
     streakNum: 18,
     title: 16,
-    cardBody: 14,
+    cardBody: 16,
     button: 13,
     caption: 11,
     micro: 9,
