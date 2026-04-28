@@ -1,1 +1,33 @@
 .claude/settings.local.json
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Native
+ios/
+android/
+*.orig.*
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Test coverage
+coverage/

@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "一文日記",
+    "slug": "one-sentence-diary",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hirunefu.onesentencediary",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "アプリのロックを解除するために使用します"
+      }
+    },
+    "android": {
+      "package": "com.hirunefu.onesentencediary",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "アプリのロックを解除するために使用します"
+        }
+      ]
+    ]
+  }
+}
