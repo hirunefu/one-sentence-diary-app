@@ -1,29 +1,45 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { EntryInput } from '../components/EntryInput';
-import { StreakBadge } from '../components/StreakBadge';
+import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
-import { today } from '../utils/date';
+import { today, addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
+import { radius } from '../theme/radius';
 
 const SAVED_FEEDBACK_MS = 1500;
 
+function formatJpDate(dateStr: string): { md: string; dow: string } {
+  const [y, m, d] = dateStr.split('-').map(Number) as [number, number, number];
+  const date = new Date(y, m - 1, d);
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const md = `${m}月${d}日`;
+  const dow = `${weekdays[date.getDay()]}曜日`;
+  return { md, dow };
+}
+
 export function HomeScreen() {
   const colors = useColors();
-  const { ready, initError, retryInit, getByDate, upsert, streak } = useEntries();
+  const { ready, initError, retryInit, getByDate, upsert, streak, entries } = useEntries();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const todayStr = today();
+
+  const { md, dow } = formatJpDate(todayStr);
+
+  const last7: StreakDay[] = useMemo(() => {
+    const recordedSet = new Set(entries.map((e) => e.date));
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = addDays(todayStr, -(6 - i));
+      return { date: d, recorded: recordedSet.has(d), isToday: d === todayStr };
+    });
+  }, [entries, todayStr]);
 
   useEffect(() => {
     if (!ready) return;
@@ -44,7 +60,10 @@ export function HomeScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={[styles.errorText, { color: colors.error }]}>{initError}</Text>
-        <PressableScale onPress={retryInit} style={[styles.button, { backgroundColor: colors.primary }]}>
+        <PressableScale
+          onPress={retryInit}
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+        >
           <Text style={[styles.buttonText, { color: colors.primaryText }]}>再試行</Text>
         </PressableScale>
       </SafeAreaView>
@@ -83,7 +102,6 @@ export function HomeScreen() {
   const isEmpty = text.trim().length === 0;
   const buttonDisabled = saving || justSaved || isEmpty;
   const buttonLabel = saving ? '保存中…' : justSaved ? '✓ 保存しました' : '保存';
-
   const buttonBg = justSaved
     ? colors.success
     : saving || isEmpty
@@ -93,34 +111,77 @@ export function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.date, { color: colors.text }]}>{todayStr}</Text>
-        <StreakBadge days={streak} />
+        <View>
+          <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
+          <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
+        </View>
+        <StreakDisplay days={streak} last7={last7} />
       </View>
+
       <View style={styles.body}>
         <EntryInput value={text} onChangeText={handleChangeText} autoFocus />
       </View>
-      <PressableScale
-        onPress={handleSave}
-        disabled={buttonDisabled}
-        style={[styles.button, { backgroundColor: buttonBg }]}
-      >
-        <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
-      </PressableScale>
+
+      <View style={[styles.footer, { borderTopColor: colors.divider }]}>
+        <PressableScale
+          onPress={handleSave}
+          disabled={buttonDisabled}
+          style={[styles.saveButton, { backgroundColor: buttonBg }]}
+        >
+          <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
+        </PressableScale>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  date: { fontSize: 18, fontWeight: '600' },
-  body: { flex: 1 },
-  button: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
+  container: {
+    flex: 1,
+    paddingHorizontal: space.lg + 2,
+    paddingTop: space.xl,
+    paddingBottom: space.lg + 2,
   },
-  buttonText: { fontSize: 16, fontWeight: '600' },
-  errorText: { marginBottom: 16, textAlign: 'center' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: space.xl,
+  },
+  dateMd: {
+    fontSize: typography.size.title,
+    fontWeight: typography.weight.medium,
+  },
+  dateDow: {
+    fontSize: typography.size.caption,
+    marginTop: 2,
+  },
+  body: {
+    flex: 1,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: space.md + 2,
+    borderTopWidth: 1,
+  },
+  saveButton: {
+    paddingVertical: 10,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.md,
+  },
+  retryButton: {
+    paddingVertical: space.md,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.md,
+    alignSelf: 'center',
+  },
+  buttonText: {
+    fontSize: typography.size.button,
+    fontWeight: typography.weight.medium,
+  },
+  errorText: {
+    marginBottom: space.lg,
+    textAlign: 'center',
+  },
 });
