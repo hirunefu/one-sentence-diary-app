@@ -3,6 +3,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
 import { useColors } from '../theme/useColors';
+import { typography } from '../theme/typography';
 
 type Props = {
   value: string;
@@ -44,6 +45,12 @@ export function EntryInput({
 
   return (
     <View style={styles.container}>
+      <Text
+        testID="remaining-count"
+        style={[styles.count, { color: countColor, fontWeight: countWeight }]}
+      >
+        残り {remaining} 字
+      </Text>
       <TextInput
         testID="entry-input"
         value={value}
@@ -52,21 +59,8 @@ export function EntryInput({
         placeholderTextColor={colors.textPlaceholder}
         autoFocus={autoFocus}
         multiline={false}
-        style={[
-          styles.input,
-          {
-            borderColor: colors.inputBorder,
-            color: colors.text,
-            backgroundColor: colors.surface,
-          },
-        ]}
+        style={[styles.input, { color: colors.text }]}
       />
-      <Text
-        testID="remaining-count"
-        style={[styles.count, { color: countColor, fontWeight: countWeight }]}
-      >
-        残り {remaining} 字
-      </Text>
     </View>
   );
 }
@@ -74,17 +68,17 @@ export function EntryInput({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+    flex: 1,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 48,
+    fontSize: typography.size.body,
+    lineHeight: typography.size.body * typography.lineHeight.body,
+    padding: 0,
+    flex: 1,
   },
   count: {
     alignSelf: 'flex-end',
-    marginTop: 4,
-    fontSize: 12,
+    fontSize: typography.size.caption,
+    marginBottom: 6,
   },
 });
