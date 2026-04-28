@@ -93,13 +93,13 @@ export function HomeScreen() {
   useEffect(() => {
     let target = 0;
     if (justSaved) target = 2;
-    else if (saving || isEmpty) target = 1;
+    else if (isEmpty) target = 1;
     Animated.timing(bgPhase, {
       toValue: target,
       duration: BG_TRANSITION_MS,
       useNativeDriver: false,
     }).start();
-  }, [saving, justSaved, isEmpty, bgPhase]);
+  }, [justSaved, isEmpty, bgPhase]);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(tapScale, {
@@ -152,29 +152,26 @@ export function HomeScreen() {
   const handleSave = async () => {
     if (text.trim().length === 0) return;
     try {
-      animateButtonLayout();
+      // saving 中もラベルは "保存" のまま、disabled 状態だけが変わる (二重タップ防止)
       setSaving(true);
       await upsert(todayStr, text);
-      // setSaving(true) と setJustSaved(true) のラベルは両方 "保存中…" のため
-      // ここでは layout アニメーションは不要 (label 変化なし)
+      animateButtonLayout(); // "保存" → "✓ 保存しました" の幅変化を滑らかに
       setJustSaved(true);
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
       savedTimerRef.current = setTimeout(() => {
-        animateButtonLayout();
+        animateButtonLayout(); // "✓ 保存しました" → "保存"
         setJustSaved(false);
       }, SAVED_FEEDBACK_MS);
     } catch (e) {
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
     } finally {
-      // saving=false で label が "保存中…" → "✓ 保存しました" (justSaved=true 時) または "保存" に変化
-      animateButtonLayout();
       setSaving(false);
     }
   };
 
   const buttonDisabled = saving || justSaved || isEmpty;
-  const buttonLabel = saving ? '保存中…' : justSaved ? '✓ 保存しました' : '保存';
+  const buttonLabel = justSaved ? '✓ 保存しました' : '保存';
 
   const animatedBg = bgPhase.interpolate({
     inputRange: [0, 1, 2],
