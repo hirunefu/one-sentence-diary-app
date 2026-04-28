@@ -32,3 +32,6 @@ yarn-error.*
 
 # Test coverage
 coverage/
+
+# Brainstorming visual companion (mockups保存用)
+.superpowers/
