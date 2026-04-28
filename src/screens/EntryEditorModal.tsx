@@ -11,6 +11,9 @@ import { EntryInput } from '../components/EntryInput';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useColors } from '../theme/useColors';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
+import { radius } from '../theme/radius';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EntryEditor'>;
@@ -75,11 +78,11 @@ export function EntryEditorModal({ route, navigation }: Props) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
       <EntryInput value={text} onChangeText={setText} autoFocus />
-      <View style={styles.row}>
+      <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         {exists && (
           <PressableScale
             onPress={handleDelete}
-            style={[styles.button, { backgroundColor: colors.danger }]}
+            style={[styles.actionButton, { backgroundColor: colors.danger }]}
           >
             <Text style={[styles.buttonText, { color: colors.primaryText }]}>削除</Text>
           </PressableScale>
@@ -87,7 +90,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
         <PressableScale
           onPress={handleSave}
           disabled={isEmpty}
-          style={[styles.button, { backgroundColor: saveBg }]}
+          style={[styles.actionButton, { backgroundColor: saveBg }]}
         >
           <Text style={[styles.buttonText, { color: colors.primaryText }]}>保存</Text>
         </PressableScale>
@@ -97,9 +100,32 @@ export function EntryEditorModal({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  date: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
-  row: { flexDirection: 'row', marginTop: 16, gap: 8 },
-  button: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  buttonText: { fontSize: 16, fontWeight: '600' },
+  container: {
+    flex: 1,
+    paddingHorizontal: space.lg + 2,
+    paddingTop: space.xl,
+    paddingBottom: space.lg + 2,
+  },
+  date: {
+    fontSize: typography.size.title,
+    fontWeight: typography.weight.medium,
+    marginBottom: space.lg,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: space.sm,
+    marginTop: space.lg,
+    paddingTop: space.md + 2,
+    borderTopWidth: 1,
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.md,
+  },
+  buttonText: {
+    fontSize: typography.size.button,
+    fontWeight: typography.weight.medium,
+  },
 });
