@@ -14,8 +14,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEntries } from '../contexts/EntriesContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { EntryCard } from '../components/EntryCard';
+import { TimelineRow } from '../components/TimelineRow';
 import { useColors } from '../theme/useColors';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -49,11 +51,11 @@ export function HistoryScreen() {
       const dates = await getDatesInMonth(y, m);
       const map: Record<string, { marked: boolean; dotColor?: string }> = {};
       for (const d of dates) {
-        map[d] = { marked: true, dotColor: colors.primary };
+        map[d] = { marked: true, dotColor: colors.text };
       }
       setMarked(map);
     },
-    [getDatesInMonth, colors.primary]
+    [getDatesInMonth, colors.text]
   );
 
   useEffect(() => {
@@ -68,22 +70,24 @@ export function HistoryScreen() {
     backgroundColor: colors.background,
     calendarBackground: colors.background,
     textSectionTitleColor: colors.textMuted,
-    selectedDayBackgroundColor: colors.primary,
-    selectedDayTextColor: colors.primaryText,
-    todayTextColor: colors.primary,
+    selectedDayBackgroundColor: colors.text,
+    selectedDayTextColor: colors.background,
+    todayTextColor: colors.text,
+    todayBackgroundColor: colors.surface,
     dayTextColor: colors.text,
     textDisabledColor: colors.disabled,
-    dotColor: colors.primary,
-    selectedDotColor: colors.primaryText,
-    arrowColor: colors.primary,
+    dotColor: colors.text,
+    selectedDotColor: colors.background,
+    arrowColor: colors.text,
     monthTextColor: colors.text,
-    indicatorColor: colors.primary,
+    indicatorColor: colors.text,
   };
 
   const tabWidth = tabsWidth / 2;
+  // indicator width = tabWidth * 0.75 → 各タブの中央に置くため左右に tabWidth * 0.125 のインセット
   const indicatorTranslate = indicatorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, tabWidth],
+    outputRange: [tabWidth * 0.125, tabWidth * 1.125],
   });
 
   const onTabsLayout = (e: LayoutChangeEvent) => {
@@ -92,19 +96,48 @@ export function HistoryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.toggleWrapper} onLayout={onTabsLayout}>
+      <View
+        style={[styles.toggleWrapper, { borderBottomColor: colors.divider }]}
+        onLayout={onTabsLayout}
+      >
         <View style={styles.toggleRow}>
           <Pressable
             onPress={() => updateSettings({ viewMode: 'calendar' })}
             style={styles.tab}
           >
-            <Text style={[styles.tabText, { color: colors.text }]}>カレンダー</Text>
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color: settings.viewMode === 'calendar' ? colors.text : colors.textMuted,
+                  fontWeight:
+                    settings.viewMode === 'calendar'
+                      ? typography.weight.medium
+                      : typography.weight.regular,
+                },
+              ]}
+            >
+              カレンダー
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => updateSettings({ viewMode: 'timeline' })}
             style={styles.tab}
           >
-            <Text style={[styles.tabText, { color: colors.text }]}>タイムライン</Text>
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color: settings.viewMode === 'timeline' ? colors.text : colors.textMuted,
+                  fontWeight:
+                    settings.viewMode === 'timeline'
+                      ? typography.weight.medium
+                      : typography.weight.regular,
+                },
+              ]}
+            >
+              タイムライン
+            </Text>
           </Pressable>
         </View>
         {tabsWidth > 0 && (
@@ -112,8 +145,8 @@ export function HistoryScreen() {
             style={[
               styles.indicator,
               {
-                width: tabWidth,
-                backgroundColor: colors.primary,
+                width: tabWidth * 0.75,
+                backgroundColor: colors.text,
                 transform: [{ translateX: indicatorTranslate }],
               },
             ]}
@@ -134,11 +167,14 @@ export function HistoryScreen() {
         />
       ) : (
         <FlatList
+          inverted
           data={entries}
           keyExtractor={(item) => item.date}
-          renderItem={({ item }) => <EntryCard entry={item} onPress={openEditor} />}
+          renderItem={({ item }) => <TimelineRow entry={item} onPress={openEditor} />}
           ListEmptyComponent={
-            <Text style={[styles.empty, { color: colors.textMuted }]}>まだ記録がありません</Text>
+            <Text style={[styles.empty, { color: colors.textMuted }]}>
+              まだ記録がありません
+            </Text>
           }
         />
       )}
@@ -148,20 +184,32 @@ export function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  toggleWrapper: { paddingTop: 8, position: 'relative' },
-  toggleRow: { flexDirection: 'row', paddingHorizontal: 8 },
+  toggleWrapper: {
+    paddingTop: space.sm,
+    position: 'relative',
+    borderBottomWidth: 1,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    // 横 padding は付けない (indicator の translateX が toggleWrapper 全幅を前提にしている)
+  },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 14,
     alignItems: 'center',
   },
-  tabText: { fontSize: 14 },
+  tabText: {
+    fontSize: typography.size.button,
+  },
   indicator: {
     position: 'absolute',
-    bottom: 0,
-    left: 8,
+    bottom: -1,
+    left: 0,
     height: 2,
-    borderRadius: 1,
   },
-  empty: { textAlign: 'center', marginTop: 32 },
+  empty: {
+    textAlign: 'center',
+    marginTop: space.xxl,
+    fontSize: typography.size.button,
+  },
 });
