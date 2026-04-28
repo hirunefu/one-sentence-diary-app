@@ -1,24 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- 紙風の背景 -->
+  <!-- 紙風の背景 (Android 円形マスクで全面表示されるよう全面塗り) -->
   <rect width="1024" height="1024" fill="#f3e6cd"/>
-  <!-- 微かな縁取り (アイコンとして輪郭を出す) -->
-  <rect x="0" y="0" width="1024" height="1024" fill="none" stroke="#dccfb1" stroke-width="6"/>
 
-  <!-- 「口」を明朝体で大きく描画 -->
+  <!-- 「口」を明朝体で描画 (内側 ~70% に収めて丸マスクで端が欠けないように) -->
   <text
     x="512"
-    y="820"
+    y="730"
     text-anchor="middle"
-    font-size="940"
+    font-size="680"
     font-family="Yu Mincho, MS Mincho, Hiragino Mincho ProN, Hiragino Mincho Pro, Noto Serif CJK JP, serif"
     fill="#2b2117">口</text>
 
   <!-- 「一」を「口」の中心に明朝体で描画 -->
   <text
     x="512"
-    y="640"
+    y="600"
     text-anchor="middle"
-    font-size="420"
+    font-size="300"
     font-family="Yu Mincho, MS Mincho, Hiragino Mincho ProN, Hiragino Mincho Pro, Noto Serif CJK JP, serif"
     fill="#2b2117">一</text>
 </svg>
