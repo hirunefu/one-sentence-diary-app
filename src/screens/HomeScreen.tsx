@@ -168,18 +168,18 @@ export function HomeScreen() {
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
-        <AnimatedPressable
-          onPress={handleSave}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          disabled={buttonDisabled}
-          style={[
-            styles.saveButton,
-            { backgroundColor: animatedBg, transform: [{ scale: tapScale }] },
-          ]}
-        >
-          <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
-        </AnimatedPressable>
+        {/* native driver の transform と JS driver の backgroundColor を分離するため Animated.View でラップ */}
+        <Animated.View style={{ transform: [{ scale: tapScale }] }}>
+          <AnimatedPressable
+            onPress={handleSave}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            disabled={buttonDisabled}
+            style={[styles.saveButton, { backgroundColor: animatedBg }]}
+          >
+            <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
+          </AnimatedPressable>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
