@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#f3e6cd"
     },
     "ios": {
       "supportsTablet": true,
@@ -23,7 +23,7 @@
       "package": "com.hirunefu.onesentencediary",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#f3e6cd"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
