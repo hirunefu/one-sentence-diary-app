@@ -2,10 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
   Animated,
+  LayoutAnimation,
+  Platform,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
+  UIManager,
   View,
 } from 'react-native';
 import { EntryInput } from '../components/EntryInput';
@@ -20,7 +23,21 @@ import { radius } from '../theme/radius';
 
 const SAVED_FEEDBACK_MS = 1500;
 const BG_TRANSITION_MS = 250;
+const LAYOUT_TRANSITION_MS = 250;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+// Android で LayoutAnimation を有効化 (一度だけ)
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+// Material Design Standard easing (easeInOut) 相当の幅遷移
+function animateButtonLayout() {
+  LayoutAnimation.configureNext({
+    duration: LAYOUT_TRANSITION_MS,
+    update: { type: 'easeInEaseOut' },
+  });
+}
 
 function formatJpDate(dateStr: string): { md: string; dow: string } {
   const [y, m, d] = dateStr.split('-').map(Number) as [number, number, number];
@@ -126,21 +143,32 @@ export function HomeScreen() {
 
   const handleChangeText = (next: string) => {
     setText(next);
-    if (justSaved) setJustSaved(false);
+    if (justSaved) {
+      animateButtonLayout();
+      setJustSaved(false);
+    }
   };
 
   const handleSave = async () => {
     if (text.trim().length === 0) return;
     try {
+      animateButtonLayout();
       setSaving(true);
       await upsert(todayStr, text);
+      // setSaving(true) と setJustSaved(true) のラベルは両方 "保存中…" のため
+      // ここでは layout アニメーションは不要 (label 変化なし)
       setJustSaved(true);
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
-      savedTimerRef.current = setTimeout(() => setJustSaved(false), SAVED_FEEDBACK_MS);
+      savedTimerRef.current = setTimeout(() => {
+        animateButtonLayout();
+        setJustSaved(false);
+      }, SAVED_FEEDBACK_MS);
     } catch (e) {
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
     } finally {
+      // saving=false で label が "保存中…" → "✓ 保存しました" (justSaved=true 時) または "保存" に変化
+      animateButtonLayout();
       setSaving(false);
     }
   };
