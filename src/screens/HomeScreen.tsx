@@ -219,8 +219,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: space.xl,
     borderRadius: radius.md,
-    minWidth: 132,
-    alignItems: 'center',
   },
   retryButton: {
     paddingVertical: space.md,
