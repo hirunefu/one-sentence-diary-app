@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Settings } from '../types';
+import type { Settings, ThemePreference } from '../types';
 import { DEFAULT_SETTINGS } from '../types';
 
 const KEYS = {
@@ -8,6 +8,7 @@ const KEYS = {
   reminderHour: 'settings.reminderHour',
   reminderMinute: 'settings.reminderMinute',
   viewMode: 'settings.viewMode',
+  themePreference: 'settings.themePreference',
 } as const;
 
 function parseBool(v: string | null, def: boolean): boolean {
@@ -29,13 +30,19 @@ function parseViewMode(
   return def;
 }
 
+function parseThemePreference(v: string | null, def: ThemePreference): ThemePreference {
+  if (v === 'system' || v === 'light' || v === 'dark') return v;
+  return def;
+}
+
 export async function loadSettings(): Promise<Settings> {
-  const [lock, rem, hour, minute, view] = await Promise.all([
+  const [lock, rem, hour, minute, view, theme] = await Promise.all([
     AsyncStorage.getItem(KEYS.lockEnabled),
     AsyncStorage.getItem(KEYS.reminderEnabled),
     AsyncStorage.getItem(KEYS.reminderHour),
     AsyncStorage.getItem(KEYS.reminderMinute),
     AsyncStorage.getItem(KEYS.viewMode),
+    AsyncStorage.getItem(KEYS.themePreference),
   ]);
   return {
     lockEnabled: parseBool(lock, DEFAULT_SETTINGS.lockEnabled),
@@ -43,6 +50,7 @@ export async function loadSettings(): Promise<Settings> {
     reminderHour: parseNumber(hour, DEFAULT_SETTINGS.reminderHour),
     reminderMinute: parseNumber(minute, DEFAULT_SETTINGS.reminderMinute),
     viewMode: parseViewMode(view, DEFAULT_SETTINGS.viewMode),
+    themePreference: parseThemePreference(theme, DEFAULT_SETTINGS.themePreference),
   };
 }
 
@@ -53,5 +61,6 @@ export async function saveSettings(s: Settings): Promise<void> {
     AsyncStorage.setItem(KEYS.reminderHour, String(s.reminderHour)),
     AsyncStorage.setItem(KEYS.reminderMinute, String(s.reminderMinute)),
     AsyncStorage.setItem(KEYS.viewMode, s.viewMode),
+    AsyncStorage.setItem(KEYS.themePreference, s.themePreference),
   ]);
 }

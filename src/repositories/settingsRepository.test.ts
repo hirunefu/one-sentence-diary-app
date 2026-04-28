@@ -23,9 +23,25 @@ describe('settingsRepository', () => {
       reminderHour: 8,
       reminderMinute: 30,
       viewMode: 'timeline' as const,
+      themePreference: 'dark' as const,
     };
     await saveSettings(next);
     expect(await loadSettings()).toEqual(next);
+  });
+
+  test('themePreference round-trips for each value', async () => {
+    for (const value of ['system', 'light', 'dark'] as const) {
+      await AsyncStorage.clear();
+      await saveSettings({ ...DEFAULT_SETTINGS, themePreference: value });
+      const loaded = await loadSettings();
+      expect(loaded.themePreference).toBe(value);
+    }
+  });
+
+  test('themePreference falls back to default when storage value is invalid', async () => {
+    await AsyncStorage.setItem('settings.themePreference', 'bogus');
+    const s = await loadSettings();
+    expect(s.themePreference).toBe('system');
   });
 
   test('partial pre-existing data is filled with defaults for missing keys', async () => {

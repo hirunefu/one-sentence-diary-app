@@ -1,5 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+
+jest.mock('../theme/useColors', () => {
+  const { lightColors } = require('../theme/colors');
+  return {
+    useColors: () => lightColors,
+    useIsDark: () => false,
+  };
+});
+
 import { StreakBadge } from './StreakBadge';
 
 describe('StreakBadge', () => {

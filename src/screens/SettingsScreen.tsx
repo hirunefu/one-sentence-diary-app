@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
 import { Alert, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
 import { exportEntries } from '../services/exportService';
 import { useColors } from '../theme/useColors';
+import type { ThemePreference } from '../types';
+
+const THEME_OPTIONS: ReadonlyArray<{
+  value: ThemePreference;
+  label: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+}> = [
+  { value: 'system', label: 'システム', icon: 'phone-portrait-outline' },
+  { value: 'light', label: 'ライト', icon: 'sunny-outline' },
+  { value: 'dark', label: 'ダーク', icon: 'moon-outline' },
+];
 
 export function SettingsScreen() {
   const colors = useColors();
@@ -60,6 +72,34 @@ export function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>カラーテーマ</Text>
+        {THEME_OPTIONS.map((option) => {
+          const isSelected = settings.themePreference === option.value;
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => updateSettings({ themePreference: option.value })}
+              style={rowStyle}
+            >
+              <View style={styles.rowLeft}>
+                <Ionicons
+                  name={option.icon}
+                  size={22}
+                  color={colors.text}
+                  style={styles.themeIcon}
+                />
+                <Text style={[styles.label, { color: colors.text }]}>{option.label}</Text>
+              </View>
+              {isSelected && (
+                <Ionicons name="checkmark" size={22} color={colors.primary} />
+              )}
+            </Pressable>
+          );
+        })}
+
+        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+          セキュリティと通知
+        </Text>
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
           <Switch value={settings.lockEnabled} onValueChange={toggleLock} />
@@ -105,12 +145,26 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  themeIcon: {
+    marginRight: 12,
   },
   label: { fontSize: 16 },
   value: { fontSize: 16 },
