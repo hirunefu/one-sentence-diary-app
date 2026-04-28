@@ -34,7 +34,7 @@ export async function exportEntries(
   file.write(json);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
-    dialogTitle: '一文日記をエクスポート',
+    dialogTitle: '一口日記をエクスポート',
     UTI: 'public.json',
   });
 }

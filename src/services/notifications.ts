@@ -19,7 +19,7 @@ export async function rescheduleDailyReminder(
   await Notifications.scheduleNotificationAsync({
     identifier: REMINDER_NOTIFICATION_ID,
     content: {
-      title: '一文日記',
+      title: '一口日記',
       body: '今日の一文を書きましょう',
     },
     trigger: {

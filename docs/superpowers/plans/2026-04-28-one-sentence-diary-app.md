@@ -1,8 +1,8 @@
-# 一文日記アプリ 実装プラン
+# 一口日記アプリ 実装プラン
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** React Native (Expo) で個人用の「1日1件・140 文字以内」の一文日記アプリを iOS / Android 両プラットフォーム向けに構築する。
+**Goal:** React Native (Expo) で個人用の「1日1件・140 文字以内」の一口日記アプリを iOS / Android 両プラットフォーム向けに構築する。
 
 **Architecture:** 3 層構造 (UI / State / Data)。Repository パターンで SQLite と AsyncStorage へのアクセスを抽象化、Context は責務ごとに 3 分割 (Entries / Settings / AuthLock)、Service 層で expo-notifications / expo-local-authentication / expo-file-system をラップ。
 
@@ -222,7 +222,7 @@ module.exports = {
 ```json
 {
   "expo": {
-    "name": "一文日記",
+    "name": "一口日記",
     "slug": "one-sentence-diary",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -1301,7 +1301,7 @@ export async function rescheduleDailyReminder(
   await Notifications.scheduleNotificationAsync({
     identifier: REMINDER_NOTIFICATION_ID,
     content: {
-      title: '一文日記',
+      title: '一口日記',
       body: '今日の一文を書きましょう',
     },
     trigger: {
@@ -1462,7 +1462,7 @@ export async function exportEntries(
   file.write(json);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
-    dialogTitle: '一文日記をエクスポート',
+    dialogTitle: '一口日記をエクスポート',
     UTI: 'public.json',
   });
 }
