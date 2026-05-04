@@ -16,7 +16,13 @@ import {
   getAllEntriesDesc,
   getDatesInMonth as repoDatesInMonth,
   getAllDatesDesc,
+  type ImportStrategy,
 } from '../repositories/entriesRepository';
+import {
+  applyImport,
+  type ClassifiedEntries,
+  type ApplyImportResult,
+} from '../services/importService';
 import { calculateStreak } from '../utils/streak';
 import { today } from '../utils/date';
 
@@ -30,6 +36,10 @@ type EntriesContextValue = {
   remove: (date: string) => Promise<void>;
   getByDate: (date: string) => Promise<Entry | null>;
   getDatesInMonth: (year: number, month: number) => Promise<string[]>;
+  bulkImport: (
+    classified: ClassifiedEntries,
+    strategy: ImportStrategy
+  ) => Promise<ApplyImportResult>;
 };
 
 const EntriesContext = createContext<EntriesContextValue | null>(null);
@@ -82,6 +92,19 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     [db, refresh]
   );
 
+  const bulkImport = useCallback(
+    async (
+      classified: ClassifiedEntries,
+      strategy: ImportStrategy
+    ): Promise<ApplyImportResult> => {
+      if (!db) throw new Error('DB not ready');
+      const result = await applyImport(db, classified, strategy);
+      await refresh(db);
+      return result;
+    },
+    [db, refresh]
+  );
+
   const getByDate = useCallback(
     async (date: string) => {
       if (!db) return null;
@@ -114,8 +137,9 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       remove,
       getByDate,
       getDatesInMonth,
+      bulkImport,
     }),
-    [ready, initError, init, entries, streak, upsert, remove, getByDate, getDatesInMonth]
+    [ready, initError, init, entries, streak, upsert, remove, getByDate, getDatesInMonth, bulkImport]
   );
 
   return (
