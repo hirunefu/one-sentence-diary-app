@@ -3,10 +3,20 @@ import { Alert, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, Vi
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
 import { exportEntries } from '../services/exportService';
+import {
+  parseImportJson,
+  classifyEntries,
+  ImportParseError,
+  type ClassifiedEntries,
+} from '../services/importService';
+import type { ImportStrategy } from '../repositories/entriesRepository';
+import { ImportConflictModal } from '../components/ImportConflictModal';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from '../components/PressableScale';
 import type { ThemePreference } from '../types';
@@ -24,8 +34,9 @@ const THEME_OPTIONS: ReadonlyArray<{
 export function SettingsScreen() {
   const colors = useColors();
   const { settings, updateSettings } = useSettings();
-  const { entries } = useEntries();
+  const { entries, bulkImport } = useEntries();
   const [showPicker, setShowPicker] = useState(false);
+  const [pendingImport, setPendingImport] = useState<ClassifiedEntries | null>(null);
 
   const toggleLock = async (value: boolean) => {
     if (value) {
@@ -50,6 +61,94 @@ export function SettingsScreen() {
       Alert.alert('エクスポートに失敗しました');
     }
   };
+
+  const reportImportResult = (result: {
+    inserted: number;
+    updated: number;
+    skipped: number;
+    invalid: number;
+  }) => {
+    const { inserted, updated, skipped, invalid } = result;
+    const total = inserted + updated;
+    const detail = `内訳: 新規 ${inserted} / 上書き ${updated} / スキップ ${skipped} / 不正 ${invalid}`;
+    if (total === 0 && invalid === 0 && skipped === 0) {
+      Alert.alert('インポートする日記がありませんでした');
+    } else {
+      Alert.alert('インポートが完了しました', `${total} 件取り込みました\n${detail}`);
+    }
+  };
+
+  const runImport = async (
+    classified: ClassifiedEntries,
+    strategy: ImportStrategy
+  ) => {
+    try {
+      const result = await bulkImport(classified, strategy);
+      reportImportResult(result);
+    } catch (e) {
+      console.error('import failed', e);
+      Alert.alert('インポートに失敗しました');
+    }
+  };
+
+  const handleImport = async () => {
+    let pickResult: DocumentPicker.DocumentPickerResult;
+    try {
+      pickResult = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+    } catch (e) {
+      console.error('document picker failed', e);
+      Alert.alert('ファイルを開けませんでした');
+      return;
+    }
+    if (pickResult.canceled) return;
+    const asset = pickResult.assets[0];
+    if (!asset) return;
+
+    let raw: string;
+    try {
+      const file = new File(asset.uri);
+      raw = await file.text();
+    } catch (e) {
+      console.error('file read failed', e);
+      Alert.alert('ファイルを読み込めませんでした');
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = parseImportJson(raw);
+    } catch (e) {
+      if (e instanceof ImportParseError) {
+        Alert.alert('インポートできません', e.message);
+      } else {
+        Alert.alert('ファイルを読み込めませんでした');
+      }
+      return;
+    }
+
+    const existingDates = new Set(entries.map((e) => e.date));
+    const classified = classifyEntries(parsed.entries, existingDates);
+
+    if (classified.conflicts.length === 0) {
+      await runImport(classified, 'skip');
+      return;
+    }
+
+    setPendingImport(classified);
+  };
+
+  const handleConfirmImport = async (strategy: ImportStrategy) => {
+    const classified = pendingImport;
+    setPendingImport(null);
+    if (!classified) return;
+    await runImport(classified, strategy);
+  };
+
+  const handleCancelImport = () => setPendingImport(null);
 
   const onTimeChange = (_event: unknown, date?: Date) => {
     if (Platform.OS !== 'ios') setShowPicker(false);
@@ -138,10 +237,40 @@ export function SettingsScreen() {
           <Text style={[styles.exportText, { color: colors.primaryText }]}>データをエクスポート</Text>
         </PressableScale>
 
+        <PressableScale
+          onPress={handleImport}
+          style={[
+            styles.exportButton,
+            {
+              backgroundColor: 'transparent',
+              borderWidth: 1,
+              borderColor: colors.border,
+              marginTop: 12,
+            },
+          ]}
+        >
+          <Text style={[styles.exportText, { color: colors.text }]}>データをインポート</Text>
+        </PressableScale>
+
         <Text style={[styles.version, { color: colors.textMuted }]}>
           バージョン: {Constants.expoConfig?.version ?? '1.0.0'}
         </Text>
       </ScrollView>
+      {pendingImport && (
+        <ImportConflictModal
+          visible={true}
+          totalCount={
+            pendingImport.newEntries.length +
+            pendingImport.conflicts.length +
+            pendingImport.invalid
+          }
+          newCount={pendingImport.newEntries.length}
+          conflictCount={pendingImport.conflicts.length}
+          invalidCount={pendingImport.invalid}
+          onCancel={handleCancelImport}
+          onConfirm={handleConfirmImport}
+        />
+      )}
     </SafeAreaView>
   );
 }
