@@ -4,6 +4,9 @@ import {
   type BulkImportResult,
   type ImportStrategy,
 } from '../repositories/entriesRepository';
+import type { Entry } from '../types';
+import { MAX_TEXT_LENGTH } from '../types';
+import { countChars } from '../utils/text';
 
 export type ImportFileV1 = {
   version: 1;
@@ -54,10 +57,6 @@ export function parseImportJson(raw: string): ImportFileV1 {
   }
   return { version: 1, entries: obj.entries };
 }
-
-import type { Entry } from '../types';
-import { MAX_TEXT_LENGTH } from '../types';
-import { countChars } from '../utils/text';
 
 export type ClassifiedEntries = {
   newEntries: Entry[];
