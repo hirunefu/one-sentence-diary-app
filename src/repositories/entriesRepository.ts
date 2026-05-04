@@ -77,3 +77,73 @@ export async function getAllDatesDesc(db: DiaryDatabase): Promise<string[]> {
   );
   return rows.map((r) => r.date);
 }
+
+export type ImportStrategy = 'overwrite' | 'skip' | 'newer';
+
+export type ImportRecord = {
+  date: string;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type BulkImportResult = {
+  inserted: number;
+  updated: number;
+  skipped: number;
+};
+
+export async function bulkUpsertEntries(
+  db: DiaryDatabase,
+  newEntries: ImportRecord[],
+  conflicts: ImportRecord[],
+  strategy: ImportStrategy
+): Promise<BulkImportResult> {
+  let inserted = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  await db.execAsync('BEGIN');
+  try {
+    for (const e of newEntries) {
+      await db.runAsync(
+        `INSERT INTO entries (date, text, created_at, updated_at) VALUES (?, ?, ?, ?)`,
+        [e.date, e.text, e.createdAt, e.updatedAt]
+      );
+      inserted++;
+    }
+
+    if (strategy === 'skip') {
+      skipped += conflicts.length;
+    } else {
+      for (const e of conflicts) {
+        if (strategy === 'newer') {
+          const existing = await db.getFirstAsync<{ updated_at: number }>(
+            `SELECT updated_at FROM entries WHERE date = ?`,
+            [e.date]
+          );
+          if (existing && existing.updated_at >= e.updatedAt) {
+            skipped++;
+            continue;
+          }
+        }
+        await db.runAsync(
+          `INSERT INTO entries (date, text, created_at, updated_at) VALUES (?, ?, ?, ?)
+           ON CONFLICT(date) DO UPDATE SET
+             text = excluded.text,
+             created_at = excluded.created_at,
+             updated_at = excluded.updated_at`,
+          [e.date, e.text, e.createdAt, e.updatedAt]
+        );
+        updated++;
+      }
+    }
+
+    await db.execAsync('COMMIT');
+  } catch (err) {
+    await db.execAsync('ROLLBACK');
+    throw err;
+  }
+
+  return { inserted, updated, skipped };
+}
