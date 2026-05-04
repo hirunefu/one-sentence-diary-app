@@ -113,3 +113,42 @@ describe('classifyEntries', () => {
     expect(r.invalid).toBe(0);
   });
 });
+
+import { applyImport } from './importService';
+import { openTestDatabase } from '../db/testDatabase';
+import type { DiaryDatabase } from '../db/database';
+import { upsertEntry, getEntryByDate } from '../repositories/entriesRepository';
+
+describe('applyImport', () => {
+  let db: DiaryDatabase;
+  beforeEach(async () => {
+    db = await openTestDatabase();
+  });
+  afterEach(async () => {
+    await db.closeAsync();
+  });
+
+  test('classified を bulkUpsertEntries に渡し、invalid 件数を返す', async () => {
+    await upsertEntry(db, { date: '2026-04-29', text: 'old', now: 1000 });
+    const result = await applyImport(
+      db,
+      {
+        newEntries: [
+          { date: '2026-04-30', text: 'new', createdAt: 1, updatedAt: 1 },
+        ],
+        conflicts: [
+          { date: '2026-04-29', text: 'imp', createdAt: 1, updatedAt: 2000 },
+        ],
+        invalid: 3,
+      },
+      'overwrite'
+    );
+    expect(result).toEqual({
+      inserted: 1,
+      updated: 1,
+      skipped: 0,
+      invalid: 3,
+    });
+    expect((await getEntryByDate(db, '2026-04-29'))?.text).toBe('imp');
+  });
+});

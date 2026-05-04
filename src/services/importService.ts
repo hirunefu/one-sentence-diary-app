@@ -1,3 +1,10 @@
+import type { DiaryDatabase } from '../db/database';
+import {
+  bulkUpsertEntries,
+  type BulkImportResult,
+  type ImportStrategy,
+} from '../repositories/entriesRepository';
+
 export type ImportFileV1 = {
   version: 1;
   exportedAt?: string;
@@ -103,4 +110,20 @@ export function classifyEntries(
     }
   }
   return { newEntries, conflicts, invalid };
+}
+
+export type ApplyImportResult = BulkImportResult & { invalid: number };
+
+export async function applyImport(
+  db: DiaryDatabase,
+  classified: ClassifiedEntries,
+  strategy: ImportStrategy
+): Promise<ApplyImportResult> {
+  const result = await bulkUpsertEntries(
+    db,
+    classified.newEntries,
+    classified.conflicts,
+    strategy
+  );
+  return { ...result, invalid: classified.invalid };
 }
