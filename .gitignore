@@ -35,3 +35,7 @@ coverage/
 
 # Brainstorming visual companion (mockups保存用)
 .superpowers/
+
+# Release signing (NEVER commit — keystore and its credentials are the signing identity)
+release.keystore
+release-keystore-info.txt
