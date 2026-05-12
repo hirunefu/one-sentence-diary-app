@@ -52,6 +52,48 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Resolve version & versionCode from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RAW_TAG="${{ inputs.tag }}"
+          else
+            RAW_TAG="${{ github.ref_name }}"
+          fi
+          # strip leading 'v' and any pre-release suffix (e.g. -beta.1)
+          VERSION_FULL="${RAW_TAG#v}"
+          VERSION="${VERSION_FULL%%-*}"
+          IFS=. read -r MAJOR MINOR PATCH <<<"$VERSION"
+          : "${MAJOR:=0}" "${MINOR:=0}" "${PATCH:=0}"
+          if ! [[ "$MAJOR" =~ ^[0-9]+$ && "$MINOR" =~ ^[0-9]+$ && "$PATCH" =~ ^[0-9]+$ ]]; then
+            echo "::error::Tag '$RAW_TAG' does not match v<major>.<minor>.<patch>"
+            exit 1
+          fi
+          if [ "$MINOR" -gt 99 ] || [ "$PATCH" -gt 99 ]; then
+            echo "::error::minor/patch must each be <= 99 (got $MINOR/$PATCH)"
+            exit 1
+          fi
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          echo "tag=$RAW_TAG"          >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"      >> "$GITHUB_OUTPUT"
+          echo "versionCode=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "Tag $RAW_TAG → version=$VERSION versionCode=$VERSION_CODE"
+
+      - name: Inject version & versionCode into app.json
+        env:
+          INJ_VERSION: ${{ steps.version.outputs.version }}
+          INJ_VERSION_CODE: ${{ steps.version.outputs.versionCode }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const j = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            j.expo.version = process.env.INJ_VERSION;
+            j.expo.android = j.expo.android || {};
+            j.expo.android.versionCode = parseInt(process.env.INJ_VERSION_CODE, 10);
+            fs.writeFileSync('app.json', JSON.stringify(j, null, 2) + '\n');
+          "
+          grep -E '\"version\"|\"versionCode\"' app.json
+
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
@@ -85,11 +127,10 @@ jobs:
       - name: Rename APK with version
         id: rename
         run: |
-          VERSION=$(node -p "require('./app.json').expo.version")
+          VERSION="${{ steps.version.outputs.version }}"
           OUT="one-sentence-diary-v${VERSION}.apk"
           cp android/app/build/outputs/apk/release/app-release.apk "$OUT"
           echo "apk_path=$OUT" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

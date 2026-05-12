@@ -115,6 +115,45 @@ npm run licenses    # writes src/assets/licenses.json
 
 `src/assets/licenses.json` is committed so the asset is available at build time even on machines without `node_modules`.
 
+## Install via Obtainium
+
+[Obtainium](https://github.com/ImranR98/Obtainium) installs and tracks updates for Android apps directly from their source (GitHub Releases, F-Droid, etc.), bypassing the Play Store. Signed APKs are published to [GitHub Releases](https://github.com/hirunefu/one-sentence-diary-app/releases) by the [`Build & release Android APK`](.github/workflows/release-apk.yml) workflow whenever a `v*` tag is pushed.
+
+### One-tap setup
+
+Open this link on your Android device (Obtainium must be installed first):
+
+```
+obtainium://app/%7B%22id%22%3A%22com.hirunefu.onesentencediary%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fhirunefu%2Fone-sentence-diary-app%22%2C%22author%22%3A%22hirunefu%22%2C%22name%22%3A%22%E4%B8%80%E5%8F%A3%E6%97%A5%E8%A8%98%22%7D
+```
+
+### Manual setup
+
+1. Install [Obtainium](https://github.com/ImranR98/Obtainium/releases) on your Android device.
+2. Open Obtainium → tap **+** → paste:
+   ```
+   https://github.com/hirunefu/one-sentence-diary-app
+   ```
+3. Tap **Add**. Obtainium picks up the latest `one-sentence-diary-v*.apk` automatically.
+4. Tap **Install**.
+
+Subsequent releases (new tags pushed to this repo) appear in Obtainium's update list automatically.
+
+### Verifying the signing certificate
+
+Every release is signed with the same keystore. Pin or compare against the SHA-256 fingerprint to detect tampering:
+
+| Field | Value |
+| --- | --- |
+| DN | `CN=one-sentence-diary, O=hirunefu, C=JP` |
+| SHA-256 | `3E:D5:CC:6B:4E:3F:4A:E4:36:AC:F4:BF:E7:B4:45:AB:9C:BD:2A:B6:2E:DA:FE:F4:00:E8:2B:25:23:99:4C:41` |
+
+Verify locally with:
+
+```sh
+$ANDROID_HOME/build-tools/<latest>/apksigner verify --print-certs one-sentence-diary-v*.apk
+```
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
