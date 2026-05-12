@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Alert, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
@@ -20,6 +22,9 @@ import { ImportConflictModal } from '../components/ImportConflictModal';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from '../components/PressableScale';
 import type { ThemePreference } from '../types';
+import type { RootStackParamList } from '../navigation/RootNavigator';
+
+type SettingsNav = NativeStackNavigationProp<RootStackParamList>;
 
 const THEME_OPTIONS: ReadonlyArray<{
   value: ThemePreference;
@@ -33,6 +38,7 @@ const THEME_OPTIONS: ReadonlyArray<{
 
 export function SettingsScreen() {
   const colors = useColors();
+  const navigation = useNavigation<SettingsNav>();
   const { settings, updateSettings } = useSettings();
   const { entries, bulkImport } = useEntries();
   const [showPicker, setShowPicker] = useState(false);
@@ -250,6 +256,19 @@ export function SettingsScreen() {
           ]}
         >
           <Text style={[styles.exportText, { color: colors.text }]}>データをインポート</Text>
+        </PressableScale>
+
+        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+          このアプリについて
+        </Text>
+        <PressableScale
+          onPress={() => navigation.navigate('Licenses')}
+          style={rowStyle}
+        >
+          <Text style={[styles.label, { color: colors.text }]}>
+            オープンソースライセンス
+          </Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </PressableScale>
 
         <Text style={[styles.version, { color: colors.textMuted }]}>

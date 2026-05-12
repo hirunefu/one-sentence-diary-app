@@ -7,6 +7,8 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { EntryEditorModal } from '../screens/EntryEditorModal';
+import { LicensesScreen } from '../screens/LicensesScreen';
+import { LicenseDetailScreen } from '../screens/LicenseDetailScreen';
 import { LockScreen } from '../screens/LockScreen';
 import { useAuthLock } from '../contexts/AuthLockContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -16,6 +18,8 @@ import { View, Text } from 'react-native';
 export type RootStackParamList = {
   MainTabs: undefined;
   EntryEditor: { date: string };
+  Licenses: undefined;
+  LicenseDetail: { name: string; version: string };
 };
 
 export type MainTabsParamList = {
@@ -127,6 +131,16 @@ export function RootNavigator() {
           name="EntryEditor"
           component={EntryEditorModal}
           options={{ presentation: 'modal', title: '編集' }}
+        />
+        <Stack.Screen
+          name="Licenses"
+          component={LicensesScreen}
+          options={{ title: 'オープンソースライセンス' }}
+        />
+        <Stack.Screen
+          name="LicenseDetail"
+          component={LicenseDetailScreen}
+          options={{ title: 'ライセンス' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

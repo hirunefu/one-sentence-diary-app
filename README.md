@@ -104,6 +104,17 @@ The app icon is regenerated from SVG via `@resvg/resvg-js`:
 npm run icons
 ```
 
+## Open-source license attribution
+
+The app ships an in-app "Open-source licenses" screen (Settings → このアプリについて → オープンソースライセンス) listing every bundled package along with its license text. The data lives in `src/assets/licenses.json` and is regenerated from `node_modules` after dependency changes:
+
+```sh
+npm install         # ensure node_modules is up to date
+npm run licenses    # writes src/assets/licenses.json
+```
+
+`src/assets/licenses.json` is committed so the asset is available at build time even on machines without `node_modules`.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
