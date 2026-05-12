@@ -49,11 +49,52 @@ Requires Node.js 20+ and the Expo CLI.
 
 ```sh
 npm install
-npm start        # Expo dev server
-npm run ios      # build & run on iOS simulator
-npm run android  # build & run on Android emulator
+npm start        # Expo dev server (Metro bundler)
 npm test         # Jest test suite
 ```
+
+## Build
+
+### Local native build (development)
+
+`expo run:*` runs `expo prebuild` to generate the gitignored `ios/` and `android/` projects, then compiles and installs the app on a connected simulator/emulator or device.
+
+Prerequisites:
+- iOS — macOS with Xcode 16+ and the iOS Simulator (or a registered physical device)
+- Android — Android Studio with SDK Platform 35+ and an emulator or device with USB debugging enabled
+
+```sh
+npm run ios       # build & install on iOS simulator
+npm run android   # build & install on Android emulator
+```
+
+### Cloud build with EAS
+
+Distribution builds are produced via [Expo Application Services](https://docs.expo.dev/build/introduction/). Three profiles are defined in `eas.json`:
+
+| Profile       | Output                  | Distribution        |
+| ------------- | ----------------------- | ------------------- |
+| `development` | Android APK + dev client | Internal            |
+| `preview`     | Android APK             | Internal            |
+| `production`  | Android App Bundle (AAB) | Play Store / Ad-hoc |
+
+Install the CLI and authenticate once:
+
+```sh
+npm install -g eas-cli
+eas login
+```
+
+Build:
+
+```sh
+eas build --profile development --platform android
+eas build --profile preview     --platform android
+eas build --profile production  --platform android
+eas build --profile production  --platform ios       # uses EAS defaults
+```
+
+iOS-specific options aren't pinned in `eas.json`, so iOS builds fall back to EAS defaults; configure signing/credentials via `eas credentials` if needed. Bump `expo.version` in `app.json` before each production build.
 
 ## App icon
 
