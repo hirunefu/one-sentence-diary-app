@@ -94,9 +94,10 @@ export function HomeScreen() {
     let target = 0;
     if (justSaved) target = 2;
     else if (isEmpty) target = 1;
-    // backgroundColor は React Native の native driver では補間できないため
-    // useNativeDriver: false にしている。代わりに transform 系 (tapScale) は
-    // 下の <Animated.View> 側で native driver を使い、二系統に分けている。
+    // backgroundColor cannot be interpolated on RN's native driver, so this
+    // animation must run on the JS driver. The transform animation (tapScale)
+    // is split out into the <Animated.View> below to use the native driver —
+    // two drivers, one per property.
     Animated.timing(bgPhase, {
       toValue: target,
       duration: BG_TRANSITION_MS,

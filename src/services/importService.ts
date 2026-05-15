@@ -66,9 +66,9 @@ export type ClassifiedEntries = {
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-// 正規表現だけだと "2024-02-30" のような存在しない日付を通してしまうため、
-// Date オブジェクトに通したあと元の y/m/d と一致するかを確認する。
-// (Date は範囲外の値を自動的に正規化する: new Date(2024,1,30) => 3月1日)
+// The regex alone would accept non-existent dates like "2024-02-30".
+// Round-trip through Date and verify y/m/d still match, because Date
+// silently normalizes out-of-range values (new Date(2024, 1, 30) => Mar 1).
 function isValidDate(s: string): boolean {
   if (!DATE_REGEX.test(s)) return false;
   const [y, m, d] = s.split('-').map(Number) as [number, number, number];
@@ -80,9 +80,10 @@ function isValidDate(s: string): boolean {
   );
 }
 
-// インポート JSON の各エントリに対する受け入れ条件。
-// EntryInput が保証する不変条件 (1〜MAX_TEXT_LENGTH 字、改行なし) と
-// 一致させているため、ここを緩めると DB に異常データが混入する。
+// Acceptance criteria for each entry in the import JSON.
+// These conditions mirror the invariants EntryInput enforces on the input
+// side (1..MAX_TEXT_LENGTH chars, no newlines); relaxing them here would
+// let malformed data slip into the DB.
 function isValidEntry(e: unknown): e is Entry {
   if (e === null || typeof e !== 'object') return false;
   const r = e as Record<string, unknown>;

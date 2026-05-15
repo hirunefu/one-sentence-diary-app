@@ -1,11 +1,11 @@
-// 各文は冪等 (IF NOT EXISTS) なので、起動時に毎回流して問題ない。
-// 将来スキーマ変更が必要になったら、ここを「追記専用」ではなく
-// バージョン管理付きマイグレーション (PRAGMA user_version) に作り直す必要がある。
-// date を PRIMARY KEY に置くことで「1 日 1 エントリ」を DB レベルで保証し、
-// upsertEntry の ON CONFLICT(date) が機能する。
-// idx_entries_date_desc は履歴タイムラインの DESC スキャンを高速化するため。
-// (SQLite は PRIMARY KEY からも索引を作るが、DESC 専用の別索引のほうが
-//  ORDER BY date DESC のレンジスキャンを安価にこなせる)
+// Every statement is idempotent (IF NOT EXISTS), so it's safe to run on
+// every launch. Future schema changes will require switching from this
+// append-only model to versioned migrations (PRAGMA user_version).
+// `date` as PRIMARY KEY enforces "one entry per day" at the DB layer,
+// which is what upsertEntry's ON CONFLICT(date) relies on.
+// idx_entries_date_desc accelerates the descending scan used by the
+// history timeline. (SQLite already indexes the PRIMARY KEY, but a
+// dedicated DESC index is cheaper for ORDER BY date DESC range scans.)
 export const MIGRATIONS: ReadonlyArray<string> = [
   `CREATE TABLE IF NOT EXISTS entries (
     date TEXT PRIMARY KEY,

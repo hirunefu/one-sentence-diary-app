@@ -6,10 +6,10 @@ export function calculateStreak(sortedDescDates: string[], todayStr: string): nu
   const yesterdayStr = addDays(todayStr, -1);
   const first = sortedDescDates[0]!;
 
-  // 起点を today と yesterday の二段で許容する理由:
-  // ユーザーが「今日まだ書いていない時点」でホーム画面を開いても、
-  // 昨日まで連続で書いていれば streak をそのまま表示したい (書く前の励まし)。
-  // 一昨日以前で途切れている場合は 0 にリセットする。
+  // Allow two valid anchors (today and yesterday): when the user opens the
+  // app before writing today's entry, the streak should still be visible as
+  // long as they wrote yesterday — encouragement before the action.
+  // If the most recent entry is older than yesterday, the streak resets to 0.
   let cursor: string;
   if (first === todayStr) {
     cursor = todayStr;

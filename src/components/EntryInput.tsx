@@ -23,10 +23,11 @@ export function EntryInput({
 }: Props) {
   const colors = useColors();
 
-  // 「一口日記 = 1 文」のコンセプトを担保するため、改行は入力段で取り除き、
-  // 上限超過は文字列を切り詰めずに変更そのものを破棄する (= IME 変換中の
-  // 中間状態でも視覚的に文字数が増減しない)。
-  // この契約は importService.isValidEntry でも同じ条件で検証している。
+  // Enforce the "one-sentence diary" contract at the input layer: strip
+  // newlines, and on length overflow drop the change entirely instead of
+  // truncating, so the visible char count doesn't flicker mid-IME-composition.
+  // importService.isValidEntry validates the same conditions on the import
+  // side — keep these two in sync.
   const handleChange = useCallback(
     (next: string) => {
       const cleaned = stripNewlines(next);

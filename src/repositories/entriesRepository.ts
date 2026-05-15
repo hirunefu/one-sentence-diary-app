@@ -61,9 +61,10 @@ export async function getDatesInMonth(
   year: number,
   month: number
 ): Promise<string[]> {
-  // date は ISO 8601 形式の文字列で格納されているため、辞書順 = 時系列順。
-  // 終端を一律 "-31" にしても、その月に 31 日が存在しなくても
-  // 文字列比較で過剰一致しない (例: 2024-02-30 が存在しないので拾わない)。
+  // `date` is stored as an ISO 8601 string, so lexicographic order equals
+  // chronological order. Using "-31" as the upper bound is safe even for
+  // months without a 31st — nonexistent dates simply don't exist in the
+  // table, so string comparison won't over-match (e.g. 2024-02-30).
   const mm = String(month).padStart(2, '0');
   const start = `${year}-${mm}-01`;
   const end = `${year}-${mm}-31`;
@@ -96,9 +97,10 @@ export type BulkImportResult = {
   skipped: number;
 };
 
-// インポートは「全件成功」か「全件ロールバック」のいずれかを保証する。
-// 途中で失敗した場合に半端な状態で DB が残ると、ユーザーが再インポートしても
-// 'skip' 戦略では既に入った部分が上書きされず矛盾するため、トランザクションで包む。
+// Import is all-or-nothing: wrap everything in a transaction so a mid-stream
+// failure rolls back cleanly. Without it, a retry under the 'skip' strategy
+// would leave already-inserted rows untouched while skipping conflicts,
+// producing an inconsistent state the user can't easily reconcile.
 export async function bulkUpsertEntries(
   db: DiaryDatabase,
   newEntries: ImportRecord[],

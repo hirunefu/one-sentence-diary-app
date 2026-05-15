@@ -8,10 +8,11 @@ export async function isLocalAuthAvailable(): Promise<boolean> {
 }
 
 export async function authenticate(): Promise<boolean> {
-  // disableDeviceFallback: false により、生体認証が連続で失敗した場合に
-  // 端末のパスコード/パターン入力にフォールバックできる。
-  // 怪我や眼鏡の有無で Face ID / 指紋が通らないケースを救うための妥協で、
-  // 機密性より「自分が使えなくなる」リスクのほうが大きいと判断したため。
+  // disableDeviceFallback: false lets the user fall back to the device
+  // passcode/pattern after repeated biometric failures. Deliberate trade-off:
+  // we'd rather rescue a user who can't pass Face ID / fingerprint (injury,
+  // glasses, etc.) than enforce biometric-only entry. Self-lockout risk is
+  // judged greater than the marginal confidentiality gain.
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage: 'ロックを解除',
     cancelLabel: 'キャンセル',
