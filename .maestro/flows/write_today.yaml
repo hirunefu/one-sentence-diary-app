@@ -1,0 +1,26 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Enter and save today's entry.
+- assertVisible:
+    id: "entry-input"
+- tapOn:
+    id: "entry-input"
+- inputText: "今日は最高の一日だった"
+- tapOn:
+    id: "save-button"
+
+# The save button's testID flips to save-button-saved after a successful save.
+- assertVisible:
+    id: "save-button-saved"
+
+# Cold-restart and verify the entry persisted.
+- stopApp
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "entry-input"
+- assertVisible: "今日は最高の一日だった"
