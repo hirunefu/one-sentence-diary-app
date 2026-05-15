@@ -16,7 +16,10 @@ set -euo pipefail
 SKIP_BUILD=0
 TARGET=""
 AT_DATE=""
-FLOW="${1:-}"
+# FLOW starts empty; the option-parsing loop below captures any non-flag
+# positional argument as the flow name. Initializing from $1 here would
+# misinterpret a leading flag like --skip-build as the flow.
+FLOW=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -55,7 +58,11 @@ echo "Using device: $TARGET"
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
   echo "Building E2E APK (EXPO_PUBLIC_E2E=1)…"
-  EXPO_PUBLIC_E2E=1 npx expo run:android --variant=release --device "$TARGET" --no-bundler
+  # Expo's --device flag does not accept ADB serials directly; instead it
+  # uses the first attached device when --device is omitted. Set
+  # ANDROID_SERIAL so adb-level installs target $TARGET specifically when
+  # multiple devices are attached.
+  ANDROID_SERIAL="$TARGET" EXPO_PUBLIC_E2E=1 npx expo run:android --variant=release --no-bundler
 else
   echo "Skipping build (--skip-build)."
 fi
