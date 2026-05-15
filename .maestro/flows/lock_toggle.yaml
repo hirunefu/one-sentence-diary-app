@@ -1,0 +1,21 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    text: "設定"
+- tapOn:
+    id: "settings-switch-lock"
+
+# Send the app to the background and bring it back.
+# AppState 'active' on resume triggers a re-lock when lockEnabled is true.
+- pressKey: "Home"
+- launchApp:
+    clearState: false
+
+# E2E build stubs authenticate() to return true immediately, so the
+# LockScreen is briefly shown then dismissed automatically by the
+# useEffect that calls tryAuth on mount.
+- assertVisible:
+    id: "entry-input"
