@@ -1,0 +1,15 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- assertVisible:
+    id: "entry-input"
+# With an empty input, the save button must be the un-saved variant
+# and tapping it must not transition to the saved state.
+- assertVisible:
+    id: "save-button"
+- tapOn:
+    id: "save-button"
+- assertNotVisible:
+    id: "save-button-saved"

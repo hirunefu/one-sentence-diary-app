@@ -1,0 +1,15 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "entry-input"
+# 140 Japanese characters (each counted as 1 by countChars).
+- inputText: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめも"
+- assertVisible: "残り 0 字"
+# Typing one more character must be dropped silently.
+- tapOn:
+    id: "entry-input"
+- inputText: "X"
+- assertVisible: "残り 0 字"
