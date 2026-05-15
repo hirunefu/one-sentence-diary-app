@@ -3,6 +3,9 @@ appId: com.hirunefu.onesentencediary
 - launchApp:
     clearState: true
     stopApp: true
+# Home screen auto-focuses entry-input → soft keyboard covers the bottom
+# tab bar. Dismiss it before tapping a tab.
+- hideKeyboard
 - tapOn:
     text: "設定"
 - tapOn:
