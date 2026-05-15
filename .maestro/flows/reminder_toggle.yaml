@@ -1,0 +1,17 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    text: "設定"
+- assertNotVisible:
+    id: "settings-reminder-time"
+- tapOn:
+    id: "settings-switch-reminder"
+- assertVisible:
+    id: "settings-reminder-time"
+- tapOn:
+    id: "settings-switch-reminder"
+- assertNotVisible:
+    id: "settings-reminder-time"
