@@ -28,16 +28,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Verify Maestro version matches the pinned version.
+# Verify Maestro version matches the pinned version (best-effort: a missing
+# pin file warns but does not abort, so a fresh clone with Maestro installed
+# can still run flows. Create .maestro/.maestro-version with the output of
+# `maestro --version` to lock the version once everything works.)
 PIN_FILE=.maestro/.maestro-version
-if [[ ! -f "$PIN_FILE" ]]; then
-  echo "::error::Missing $PIN_FILE" >&2
-  exit 1
-fi
-PINNED=$(cat "$PIN_FILE")
 INSTALLED=$(maestro --version 2>/dev/null | tr -d '[:space:]')
-if [[ "$PINNED" != "$INSTALLED" ]]; then
-  echo "::warning::Maestro version mismatch — pinned $PINNED, installed $INSTALLED" >&2
+if [[ ! -f "$PIN_FILE" ]]; then
+  echo "::warning::Missing $PIN_FILE — pin the version with: echo \"$INSTALLED\" > $PIN_FILE" >&2
+else
+  PINNED=$(cat "$PIN_FILE")
+  if [[ "$PINNED" != "$INSTALLED" ]]; then
+    echo "::warning::Maestro version mismatch — pinned $PINNED, installed $INSTALLED" >&2
+  fi
 fi
 
 # Resolve target device.

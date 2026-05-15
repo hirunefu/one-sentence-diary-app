@@ -6,7 +6,8 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 # 140 Japanese characters (each counted as 1 by countChars).
-- inputText: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめも"
+# Pattern: 3 full kana sequences (46 chars each) + "あい" = 138 + 2 = 140.
+- inputText: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあい"
 - assertVisible: "残り 0 字"
 # Typing one more character must be dropped silently.
 - tapOn:
