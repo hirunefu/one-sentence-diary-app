@@ -1,0 +1,34 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Seed today's entry first.
+- tapOn:
+    id: "entry-input"
+- inputText: "original text"
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "save-button-saved"
+
+# Open the entry from the timeline (no need to know today's date string).
+- tapOn:
+    text: "履歴"
+- tapOn:
+    id: "history-tab-timeline"
+- tapOn: "original text"
+
+- assertVisible:
+    id: "entry-input"
+- tapOn:
+    id: "entry-input"
+- inputText: " edited"
+- tapOn:
+    id: "editor-save"
+
+# Verify the edit persisted in the timeline.
+- assertVisible:
+    id: "history-tab-timeline"
+- assertVisible: "original text edited"

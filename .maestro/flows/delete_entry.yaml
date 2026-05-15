@@ -1,0 +1,29 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+- tapOn:
+    id: "entry-input"
+- inputText: "to be deleted"
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "save-button-saved"
+
+- tapOn:
+    text: "履歴"
+- tapOn:
+    id: "history-tab-timeline"
+- assertVisible: "to be deleted"
+- tapOn:
+    text: "to be deleted"
+- tapOn:
+    id: "editor-delete"
+- tapOn:
+    text: "削除"
+
+- tapOn:
+    id: "history-tab-timeline"
+- assertNotVisible: "to be deleted"
