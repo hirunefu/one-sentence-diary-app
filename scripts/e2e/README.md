@@ -37,3 +37,17 @@ pre-E2E behavior.
 - For UI chrome (buttons, tabs, settings rows), select by testID only.
 - For diary content (user-entered text), text matching is acceptable.
 - Use `clearState: true` (already in `.maestro/config.yaml`) for every flow.
+
+## Streak flow time fixation
+
+The `streak` and `streak_break` flows assume the device clock is at
+2026-05-15. Use `--at-date` to freeze it:
+
+```sh
+./scripts/e2e/run.sh --at-date 2026-05-15 streak
+```
+
+Requires a rooted Android emulator image (default Pixel 7 / API 35 images
+allow `su 0`). Physical devices typically refuse; on those, the streak
+flows are expected to fail intermittently and can be skipped from the
+regular suite by running individual flows by name.

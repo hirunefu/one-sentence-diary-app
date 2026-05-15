@@ -4,9 +4,10 @@
 # Usage: ./scripts/e2e/run.sh [options] [flow-glob]
 #
 # Options:
-#   --skip-build    Use the already-installed APK; do not rebuild.
-#   --target ID     ADB device serial (default: first device returned by adb).
-#   --help          This message.
+#   --skip-build          Use the already-installed APK; do not rebuild.
+#   --target ID           ADB device serial (default: first device returned by adb).
+#   --at-date YYYY-MM-DD  Freeze device clock to this date (requires rooted emulator).
+#   --help                This message.
 #
 # Without arguments, runs every flow under .maestro/flows/.
 
@@ -14,13 +15,15 @@ set -euo pipefail
 
 SKIP_BUILD=0
 TARGET=""
+AT_DATE=""
 FLOW="${1:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-build) SKIP_BUILD=1; shift;;
     --target) TARGET="$2"; shift 2;;
-    --help) sed -n '2,15p' "$0"; exit 0;;
+    --at-date) AT_DATE="$2"; shift 2;;
+    --help) sed -n '2,16p' "$0"; exit 0;;
     *) FLOW="$1"; shift;;
   esac
 done
@@ -66,5 +69,17 @@ else
     [[ -f "$TARGET_PATH" ]] || { echo "::error::No such flow: $TARGET_PATH" >&2; exit 1; }
   fi
 fi
+
+# Freeze device clock if requested. Works on rooted emulator images
+# (most -api35 images allow `su 0 ...`); physical devices may refuse.
+if [[ -n "$AT_DATE" ]]; then
+  TS=$(date -j -f %Y-%m-%d "$AT_DATE" +%m%d0900%Y.%S 2>/dev/null \
+      || date -d "$AT_DATE 09:00:00" +%m%d0900%Y.%S)
+  adb -s "$TARGET" shell "su 0 settings put global auto_time 0" 2>/dev/null \
+    || echo "::warning::Could not disable auto_time; clock fixation may not stick"
+  adb -s "$TARGET" shell "su 0 date $TS" 2>/dev/null \
+    || echo "::warning::Could not set device date; streak flows may be flaky"
+fi
+trap 'if [[ -n "$AT_DATE" ]]; then adb -s "$TARGET" shell "su 0 settings put global auto_time 1" 2>/dev/null || true; fi' EXIT
 
 MAESTRO_DEVICE="$TARGET" maestro test "$TARGET_PATH"
