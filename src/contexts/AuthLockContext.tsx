@@ -20,6 +20,9 @@ const AuthLockContext = createContext<AuthLockContextValue | null>(null);
 export function AuthLockProvider({ children }: { children: React.ReactNode }) {
   const { settings, ready } = useSettings();
   const [isLocked, setIsLocked] = useState(false);
+  // AppState listener は一度しか登録しないクロージャなので、
+  // settings.lockEnabled を直接参照すると常に初期値で評価される (stale closure)。
+  // ref を経由して最新値を読みに行く。
   const lockEnabledRef = useRef(settings.lockEnabled);
 
   useEffect(() => {
@@ -33,6 +36,9 @@ export function AuthLockProvider({ children }: { children: React.ReactNode }) {
   }, [ready, settings.lockEnabled]);
 
   useEffect(() => {
+    // フォアグラウンド復帰時に再ロックする理由:
+    // バックグラウンド中はホーム画面に内容が残らない (Lock 設定 ON 時) ことに加えて、
+    // 一度離席してから戻ってきた第三者にデータを見せないため、毎回認証を要求する。
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active' && lockEnabledRef.current) {
         setIsLocked(true);

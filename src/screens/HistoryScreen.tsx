@@ -238,6 +238,8 @@ export function HistoryScreen() {
 
       {settings.viewMode === 'calendar' ? (
         <Calendar
+          // theme prop の動的更新だけでは色変更が一部反映されないため、
+          // テーマ切替時に key を変えて Calendar 自体を再マウントさせる。
           key={colors.background}
           markedDates={marked}
           theme={calendarTheme}
