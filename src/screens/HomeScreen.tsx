@@ -14,6 +14,7 @@ import {
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
+import { IS_E2E } from '../config/e2eMode';
 import { useEntries } from '../contexts/EntriesContext';
 import { today, addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
@@ -193,7 +194,11 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.body}>
-        <EntryInput value={text} onChangeText={handleChangeText} autoFocus />
+        {/* Skip autoFocus under E2E: the soft keyboard would cover the
+            save button and bottom tab bar before Maestro can dismiss it,
+            and the asynchronous focus event makes hideKeyboard timing
+            flaky. Flows that need the keyboard tap entry-input explicitly. */}
+        <EntryInput value={text} onChangeText={handleChangeText} autoFocus={!IS_E2E} />
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>

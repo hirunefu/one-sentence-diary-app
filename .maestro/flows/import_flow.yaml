@@ -3,7 +3,6 @@ appId: com.hirunefu.onesentencediary
 - launchApp:
     clearState: true
     stopApp: true
-- hideKeyboard
 - tapOn:
     text: "設定"
 - tapOn:
