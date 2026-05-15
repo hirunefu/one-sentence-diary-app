@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "exportedAt": "2026-05-08T12:00:00.000Z",
+  "appVersion": "1.0.0",
+  "entries": [
+    { "date": "2026-05-08", "text": "Fixture entry 1", "createdAt": 1746705600000, "updatedAt": 1746705600000 },
+    { "date": "2026-05-09", "text": "Fixture entry 2", "createdAt": 1746792000000, "updatedAt": 1746792000000 },
+    { "date": "2026-05-10", "text": "Fixture entry 3", "createdAt": 1746878400000, "updatedAt": 1746878400000 },
+    { "date": "2026-05-11", "text": "Fixture entry 4", "createdAt": 1746964800000, "updatedAt": 1746964800000 },
+    { "date": "2026-05-12", "text": "Fixture entry 5", "createdAt": 1747051200000, "updatedAt": 1747051200000 },
+    { "date": "2026-05-13", "text": "Fixture entry 6", "createdAt": 1747137600000, "updatedAt": 1747137600000 },
+    { "date": "2026-05-14", "text": "Fixture entry 7", "createdAt": 1747224000000, "updatedAt": 1747224000000 }
+  ]
+}

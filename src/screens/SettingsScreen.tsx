@@ -7,6 +7,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
+import { IS_E2E } from '../config/e2eMode';
+import seedSevenDays from '../../.maestro/fixtures/seed-7days.json';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
@@ -97,7 +99,11 @@ export function SettingsScreen() {
     }
   };
 
-  const handleImport = async () => {
+  const pickImportRaw = async (): Promise<string | null> => {
+    // E2E: return the bundled fixture as a JSON string, bypassing the
+    // DocumentPicker (Maestro can't drive system file pickers).
+    if (IS_E2E) return JSON.stringify(seedSevenDays);
+
     let pickResult: DocumentPicker.DocumentPickerResult;
     try {
       pickResult = await DocumentPicker.getDocumentAsync({
@@ -108,21 +114,25 @@ export function SettingsScreen() {
     } catch (e) {
       console.error('document picker failed', e);
       Alert.alert('ファイルを開けませんでした');
-      return;
+      return null;
     }
-    if (pickResult.canceled) return;
+    if (pickResult.canceled) return null;
     const asset = pickResult.assets[0];
-    if (!asset) return;
+    if (!asset) return null;
 
-    let raw: string;
     try {
       const file = new File(asset.uri);
-      raw = await file.text();
+      return await file.text();
     } catch (e) {
       console.error('file read failed', e);
       Alert.alert('ファイルを読み込めませんでした');
-      return;
+      return null;
     }
+  };
+
+  const handleImport = async () => {
+    const raw = await pickImportRaw();
+    if (raw === null) return;
 
     let parsed;
     try {
