@@ -1,0 +1,21 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Seed at least one entry so the calendar has a dot.
+- tapOn:
+    id: "entry-input"
+- inputText: "calendar test"
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "save-button-saved"
+
+- tapOn:
+    text: "履歴"
+- tapOn:
+    id: "history-tab-calendar"
+# Confirm the calendar header and the today cell render.
+- assertVisible: "今日"
