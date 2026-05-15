@@ -149,6 +149,7 @@ export function HistoryScreen() {
 
       return (
         <Pressable
+          testID={`day-${date.dateString}`}
           onPress={() => onPress?.(date)}
           disabled={isDisabled}
           style={[
@@ -184,6 +185,7 @@ export function HistoryScreen() {
       >
         <View style={styles.toggleRow}>
           <Pressable
+            testID="history-tab-calendar"
             onPress={() => updateSettings({ viewMode: 'calendar' })}
             style={styles.tab}
           >
@@ -203,6 +205,7 @@ export function HistoryScreen() {
             </Text>
           </Pressable>
           <Pressable
+            testID="history-tab-timeline"
             onPress={() => updateSettings({ viewMode: 'timeline' })}
             style={styles.tab}
           >

@@ -193,6 +193,7 @@ export function SettingsScreen() {
           const isSelected = settings.themePreference === option.value;
           return (
             <PressableScale
+              testID={`settings-theme-${option.value}`}
               key={option.value}
               onPress={() => updateSettings({ themePreference: option.value })}
               style={rowStyle}
@@ -218,19 +219,20 @@ export function SettingsScreen() {
         </Text>
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
-          <Switch value={settings.lockEnabled} onValueChange={toggleLock} />
+          <Switch testID="settings-switch-lock" value={settings.lockEnabled} onValueChange={toggleLock} />
         </View>
 
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>リマインダー通知</Text>
           <Switch
+            testID="settings-switch-reminder"
             value={settings.reminderEnabled}
             onValueChange={(v) => updateSettings({ reminderEnabled: v })}
           />
         </View>
 
         {settings.reminderEnabled && (
-          <PressableScale onPress={() => setShowPicker(true)} style={rowStyle}>
+          <PressableScale testID="settings-reminder-time" onPress={() => setShowPicker(true)} style={rowStyle}>
             <Text style={[styles.label, { color: colors.text }]}>通知時刻</Text>
             <Text style={[styles.value, { color: colors.textMuted }]}>{reminderTimeLabel}</Text>
           </PressableScale>
@@ -247,6 +249,7 @@ export function SettingsScreen() {
         )}
 
         <PressableScale
+          testID="settings-export"
           onPress={handleExport}
           style={[styles.exportButton, { backgroundColor: colors.primary }]}
         >
@@ -254,6 +257,7 @@ export function SettingsScreen() {
         </PressableScale>
 
         <PressableScale
+          testID="settings-import"
           onPress={handleImport}
           style={[
             styles.exportButton,

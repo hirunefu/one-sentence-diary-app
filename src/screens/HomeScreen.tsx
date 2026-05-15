@@ -200,6 +200,7 @@ export function HomeScreen() {
         {/* native driver の transform と JS driver の backgroundColor を分離するため Animated.View でラップ */}
         <Animated.View style={{ transform: [{ scale: tapScale }] }}>
           <AnimatedPressable
+            testID={justSaved ? 'save-button-saved' : 'save-button'}
             onPress={handleSave}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
