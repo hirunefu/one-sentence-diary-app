@@ -1,0 +1,33 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Frozen at 2026-05-15. Seed only today + day-before-yesterday → streak = 1
+# (today is recorded, but yesterday is missing → streak does not extend back).
+
+- tapOn:
+    id: "entry-input"
+- inputText: "today"
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "save-button-saved"
+
+- tapOn:
+    text: "履歴"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-13"
+- tapOn:
+    id: "entry-input"
+- inputText: "two days ago"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    text: "今日"
+- assertVisible: "1"
+- assertVisible: "日連続"

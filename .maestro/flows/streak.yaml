@@ -1,0 +1,79 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# This flow assumes the runner set the device date to 2026-05-15 via
+# `./scripts/e2e/run.sh --at-date 2026-05-15 streak`.
+
+- tapOn:
+    id: "entry-input"
+- inputText: "day 1"
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "save-button-saved"
+
+# Advance through 6 more days by directly opening the editor for each
+# past date. Day cells expose testID="day-YYYY-MM-DD".
+- tapOn:
+    text: "履歴"
+- tapOn:
+    id: "history-tab-calendar"
+
+# Iterate over the previous 6 days (2026-05-14 down to 2026-05-09).
+# Maestro doesn't have a loop primitive — list each day explicitly.
+- tapOn:
+    id: "day-2026-05-14"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 14"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "day-2026-05-13"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 13"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "day-2026-05-12"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 12"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "day-2026-05-11"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 11"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "day-2026-05-10"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 10"
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "day-2026-05-09"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 9"
+- tapOn:
+    id: "editor-save"
+
+# Back to home, the streak counter must read 7.
+- tapOn:
+    text: "今日"
+- assertVisible: "7"
+- assertVisible: "日連続"
