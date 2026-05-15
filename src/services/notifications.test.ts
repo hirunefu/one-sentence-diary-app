@@ -122,3 +122,46 @@ describe('notifications service', () => {
     expect(await requestNotificationPermission()).toBe(false);
   });
 });
+
+describe('notifications under E2E flag', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
+  });
+
+  test('requestNotificationPermission() returns true without prompt', async () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    const requestMock = jest.fn();
+    jest.doMock('expo-notifications', () => ({
+      requestPermissionsAsync: requestMock,
+      getAllScheduledNotificationsAsync: jest.fn(),
+      cancelScheduledNotificationAsync: jest.fn(),
+      scheduleNotificationAsync: jest.fn(),
+      SchedulableTriggerInputTypes: { DATE: 'date' },
+    }));
+    const { requestNotificationPermission } = require('./notifications');
+    await expect(requestNotificationPermission()).resolves.toBe(true);
+    expect(requestMock).not.toHaveBeenCalled();
+  });
+
+  test('rescheduleReminders() is a no-op', async () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    const scheduleMock = jest.fn();
+    const cancelMock = jest.fn();
+    jest.doMock('expo-notifications', () => ({
+      requestPermissionsAsync: jest.fn(),
+      getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
+      cancelScheduledNotificationAsync: cancelMock,
+      scheduleNotificationAsync: scheduleMock,
+      SchedulableTriggerInputTypes: { DATE: 'date' },
+    }));
+    const { rescheduleReminders } = require('./notifications');
+    await rescheduleReminders({
+      hour: 21,
+      minute: 0,
+      recordedDates: new Set(),
+    });
+    expect(scheduleMock).not.toHaveBeenCalled();
+    expect(cancelMock).not.toHaveBeenCalled();
+  });
+});
