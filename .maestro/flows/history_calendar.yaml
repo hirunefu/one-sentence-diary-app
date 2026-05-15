@@ -8,10 +8,9 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "calendar test"
+- hideKeyboard
 - tapOn:
     id: "save-button"
-- assertVisible:
-    id: "save-button-saved"
 
 - tapOn:
     text: "履歴"

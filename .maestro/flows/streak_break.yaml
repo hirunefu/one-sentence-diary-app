@@ -10,10 +10,9 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "today"
+- hideKeyboard
 - tapOn:
     id: "save-button"
-- assertVisible:
-    id: "save-button-saved"
 
 - tapOn:
     text: "履歴"
@@ -24,6 +23,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "two days ago"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 

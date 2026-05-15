@@ -5,9 +5,11 @@ appId: com.hirunefu.onesentencediary
     stopApp: true
 - tapOn:
     id: "entry-input"
-# 140 Japanese characters (each counted as 1 by countChars).
-# Pattern: 3 full kana sequences (46 chars each) + "あい" = 138 + 2 = 140.
-- inputText: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんあい"
+# 140 ASCII characters: 14 repetitions of "abcdefghij" (10 chars each).
+# Maestro's inputText doesn't support Unicode on Android (issue #146),
+# so kana input is replaced here. `countChars` is code-point-based and
+# treats ASCII letters as 1 each, so the cap test still holds.
+- inputText: "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij"
 - assertVisible: "残り 0 字"
 # Typing one more character must be dropped silently.
 - tapOn:

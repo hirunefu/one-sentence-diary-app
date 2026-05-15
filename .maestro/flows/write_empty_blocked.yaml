@@ -5,6 +5,9 @@ appId: com.hirunefu.onesentencediary
     stopApp: true
 - assertVisible:
     id: "entry-input"
+# Auto-focused input opens the soft keyboard; dismiss it so the save button
+# at the bottom of the screen is hittable.
+- hideKeyboard
 # With an empty input, the save button must be the un-saved variant
 # and tapping it must not transition to the saved state.
 - assertVisible:

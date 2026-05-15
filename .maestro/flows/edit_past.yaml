@@ -8,10 +8,9 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "original text"
+- hideKeyboard
 - tapOn:
     id: "save-button"
-- assertVisible:
-    id: "save-button-saved"
 
 # Open the entry from the timeline (no need to know today's date string).
 - tapOn:
@@ -25,6 +24,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: " edited"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 

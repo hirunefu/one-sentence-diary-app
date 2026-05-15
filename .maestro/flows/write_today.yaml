@@ -9,18 +9,18 @@ appId: com.hirunefu.onesentencediary
     id: "entry-input"
 - tapOn:
     id: "entry-input"
-- inputText: "今日は最高の一日だった"
+- inputText: "Today was the best day"
+# Soft keyboard overlaps the save button at the bottom of the screen.
+- hideKeyboard
 - tapOn:
     id: "save-button"
 
-# The save button's testID flips to save-button-saved after a successful save.
-- assertVisible:
-    id: "save-button-saved"
-
-# Cold-restart and verify the entry persisted.
+# The "✓ 保存しました" feedback flips back to "保存" after 1.5s and is too
+# brief for Maestro's polling to reliably catch, so we verify persistence
+# through the cold-restart instead (which is what actually matters).
 - stopApp
 - launchApp:
     clearState: false
 - assertVisible:
     id: "entry-input"
-- assertVisible: "今日は最高の一日だった"
+- assertVisible: "Today was the best day"

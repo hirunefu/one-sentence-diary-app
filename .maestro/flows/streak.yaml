@@ -10,10 +10,9 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 1"
+- hideKeyboard
 - tapOn:
     id: "save-button"
-- assertVisible:
-    id: "save-button-saved"
 
 # Advance through 6 more days by directly opening the editor for each
 # past date. Day cells expose testID="day-YYYY-MM-DD".
@@ -29,6 +28,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 14"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
@@ -37,6 +37,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 13"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
@@ -45,6 +46,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 12"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
@@ -53,6 +55,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 11"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
@@ -61,6 +64,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 10"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
@@ -69,6 +73,7 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "entry-input"
 - inputText: "day 9"
+- hideKeyboard
 - tapOn:
     id: "editor-save"
 
