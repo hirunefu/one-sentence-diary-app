@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # @tootallnate/once and postcss reach this project only as transitive,
+    # dev-only dependencies (jest-expo -> jsdom -> http-proxy-agent and
+    # expo -> @expo/metro-config respectively). Patched versions exist but
+    # cannot be installed without breaking Expo SDK 54's transitive graph,
+    # and neither package is bundled into the production app. Suppress
+    # security-update jobs for them until the upstream graph allows
+    # resolution; revisit when bumping jest-expo / Expo SDK.
+    ignore:
+      - dependency-name: "@tootallnate/once"
+      - dependency-name: "postcss"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
