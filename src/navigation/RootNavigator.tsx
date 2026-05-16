@@ -49,6 +49,7 @@ function MainTabs() {
         component={HomeScreen}
         options={{
           title: '今日',
+          tabBarButtonTestID: 'tab-home',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'create' : 'create-outline'} size={size} color={color} />
           ),
@@ -59,6 +60,7 @@ function MainTabs() {
         component={HistoryScreen}
         options={{
           title: '履歴',
+          tabBarButtonTestID: 'tab-history',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
           ),
@@ -69,6 +71,7 @@ function MainTabs() {
         component={SettingsScreen}
         options={{
           title: '設定',
+          tabBarButtonTestID: 'tab-settings',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
           ),

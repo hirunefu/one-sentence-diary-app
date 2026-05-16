@@ -44,6 +44,34 @@ describe('yesterday', () => {
   });
 });
 
+describe('today / yesterday under EXPO_PUBLIC_E2E_TODAY', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    delete process.env.EXPO_PUBLIC_E2E;
+    delete process.env.EXPO_PUBLIC_E2E_TODAY;
+  });
+
+  test('today() returns the override when both EXPO_PUBLIC_E2E and the override are set', () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    process.env.EXPO_PUBLIC_E2E_TODAY = '2026-05-15';
+    const { today } = require('./date');
+    expect(today()).toBe('2026-05-15');
+  });
+
+  test('today() ignores the override when EXPO_PUBLIC_E2E is unset', () => {
+    process.env.EXPO_PUBLIC_E2E_TODAY = '2026-05-15';
+    const { today } = require('./date');
+    expect(today()).not.toBe('2026-05-15');
+  });
+
+  test('yesterday() returns override minus one day when override is set', () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    process.env.EXPO_PUBLIC_E2E_TODAY = '2026-05-15';
+    const { yesterday } = require('./date');
+    expect(yesterday()).toBe('2026-05-14');
+  });
+});
+
 describe('addDays', () => {
   test('adds positive days', () => {
     expect(addDays('2026-04-28', 1)).toBe('2026-04-29');

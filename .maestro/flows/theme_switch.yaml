@@ -1,0 +1,16 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "tab-settings"
+- tapOn:
+    id: "settings-theme-dark"
+- tapOn:
+    id: "settings-theme-light"
+- tapOn:
+    id: "settings-theme-system"
+# Sanity: settings screen still visible after the cycle.
+- assertVisible:
+    id: "settings-export"

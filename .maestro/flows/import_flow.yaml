@@ -1,0 +1,26 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "tab-settings"
+- tapOn:
+    id: "settings-import"
+
+# Empty DB → no conflicts → completion alert appears with 7 entries from
+# the bundled fixture (.maestro/fixtures/seed-7days.json).
+- assertVisible: "インポートが完了しました"
+- tapOn:
+    text: "OK"
+
+# Re-import the same fixture: now all 7 collide.
+- tapOn:
+    id: "settings-import"
+- assertVisible:
+    id: "import-strategy-overwrite"
+- tapOn:
+    id: "import-strategy-overwrite"
+- tapOn:
+    id: "import-confirm"
+- assertVisible: "インポートが完了しました"

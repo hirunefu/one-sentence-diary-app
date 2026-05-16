@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
+import { IS_E2E } from '../config/e2eMode';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
@@ -97,7 +98,17 @@ export function SettingsScreen() {
     }
   };
 
-  const handleImport = async () => {
+  const pickImportRaw = async (): Promise<string | null> => {
+    // E2E: return the bundled fixture as a JSON string, bypassing the
+    // DocumentPicker (Maestro can't drive system file pickers).
+    // The require() lives inside the IS_E2E guard so Metro's DCE can
+    // strip the fixture from non-E2E bundles (IS_E2E inlines to false
+    // in production, making the whole branch unreachable).
+    if (IS_E2E) {
+      const seed = require('../../.maestro/fixtures/seed-7days.json');
+      return JSON.stringify(seed);
+    }
+
     let pickResult: DocumentPicker.DocumentPickerResult;
     try {
       pickResult = await DocumentPicker.getDocumentAsync({
@@ -108,21 +119,25 @@ export function SettingsScreen() {
     } catch (e) {
       console.error('document picker failed', e);
       Alert.alert('ファイルを開けませんでした');
-      return;
+      return null;
     }
-    if (pickResult.canceled) return;
+    if (pickResult.canceled) return null;
     const asset = pickResult.assets[0];
-    if (!asset) return;
+    if (!asset) return null;
 
-    let raw: string;
     try {
       const file = new File(asset.uri);
-      raw = await file.text();
+      return await file.text();
     } catch (e) {
       console.error('file read failed', e);
       Alert.alert('ファイルを読み込めませんでした');
-      return;
+      return null;
     }
+  };
+
+  const handleImport = async () => {
+    const raw = await pickImportRaw();
+    if (raw === null) return;
 
     let parsed;
     try {
@@ -183,6 +198,7 @@ export function SettingsScreen() {
           const isSelected = settings.themePreference === option.value;
           return (
             <PressableScale
+              testID={`settings-theme-${option.value}`}
               key={option.value}
               onPress={() => updateSettings({ themePreference: option.value })}
               style={rowStyle}
@@ -208,19 +224,20 @@ export function SettingsScreen() {
         </Text>
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
-          <Switch value={settings.lockEnabled} onValueChange={toggleLock} />
+          <Switch testID="settings-switch-lock" value={settings.lockEnabled} onValueChange={toggleLock} />
         </View>
 
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>リマインダー通知</Text>
           <Switch
+            testID="settings-switch-reminder"
             value={settings.reminderEnabled}
             onValueChange={(v) => updateSettings({ reminderEnabled: v })}
           />
         </View>
 
         {settings.reminderEnabled && (
-          <PressableScale onPress={() => setShowPicker(true)} style={rowStyle}>
+          <PressableScale testID="settings-reminder-time" onPress={() => setShowPicker(true)} style={rowStyle}>
             <Text style={[styles.label, { color: colors.text }]}>通知時刻</Text>
             <Text style={[styles.value, { color: colors.textMuted }]}>{reminderTimeLabel}</Text>
           </PressableScale>
@@ -237,6 +254,7 @@ export function SettingsScreen() {
         )}
 
         <PressableScale
+          testID="settings-export"
           onPress={handleExport}
           style={[styles.exportButton, { backgroundColor: colors.primary }]}
         >
@@ -244,6 +262,7 @@ export function SettingsScreen() {
         </PressableScale>
 
         <PressableScale
+          testID="settings-import"
           onPress={handleImport}
           style={[
             styles.exportButton,

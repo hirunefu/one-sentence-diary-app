@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { IS_E2E } from '../config/e2eMode';
 import { addDays, today } from '../utils/date';
 
 export const REMINDER_NOTIFICATION_ID_PREFIX = 'daily-reminder-';
@@ -7,6 +8,8 @@ export const LEGACY_REMINDER_ID = 'daily-reminder';
 export const DEFAULT_DAYS_AHEAD = 14;
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  // E2E build: pretend permission is granted, no OS dialog to drive.
+  if (IS_E2E) return true;
   const { status } = await Notifications.requestPermissionsAsync();
   return status === 'granted';
 }
@@ -34,6 +37,10 @@ export async function rescheduleReminders({
   recordedDates,
   daysAhead = DEFAULT_DAYS_AHEAD,
 }: RescheduleArgs): Promise<void> {
+  // E2E build: skip both cancel and schedule. Reminder toggling is verified
+  // through the SettingsScreen UI flow, not the underlying scheduling.
+  if (IS_E2E) return;
+
   await cancelAllReminders();
 
   const now = new Date();

@@ -1,0 +1,8 @@
+# Shared launch settings included at the top of every flow via `runFlow`.
+# clearState wipes app data so each flow starts from byte-identical state —
+# the foundation of the suite's stability guarantee.
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true

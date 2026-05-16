@@ -55,6 +55,7 @@ export function ImportConflictModal({
             const isSelected = strategy === opt.value;
             return (
               <PressableScale
+                testID={`import-strategy-${opt.value}`}
                 key={opt.value}
                 onPress={() => setStrategy(opt.value)}
                 style={[styles.row, { borderBottomColor: colors.divider }]}
@@ -73,12 +74,13 @@ export function ImportConflictModal({
           })}
 
           <View style={styles.actions}>
-            <PressableScale onPress={onCancel} style={styles.cancelBtn}>
+            <PressableScale testID="import-cancel" onPress={onCancel} style={styles.cancelBtn}>
               <Text style={[styles.cancelText, { color: colors.textMuted }]}>
                 キャンセル
               </Text>
             </PressableScale>
             <PressableScale
+              testID="import-confirm"
               onPress={() => onConfirm(strategy)}
               style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
             >

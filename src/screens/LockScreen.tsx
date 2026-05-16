@@ -40,6 +40,7 @@ export function LockScreen() {
         <Text style={[styles.title, { color: colors.text }]}>🔒 ロックされています</Text>
         {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
         <Pressable
+          testID="lock-authenticate"
           onPress={tryAuth}
           disabled={authenticating}
           style={({ pressed }) => [

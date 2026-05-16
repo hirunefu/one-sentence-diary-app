@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
+    "e2e": "./scripts/e2e/run.sh",
     "icons": "node scripts/generate-icons.js",
     "licenses": "node scripts/generate-licenses.js"
   },

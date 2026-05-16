@@ -81,6 +81,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         {exists && (
           <PressableScale
+            testID="editor-delete"
             onPress={handleDelete}
             style={[styles.actionButton, { backgroundColor: colors.danger }]}
           >
@@ -88,6 +89,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
           </PressableScale>
         )}
         <PressableScale
+          testID="editor-save"
           onPress={handleSave}
           disabled={isEmpty}
           style={[styles.actionButton, { backgroundColor: saveBg }]}

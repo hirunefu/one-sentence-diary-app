@@ -1,0 +1,25 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+- tapOn:
+    id: "entry-input"
+- inputText: "timeline test"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-timeline"
+- assertVisible: "timeline test"
+
+# Switch tabs and switch back.
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "history-tab-timeline"
+- assertVisible: "timeline test"
