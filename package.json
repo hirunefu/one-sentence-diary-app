@@ -41,7 +41,7 @@
     "@types/react": "~19.1.0",
     "better-sqlite3": "^12.9.0",
     "jest": "^30.3.0",
-    "jest-expo": "^55.0.16",
+    "jest-expo": "^55.0.17",
     "react-test-renderer": "^19.1.0",
     "typescript": "~5.9.2"
   },
