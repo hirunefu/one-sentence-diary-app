@@ -82,10 +82,20 @@ jobs:
             exit 1
           fi
           VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          # Treat any tag carrying a SemVer pre-release suffix (e.g. v1.0.3-rc1,
+          # v1.0.3-beta.1) as a prerelease so Obtainium / GitHub clients that
+          # follow only "latest" releases skip it. Used for CI smoke-testing
+          # the release workflow without nudging end users to upgrade.
+          if [ "$VERSION_FULL" != "$VERSION" ]; then
+            IS_PRERELEASE=true
+          else
+            IS_PRERELEASE=false
+          fi
           echo "tag=$RAW_TAG"          >> "$GITHUB_OUTPUT"
           echo "version=$VERSION"      >> "$GITHUB_OUTPUT"
           echo "versionCode=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-          echo "Tag $RAW_TAG → version=$VERSION versionCode=$VERSION_CODE"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "Tag $RAW_TAG → version=$VERSION versionCode=$VERSION_CODE prerelease=$IS_PRERELEASE"
 
       - name: Inject version & versionCode into app.json
         env:
@@ -171,7 +181,7 @@ jobs:
           retention-days: 30
 
       - name: Publish GitHub Release
-        # Pinned to SHA (v2.6.2) — third-party action; mutable major tags
+        # Pinned to SHA (v3.0.0) — third-party action; mutable major tags
         # would be a supply-chain risk if the upstream repo were compromised.
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
@@ -182,4 +192,4 @@ jobs:
           files: ${{ steps.rename.outputs.apk_path }}
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
