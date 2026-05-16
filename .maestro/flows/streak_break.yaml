@@ -15,7 +15,7 @@ appId: com.hirunefu.onesentencediary
     id: "save-button"
 
 - tapOn:
-    text: "履歴"
+    id: "tab-history"
 - tapOn:
     id: "history-tab-calendar"
 - tapOn:
@@ -28,6 +28,6 @@ appId: com.hirunefu.onesentencediary
     id: "editor-save"
 
 - tapOn:
-    text: "今日"
+    id: "tab-home"
 - assertVisible: "1"
 - assertVisible: "日連続"

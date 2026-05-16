@@ -13,7 +13,7 @@ appId: com.hirunefu.onesentencediary
     id: "save-button"
 
 - tapOn:
-    text: "履歴"
+    id: "tab-history"
 - tapOn:
     id: "history-tab-calendar"
 # Confirm the calendar header and the today cell render.

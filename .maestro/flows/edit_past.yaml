@@ -14,7 +14,7 @@ appId: com.hirunefu.onesentencediary
 
 # Open the entry from the timeline (no need to know today's date string).
 - tapOn:
-    text: "履歴"
+    id: "tab-history"
 - tapOn:
     id: "history-tab-timeline"
 - tapOn: "original text"

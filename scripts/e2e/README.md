@@ -45,31 +45,18 @@ pre-E2E behavior.
 
 ## Streak flow time fixation
 
-The `streak` and `streak_break` flows assume the device clock is at
-2026-05-15. Use `--at-date` to freeze it:
+The `streak` and `streak_break` flows assume `today()` is `2026-05-15`.
+Pin the date for the build:
 
 ```sh
 ./scripts/e2e/run.sh --at-date 2026-05-15 streak
 ```
 
-Requires a rooted Android emulator image. The default Pixel 7 / API 35
-**Google Play** image refuses `adb root` / `su 0`; the runner prints a
-warning and continues, but the system clock stays at the real "today"
-and the streak count won't match the flow's expectations. Use one of:
+`--at-date` inlines `EXPO_PUBLIC_E2E_TODAY` into the E2E build, and
+`src/utils/date.ts` returns that value from `today()` whenever
+`IS_E2E && EXPO_PUBLIC_E2E_TODAY` are both set. The device clock is
+left alone — no `adb root` needed, works on Google Play images.
 
-- A non-Google-Play (AOSP) Pixel 7 / API 35 system image, which allows
-  `adb root` and can have its date set by the script.
-- An emulator launched with `-writable-system` after `adb root` succeeds.
-
-If neither is available, run the streak / streak_break flows by hand on
-a date when "today minus 6 days" was a contiguous block in your real DB,
-or exclude them from your default run:
-
-```sh
-./scripts/e2e/run.sh --skip-build write_today edit_past delete_entry \
-  history_calendar history_timeline theme_switch reminder_toggle \
-  lock_toggle import_flow write_empty_blocked write_max_length
-```
-
-(`run.sh` accepts only one positional flow today; for multiple-flow runs
-of this form, invoke `maestro test` against an explicit file list.)
+The cost: each `--at-date <date>` invocation rebuilds the APK, since
+the value is baked in at compile time. `--skip-build` is silently
+overridden whenever `--at-date` is supplied.

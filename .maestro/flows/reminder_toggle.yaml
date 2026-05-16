@@ -4,7 +4,7 @@ appId: com.hirunefu.onesentencediary
     clearState: true
     stopApp: true
 - tapOn:
-    text: "設定"
+    id: "tab-settings"
 - assertNotVisible:
     id: "settings-reminder-time"
 - tapOn:

@@ -12,7 +12,7 @@ appId: com.hirunefu.onesentencediary
     id: "save-button"
 
 - tapOn:
-    text: "履歴"
+    id: "tab-history"
 - tapOn:
     id: "history-tab-timeline"
 - assertVisible: "to be deleted"

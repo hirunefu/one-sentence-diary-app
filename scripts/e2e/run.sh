@@ -5,8 +5,13 @@
 #
 # Options:
 #   --skip-build          Use the already-installed APK; do not rebuild.
+#                         Ignored when --at-date is set (the date is inlined
+#                         at build time so the APK must be regenerated).
 #   --target ID           ADB device serial (default: first device returned by adb).
-#   --at-date YYYY-MM-DD  Freeze device clock to this date (requires rooted emulator).
+#   --at-date YYYY-MM-DD  Inline this date as today() for the E2E build.
+#                         Forces a rebuild with EXPO_PUBLIC_E2E_TODAY set so
+#                         streak / streak_break flows are deterministic
+#                         regardless of the device's wall clock or root status.
 #   --help                This message.
 #
 # Without arguments, runs every flow under .maestro/flows/.
@@ -26,10 +31,17 @@ while [[ $# -gt 0 ]]; do
     --skip-build) SKIP_BUILD=1; shift;;
     --target) TARGET="$2"; shift 2;;
     --at-date) AT_DATE="$2"; shift 2;;
-    --help) sed -n '2,16p' "$0"; exit 0;;
+    --help) sed -n '2,17p' "$0"; exit 0;;
     *) FLOW="$1"; shift;;
   esac
 done
+
+# --at-date inlines the override at build time, so --skip-build is incompatible.
+# Prefer correctness over speed: rebuild and announce the override.
+if [[ -n "$AT_DATE" && "$SKIP_BUILD" -eq 1 ]]; then
+  echo "::warning::--skip-build is ignored when --at-date is set; rebuilding." >&2
+  SKIP_BUILD=0
+fi
 
 # Verify Maestro version matches the pinned version (best-effort: a missing
 # pin file warns but does not abort, so a fresh clone with Maestro installed
@@ -57,12 +69,19 @@ fi
 echo "Using device: $TARGET"
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
-  echo "Building E2E APK (EXPO_PUBLIC_E2E=1)…"
+  if [[ -n "$AT_DATE" ]]; then
+    echo "Building E2E APK (EXPO_PUBLIC_E2E=1, EXPO_PUBLIC_E2E_TODAY=$AT_DATE)…"
+  else
+    echo "Building E2E APK (EXPO_PUBLIC_E2E=1)…"
+  fi
   # Expo's --device flag does not accept ADB serials directly; instead it
   # uses the first attached device when --device is omitted. Set
   # ANDROID_SERIAL so adb-level installs target $TARGET specifically when
   # multiple devices are attached.
-  ANDROID_SERIAL="$TARGET" EXPO_PUBLIC_E2E=1 npx expo run:android --variant=release --no-bundler
+  ANDROID_SERIAL="$TARGET" \
+    EXPO_PUBLIC_E2E=1 \
+    EXPO_PUBLIC_E2E_TODAY="$AT_DATE" \
+    npx expo run:android --variant=release --no-bundler
 else
   echo "Skipping build (--skip-build)."
 fi
@@ -79,17 +98,5 @@ else
     [[ -f "$TARGET_PATH" ]] || { echo "::error::No such flow: $TARGET_PATH" >&2; exit 1; }
   fi
 fi
-
-# Freeze device clock if requested. Works on rooted emulator images
-# (most -api35 images allow `su 0 ...`); physical devices may refuse.
-if [[ -n "$AT_DATE" ]]; then
-  TS=$(date -j -f %Y-%m-%d "$AT_DATE" +%m%d0900%Y.%S 2>/dev/null \
-      || date -d "$AT_DATE 09:00:00" +%m%d0900%Y.%S)
-  adb -s "$TARGET" shell "su 0 settings put global auto_time 0" 2>/dev/null \
-    || echo "::warning::Could not disable auto_time; clock fixation may not stick"
-  adb -s "$TARGET" shell "su 0 date $TS" 2>/dev/null \
-    || echo "::warning::Could not set device date; streak flows may be flaky"
-fi
-trap 'if [[ -n "$AT_DATE" ]]; then adb -s "$TARGET" shell "su 0 settings put global auto_time 1" 2>/dev/null || true; fi' EXIT
 
 MAESTRO_DEVICE="$TARGET" maestro test "$TARGET_PATH"

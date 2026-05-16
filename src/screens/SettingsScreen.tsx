@@ -8,7 +8,6 @@ import Constants from 'expo-constants';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { IS_E2E } from '../config/e2eMode';
-import seedSevenDays from '../../.maestro/fixtures/seed-7days.json';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
 import { isLocalAuthAvailable } from '../services/localAuth';
@@ -102,7 +101,13 @@ export function SettingsScreen() {
   const pickImportRaw = async (): Promise<string | null> => {
     // E2E: return the bundled fixture as a JSON string, bypassing the
     // DocumentPicker (Maestro can't drive system file pickers).
-    if (IS_E2E) return JSON.stringify(seedSevenDays);
+    // The require() lives inside the IS_E2E guard so Metro's DCE can
+    // strip the fixture from non-E2E bundles (IS_E2E inlines to false
+    // in production, making the whole branch unreachable).
+    if (IS_E2E) {
+      const seed = require('../../.maestro/fixtures/seed-7days.json');
+      return JSON.stringify(seed);
+    }
 
     let pickResult: DocumentPicker.DocumentPickerResult;
     try {
