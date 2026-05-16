@@ -173,7 +173,7 @@ jobs:
       - name: Publish GitHub Release
         # Pinned to SHA (v2.6.2) — third-party action; mutable major tags
         # would be a supply-chain risk if the upstream repo were compromised.
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           # Use the version step's validated `tag` output rather than raw
           # `inputs.tag` / `github.ref_name`.
