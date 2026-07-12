@@ -181,7 +181,7 @@ jobs:
           retention-days: 30
 
       - name: Publish GitHub Release
-        # Pinned to SHA (v3.0.0) — third-party action; mutable major tags
+        # Pinned to SHA (v3.0.1) — third-party action; mutable major tags
         # would be a supply-chain risk if the upstream repo were compromised.
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b
         with:
