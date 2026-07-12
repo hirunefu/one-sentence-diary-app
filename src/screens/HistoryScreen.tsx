@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEntries } from '../contexts/EntriesContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { fromDateString, today } from '../utils/date';
 import { TimelineRow } from '../components/TimelineRow';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
@@ -58,8 +59,10 @@ export function HistoryScreen() {
   const { settings, updateSettings } = useSettings();
 
   const [marked, setMarked] = useState<Record<string, { marked: boolean; dotColor?: string }>>({});
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  // new Date() ではなく today() を使う: E2E ビルドの日付オーバーライドを
+  // カレンダーの初期表示月にも効かせる (実行時は同値)
+  const [year, setYear] = useState(() => fromDateString(today()).getFullYear());
+  const [month, setMonth] = useState(() => fromDateString(today()).getMonth() + 1);
 
   const indicatorAnim = useRef(
     new Animated.Value(settings.viewMode === 'calendar' ? 0 : 1)
@@ -244,6 +247,9 @@ export function HistoryScreen() {
           // The theme prop doesn't fully reactively propagate color changes,
           // so change the key on theme switch to force a remount.
           key={colors.background}
+          // ライブラリ内部の new Date() ではなく today() 起点で初期表示月を
+          // 決める (E2E の日付オーバーライド対応。通常実行では同値)
+          initialDate={today()}
           markedDates={marked}
           theme={calendarTheme}
           dayComponent={renderDay}

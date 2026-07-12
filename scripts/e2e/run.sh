@@ -68,12 +68,23 @@ if [[ -z "$TARGET" ]]; then
 fi
 echo "Using device: $TARGET"
 
+# Gboard's stylus onboarding sheet ("Try out your stylus") can pop over the
+# first focused text input on stylus-capable emulators (e.g. Pixel 10 Pro),
+# hiding the whole UI hierarchy from Maestro. Disable stylus handwriting so
+# the sheet never appears. Best-effort: the key may not exist on older APIs.
+adb -s "$TARGET" shell settings put secure stylus_handwriting_enabled 0 || true
+
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
   if [[ -n "$AT_DATE" ]]; then
     echo "Building E2E APK (EXPO_PUBLIC_E2E=1, EXPO_PUBLIC_E2E_TODAY=$AT_DATE)…"
   else
     echo "Building E2E APK (EXPO_PUBLIC_E2E=1)…"
   fi
+  # Gradle's createBundleReleaseJsAndAssets task does not track EXPO_PUBLIC_*
+  # env vars as inputs, so with an unchanged source tree it goes UP-TO-DATE
+  # and repackages the previous JS bundle — silently dropping the inlined
+  # E2E date. Delete the generated bundle to force Metro to re-run.
+  find android/app/build -name 'index.android.bundle' -delete 2>/dev/null || true
   # Expo's --device flag does not accept ADB serials directly; instead it
   # uses the first attached device when --device is omitted. Set
   # ANDROID_SERIAL so adb-level installs target $TARGET specifically when
