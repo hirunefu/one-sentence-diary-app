@@ -45,5 +45,11 @@
     "react-test-renderer": "^19.1.0",
     "typescript": "~5.9.2"
   },
+  "overrides": {
+    "postcss": "^8.5.10",
+    "xcode": {
+      "uuid": "^11.1.1"
+    }
+  },
   "private": true
 }
