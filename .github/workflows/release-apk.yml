@@ -29,7 +29,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          # Node 20 reached EOL 2026-04; 22 is the active LTS supported by
+          # Expo SDK 54's tooling.
+          node-version: '22'
           cache: 'npm'
 
       - name: Setup JDK 17
