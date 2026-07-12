@@ -24,9 +24,26 @@ describe('settingsRepository', () => {
       reminderMinute: 30,
       viewMode: 'timeline' as const,
       themePreference: 'dark' as const,
+      exportReminderEnabled: false,
+      exportReminderIntervalDays: 30 as const,
     };
     await saveSettings(next);
     expect(await loadSettings()).toEqual(next);
+  });
+
+  test('exportReminderIntervalDays round-trips for each allowed value', async () => {
+    for (const value of [1, 3, 7, 14, 30] as const) {
+      await AsyncStorage.clear();
+      await saveSettings({ ...DEFAULT_SETTINGS, exportReminderIntervalDays: value });
+      const loaded = await loadSettings();
+      expect(loaded.exportReminderIntervalDays).toBe(value);
+    }
+  });
+
+  test('exportReminderIntervalDays falls back to default for values outside the allowed set', async () => {
+    await AsyncStorage.setItem('settings.exportReminderIntervalDays', '5');
+    const s = await loadSettings();
+    expect(s.exportReminderIntervalDays).toBe(7);
   });
 
   test('themePreference round-trips for each value', async () => {

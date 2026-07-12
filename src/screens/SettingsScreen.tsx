@@ -10,8 +10,8 @@ import { File } from 'expo-file-system';
 import { IS_E2E } from '../config/e2eMode';
 import { useSettings } from '../contexts/SettingsContext';
 import { useEntries } from '../contexts/EntriesContext';
+import { useExportReminder } from '../hooks/useExportReminder';
 import { isLocalAuthAvailable } from '../services/localAuth';
-import { exportEntries } from '../services/exportService';
 import {
   parseImportJson,
   classifyEntries,
@@ -22,7 +22,7 @@ import type { ImportStrategy } from '../repositories/entriesRepository';
 import { ImportConflictModal } from '../components/ImportConflictModal';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from '../components/PressableScale';
-import type { ThemePreference } from '../types';
+import type { ExportReminderIntervalDays, ThemePreference } from '../types';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 
 type SettingsNav = NativeStackNavigationProp<RootStackParamList>;
@@ -37,11 +37,23 @@ const THEME_OPTIONS: ReadonlyArray<{
   { value: 'dark', label: 'ダーク', icon: 'moon-outline' },
 ];
 
+const EXPORT_REMINDER_INTERVAL_OPTIONS: ReadonlyArray<{
+  value: ExportReminderIntervalDays;
+  label: string;
+}> = [
+  { value: 1, label: '毎日' },
+  { value: 3, label: '3日ごと' },
+  { value: 7, label: '1週間ごと' },
+  { value: 14, label: '2週間ごと' },
+  { value: 30, label: '1ヶ月ごと' },
+];
+
 export function SettingsScreen() {
   const colors = useColors();
   const navigation = useNavigation<SettingsNav>();
   const { settings, updateSettings } = useSettings();
   const { entries, bulkImport } = useEntries();
+  const { exportNow } = useExportReminder();
   const [showPicker, setShowPicker] = useState(false);
   const [pendingImport, setPendingImport] = useState<ClassifiedEntries | null>(null);
 
@@ -62,7 +74,7 @@ export function SettingsScreen() {
       return;
     }
     try {
-      await exportEntries(entries, Constants.expoConfig?.version ?? '1.0.0');
+      await exportNow();
     } catch (e) {
       console.error(e);
       Alert.alert('エクスポートに失敗しました');
@@ -253,6 +265,9 @@ export function SettingsScreen() {
           />
         )}
 
+        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+          バックアップ
+        </Text>
         <PressableScale
           testID="settings-export"
           onPress={handleExport}
@@ -276,6 +291,38 @@ export function SettingsScreen() {
         >
           <Text style={[styles.exportText, { color: colors.text }]}>データをインポート</Text>
         </PressableScale>
+
+        <View style={rowStyle}>
+          <Text style={[styles.label, { color: colors.text }]}>エクスポートリマインド</Text>
+          <Switch
+            testID="settings-switch-export-reminder"
+            value={settings.exportReminderEnabled}
+            onValueChange={(v) => updateSettings({ exportReminderEnabled: v })}
+          />
+        </View>
+
+        {settings.exportReminderEnabled &&
+          EXPORT_REMINDER_INTERVAL_OPTIONS.map((option) => {
+            const isSelected =
+              settings.exportReminderIntervalDays === option.value;
+            return (
+              <PressableScale
+                testID={`settings-export-interval-${option.value}`}
+                key={option.value}
+                onPress={() =>
+                  updateSettings({ exportReminderIntervalDays: option.value })
+                }
+                style={rowStyle}
+              >
+                <Text style={[styles.label, styles.intervalLabel, { color: colors.text }]}>
+                  {option.label}
+                </Text>
+                {isSelected && (
+                  <Ionicons name="checkmark" size={22} color={colors.primary} />
+                )}
+              </PressableScale>
+            );
+          })}
 
         <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
           このアプリについて
@@ -339,8 +386,10 @@ const styles = StyleSheet.create({
   },
   label: { fontSize: 16 },
   value: { fontSize: 16 },
+  // 頻度の選択肢はリマインドスイッチの配下であることを字下げで示す
+  intervalLabel: { paddingLeft: 16 },
   exportButton: {
-    marginTop: 32,
+    marginTop: 16,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

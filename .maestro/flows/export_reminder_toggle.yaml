@@ -1,0 +1,30 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "tab-settings"
+# デフォルトはオンなので頻度行（初期選択: 1週間）が最初から見える
+- scrollUntilVisible:
+    element:
+      id: "settings-switch-export-reminder"
+- assertVisible:
+    id: "settings-export-interval-7"
+- scrollUntilVisible:
+    element:
+      id: "settings-export-interval-30"
+- tapOn:
+    id: "settings-export-interval-30"
+- tapOn:
+    id: "settings-switch-export-reminder"
+- assertNotVisible:
+    id: "settings-export-interval-30"
+- tapOn:
+    id: "settings-switch-export-reminder"
+# 再有効化しても選択済みの頻度 (1ヶ月) が保持されている
+- scrollUntilVisible:
+    element:
+      id: "settings-export-interval-30"
+- assertVisible:
+    id: "settings-export-interval-30"

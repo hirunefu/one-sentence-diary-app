@@ -10,6 +10,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EntryInput } from '../components/EntryInput';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
+import { useExportReminder } from '../hooks/useExportReminder';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -22,6 +23,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
   const colors = useColors();
   const { date } = route.params;
   const { getByDate, upsert, remove } = useEntries();
+  const { remindAfterSave } = useExportReminder();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [exists, setExists] = useState(false);
@@ -40,6 +42,9 @@ export function EntryEditorModal({ route, navigation }: Props) {
     try {
       await upsert(date, text);
       navigation.goBack();
+      // 今日の日付を編集したときだけ発火する (判定はフック側)。
+      // Alert はグローバルなので goBack 後でも表示できる
+      void remindAfterSave(date);
     } catch {
       Alert.alert('保存に失敗しました');
     }

@@ -16,6 +16,7 @@ import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
 import { IS_E2E } from '../config/e2eMode';
 import { useEntries } from '../contexts/EntriesContext';
+import { useExportReminder } from '../hooks/useExportReminder';
 import { today, addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
@@ -52,6 +53,7 @@ function formatJpDate(dateStr: string): { md: string; dow: string } {
 export function HomeScreen() {
   const colors = useColors();
   const { ready, initError, retryInit, getByDate, upsert, streak, entries } = useEntries();
+  const { remindAfterSave } = useExportReminder();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -167,6 +169,8 @@ export function HomeScreen() {
         animateButtonLayout(); // "✓ 保存しました" → "保存"
         setJustSaved(false);
       }, SAVED_FEEDBACK_MS);
+      // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
+      void remindAfterSave(todayStr);
     } catch (e) {
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
