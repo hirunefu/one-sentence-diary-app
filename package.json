@@ -23,7 +23,7 @@
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.22",
     "expo-local-authentication": "~17.0.8",
-    "expo-notifications": "~0.32.17",
+    "expo-notifications": "~57.0.3",
     "expo-sharing": "~14.0.8",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
