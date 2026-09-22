@@ -167,6 +167,11 @@ describe('bulkUpsertEntries', () => {
 
   test('途中で例外が出たら全件ロールバックされる', async () => {
     await upsertEntry(db, { date: '2026-04-29', text: 'old', now: 1000 });
+    // Assert on the SQLite error code rather than `.toThrow()`: better-sqlite3's
+    // SqliteError class is created in the vm realm of whichever test file first
+    // loaded the native addon, so when another suite ran first in this worker the
+    // rejection is not `instanceof Error` here and `.toThrow()` reports
+    // "did not throw" even though the transaction was rolled back.
     await expect(
       bulkUpsertEntries(
         db,
@@ -177,7 +182,7 @@ describe('bulkUpsertEntries', () => {
         [],
         'overwrite'
       )
-    ).rejects.toThrow();
+    ).rejects.toHaveProperty('code', 'SQLITE_CONSTRAINT_PRIMARYKEY');
     expect(await getEntryByDate(db, '2026-04-30')).toBeNull();
     expect((await getEntryByDate(db, '2026-04-29'))?.text).toBe('old');
   });
