@@ -17,9 +17,9 @@ All data is stored locally on the device via SQLite. No accounts, no servers, no
 
 ## Tech stack
 
-- React Native 0.81 + React 19
-- Expo SDK 54 (new architecture enabled)
-- TypeScript 5.9
+- React Native 0.86 + React 19
+- Expo SDK 57 (new architecture enabled)
+- TypeScript 6.0
 - `expo-sqlite` for persistence
 - `expo-notifications`, `expo-local-authentication`, `expo-document-picker`, `expo-file-system`, `expo-sharing`
 - `@react-navigation/*` v7

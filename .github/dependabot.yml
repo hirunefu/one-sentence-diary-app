@@ -7,7 +7,7 @@ updates:
     open-pull-requests-limit: 5
     ignore:
       # The jest toolchain tracks the Expo SDK: expo-doctor enforces the SDK's
-      # expected versions (SDK 54 -> jest 29 / jest-expo 54 / @types/jest 29).
+      # expected versions (e.g. SDK 57 -> jest 29 / jest-expo 57 / @types/jest 29).
       # Bump these together with the SDK, not on their own.
       - dependency-name: "jest"
         update-types: ["version-update:semver-major"]

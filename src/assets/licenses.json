@@ -633,7 +633,7 @@
   },
   {
     "name": "@expo/cli",
-    "version": "56.1.26",
+    "version": "57.0.26",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/cli",
@@ -649,7 +649,7 @@
   },
   {
     "name": "@expo/config",
-    "version": "56.0.14",
+    "version": "57.0.9",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/config#readme",
@@ -657,7 +657,7 @@
   },
   {
     "name": "@expo/config-plugins",
-    "version": "56.0.16",
+    "version": "57.0.9",
     "license": "MIT",
     "author": null,
     "homepage": "https://docs.expo.dev/guides/config-plugins/",
@@ -665,7 +665,7 @@
   },
   {
     "name": "@expo/config-types",
-    "version": "56.0.7",
+    "version": "57.0.2",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/config-types#readme",
@@ -681,7 +681,7 @@
   },
   {
     "name": "@expo/devtools",
-    "version": "56.0.2",
+    "version": "57.0.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/devtools#readme",
@@ -689,19 +689,11 @@
   },
   {
     "name": "@expo/dom-webview",
-    "version": "56.0.6",
+    "version": "57.0.1",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/dom-webview",
     "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2015-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
-  },
-  {
-    "name": "@expo/env",
-    "version": "2.3.1",
-    "license": "MIT",
-    "author": null,
-    "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/env#readme",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2023-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
   },
   {
     "name": "@expo/env",
@@ -713,7 +705,7 @@
   },
   {
     "name": "@expo/expo-modules-macros-plugin",
-    "version": "0.2.2",
+    "version": "0.6.1",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo-modules-macros-plugin",
@@ -721,7 +713,7 @@
   },
   {
     "name": "@expo/fingerprint",
-    "version": "0.19.10",
+    "version": "0.20.13",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/fingerprint#readme",
@@ -729,7 +721,7 @@
   },
   {
     "name": "@expo/image-utils",
-    "version": "0.10.5",
+    "version": "0.11.5",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/%40expo/image-utils#readme",
@@ -737,18 +729,10 @@
   },
   {
     "name": "@expo/inline-modules",
-    "version": "0.0.16",
+    "version": "0.1.7",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo.git",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2015-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
-  },
-  {
-    "name": "@expo/json-file",
-    "version": "10.2.0",
-    "license": "MIT",
-    "author": null,
-    "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/json-file#readme",
     "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2015-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
   },
   {
@@ -761,7 +745,7 @@
   },
   {
     "name": "@expo/local-build-cache-provider",
-    "version": "56.0.12",
+    "version": "57.0.8",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/local-build-cache-provider#readme",
@@ -769,7 +753,7 @@
   },
   {
     "name": "@expo/log-box",
-    "version": "56.0.14",
+    "version": "57.0.4",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/log-box",
@@ -785,7 +769,7 @@
   },
   {
     "name": "@expo/metro-config",
-    "version": "56.0.19",
+    "version": "57.0.12",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/metro-config#readme",
@@ -793,7 +777,7 @@
   },
   {
     "name": "@expo/metro-file-map",
-    "version": "56.0.4",
+    "version": "57.0.3",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/metro-file-map#readme",
@@ -817,7 +801,7 @@
   },
   {
     "name": "@expo/plist",
-    "version": "0.7.0",
+    "version": "0.8.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/plist#readme",
@@ -825,7 +809,7 @@
   },
   {
     "name": "@expo/prebuild-config",
-    "version": "56.0.23",
+    "version": "57.0.16",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/prebuild-config#readme",
@@ -833,7 +817,7 @@
   },
   {
     "name": "@expo/require-utils",
-    "version": "56.1.7",
+    "version": "57.0.5",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/require-utils#readme",
@@ -841,7 +825,7 @@
   },
   {
     "name": "@expo/router-server",
-    "version": "56.0.19",
+    "version": "57.0.10",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/routing/introduction/",
@@ -849,7 +833,7 @@
   },
   {
     "name": "@expo/schema-utils",
-    "version": "56.0.2",
+    "version": "57.0.2",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/schema-utils#readme",
@@ -1041,98 +1025,98 @@
   },
   {
     "name": "@react-native/assets-registry",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/assets#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/assets#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/babel-plugin-codegen",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/babel-plugin-codegen#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/babel-plugin-codegen#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/codegen",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/react-native-codegen#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/react-native-codegen#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/community-cli-plugin",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/community-cli-plugin#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/community-cli-plugin#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/debugger-frontend",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "BSD-3-Clause",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/debugger-frontend#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/debugger-frontend#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/debugger-shell",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/debugger-shell#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/debugger-shell#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/dev-middleware",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/dev-middleware#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/dev-middleware#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/gradle-plugin",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/gradle-plugin#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/gradle-plugin#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/jest-preset",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "git+https://github.com/facebook/react-native.git",
+    "homepage": "git+https://github.com/react/react-native.git",
     "licenseText": null
   },
   {
     "name": "@react-native/js-polyfills",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/polyfills#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/polyfills#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/normalize-colors",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/normalize-color#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/normalize-color#readme",
     "licenseText": null
   },
   {
     "name": "@react-native/virtualized-lists",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
-    "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/virtualized-lists#readme",
+    "homepage": "https://github.com/react/react-native/tree/HEAD/packages/virtualized-lists#readme",
     "licenseText": null
   },
   {
@@ -1153,7 +1137,7 @@
   },
   {
     "name": "@react-navigation/elements",
-    "version": "2.9.18",
+    "version": "2.9.43",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org",
@@ -1161,7 +1145,7 @@
   },
   {
     "name": "@react-navigation/native",
-    "version": "7.2.4",
+    "version": "7.4.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org",
@@ -1553,7 +1537,7 @@
   },
   {
     "name": "babel-plugin-syntax-hermes-parser",
-    "version": "0.33.3",
+    "version": "0.36.0",
     "license": "MIT",
     "author": null,
     "homepage": "git@github.com:facebook/hermes.git",
@@ -1577,7 +1561,7 @@
   },
   {
     "name": "babel-preset-expo",
-    "version": "56.0.20",
+    "version": "57.0.12",
     "license": "MIT",
     "author": "Expo <support@expo.dev>",
     "homepage": "https://github.com/expo/expo/tree/main/packages/babel-preset-expo#readme",
@@ -2153,7 +2137,7 @@
   },
   {
     "name": "expo",
-    "version": "56.0.22",
+    "version": "57.0.24",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo",
@@ -2161,7 +2145,7 @@
   },
   {
     "name": "expo-application",
-    "version": "56.0.3",
+    "version": "57.0.3",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/application/",
@@ -2169,7 +2153,7 @@
   },
   {
     "name": "expo-asset",
-    "version": "56.0.24",
+    "version": "57.0.18",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/asset/",
@@ -2177,7 +2161,7 @@
   },
   {
     "name": "expo-constants",
-    "version": "56.0.26",
+    "version": "57.0.19",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/constants/",
@@ -2185,7 +2169,7 @@
   },
   {
     "name": "expo-document-picker",
-    "version": "56.0.4",
+    "version": "57.0.2",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/document-picker/",
@@ -2193,7 +2177,7 @@
   },
   {
     "name": "expo-file-system",
-    "version": "56.0.11",
+    "version": "57.0.7",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/filesystem/",
@@ -2201,7 +2185,7 @@
   },
   {
     "name": "expo-font",
-    "version": "56.0.7",
+    "version": "57.0.4",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/font/",
@@ -2209,7 +2193,7 @@
   },
   {
     "name": "expo-keep-awake",
-    "version": "56.0.3",
+    "version": "57.0.2",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/keep-awake/",
@@ -2217,7 +2201,7 @@
   },
   {
     "name": "expo-local-authentication",
-    "version": "56.0.5",
+    "version": "57.0.3",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/local-authentication/",
@@ -2225,7 +2209,7 @@
   },
   {
     "name": "expo-modules-autolinking",
-    "version": "56.0.23",
+    "version": "57.0.13",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-modules-autolinking#readme",
@@ -2233,7 +2217,7 @@
   },
   {
     "name": "expo-modules-core",
-    "version": "56.0.26",
+    "version": "57.0.18",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-modules-core",
@@ -2241,7 +2225,7 @@
   },
   {
     "name": "expo-modules-jsi",
-    "version": "56.0.13",
+    "version": "57.1.0",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-modules-jsi",
@@ -2249,7 +2233,7 @@
   },
   {
     "name": "expo-notifications",
-    "version": "56.0.25",
+    "version": "57.0.20",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/notifications/",
@@ -2257,7 +2241,7 @@
   },
   {
     "name": "expo-server",
-    "version": "56.0.6",
+    "version": "57.0.3",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-server#readme",
@@ -2265,7 +2249,7 @@
   },
   {
     "name": "expo-sharing",
-    "version": "56.0.26",
+    "version": "57.0.21",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/sharing/",
@@ -2273,7 +2257,7 @@
   },
   {
     "name": "expo-splash-screen",
-    "version": "56.0.15",
+    "version": "57.0.9",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/splash-screen/",
@@ -2281,7 +2265,7 @@
   },
   {
     "name": "expo-sqlite",
-    "version": "56.0.6",
+    "version": "57.0.3",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/sqlite/",
@@ -2289,7 +2273,7 @@
   },
   {
     "name": "expo-status-bar",
-    "version": "56.0.4",
+    "version": "57.0.1",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/status-bar/",
@@ -2505,7 +2489,7 @@
   },
   {
     "name": "hermes-compiler",
-    "version": "250829098.0.10",
+    "version": "250829098.0.17",
     "license": "MIT",
     "author": null,
     "homepage": "git+ssh://git@github.com/facebook/hermes.git",
@@ -2521,7 +2505,7 @@
   },
   {
     "name": "hermes-estree",
-    "version": "0.33.3",
+    "version": "0.36.0",
     "license": "MIT",
     "author": null,
     "homepage": "git@github.com:facebook/hermes.git",
@@ -2537,7 +2521,7 @@
   },
   {
     "name": "hermes-parser",
-    "version": "0.33.3",
+    "version": "0.36.0",
     "license": "MIT",
     "author": null,
     "homepage": "git@github.com:facebook/hermes.git",
@@ -3729,7 +3713,7 @@
   },
   {
     "name": "react-native",
-    "version": "0.85.3",
+    "version": "0.86.3",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnative.dev/",
@@ -3889,7 +3873,7 @@
   },
   {
     "name": "sax",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "license": "BlueOak-1.0.0",
     "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
     "homepage": "git+ssh://git@github.com/isaacs/sax-js.git",
@@ -4096,6 +4080,14 @@
     "licenseText": "MIT License\n\nCopyright (c) 2014-2019 Georg Tavonius\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
   },
   {
+    "name": "standard-navigation",
+    "version": "0.0.8",
+    "license": "MIT",
+    "author": "Satyajit Sahoo <satyajit.happy@gmail.com>",
+    "homepage": "https://github.com/react-navigation/standard-navigation#readme",
+    "licenseText": null
+  },
+  {
     "name": "statuses",
     "version": "2.0.2",
     "license": "MIT",
@@ -4153,14 +4145,6 @@
   },
   {
     "name": "supports-color",
-    "version": "7.2.0",
-    "license": "MIT",
-    "author": "Sindre Sorhus",
-    "homepage": "chalk/supports-color",
-    "licenseText": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-  },
-  {
-    "name": "supports-color",
     "version": "8.1.1",
     "license": "MIT",
     "author": "Sindre Sorhus",
@@ -4170,6 +4154,14 @@
   {
     "name": "supports-color",
     "version": "5.5.0",
+    "license": "MIT",
+    "author": "Sindre Sorhus",
+    "homepage": "chalk/supports-color",
+    "licenseText": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  },
+  {
+    "name": "supports-color",
+    "version": "7.2.0",
     "license": "MIT",
     "author": "Sindre Sorhus",
     "homepage": "chalk/supports-color",
