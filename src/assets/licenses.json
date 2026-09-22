@@ -1,7 +1,7 @@
 [
   {
     "name": "@0no-co/graphql.web",
-    "version": "1.2.0",
+    "version": "1.3.4",
     "license": "MIT",
     "author": "0no.co <hi@0no.co>",
     "homepage": "https://github.com/0no-co/graphql.web",
@@ -17,7 +17,7 @@
   },
   {
     "name": "@babel/code-frame",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-code-frame",
@@ -25,7 +25,7 @@
   },
   {
     "name": "@babel/compat-data",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -33,7 +33,7 @@
   },
   {
     "name": "@babel/core",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-core",
@@ -41,7 +41,7 @@
   },
   {
     "name": "@babel/generator",
-    "version": "7.29.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-generator",
@@ -49,7 +49,7 @@
   },
   {
     "name": "@babel/helper-annotate-as-pure",
-    "version": "7.27.3",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-annotate-as-pure",
@@ -57,7 +57,7 @@
   },
   {
     "name": "@babel/helper-compilation-targets",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -65,7 +65,7 @@
   },
   {
     "name": "@babel/helper-create-class-features-plugin",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -73,7 +73,7 @@
   },
   {
     "name": "@babel/helper-create-regexp-features-plugin",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -89,7 +89,7 @@
   },
   {
     "name": "@babel/helper-globals",
-    "version": "7.28.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -97,7 +97,7 @@
   },
   {
     "name": "@babel/helper-member-expression-to-functions",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-member-expression-to-functions",
@@ -105,7 +105,7 @@
   },
   {
     "name": "@babel/helper-module-imports",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-module-imports",
@@ -113,7 +113,7 @@
   },
   {
     "name": "@babel/helper-module-transforms",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-module-transforms",
@@ -121,7 +121,7 @@
   },
   {
     "name": "@babel/helper-optimise-call-expression",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-optimise-call-expression",
@@ -129,7 +129,7 @@
   },
   {
     "name": "@babel/helper-plugin-utils",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-plugin-utils",
@@ -137,7 +137,7 @@
   },
   {
     "name": "@babel/helper-remap-async-to-generator",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-remap-async-to-generator",
@@ -145,7 +145,7 @@
   },
   {
     "name": "@babel/helper-replace-supers",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-replace-supers",
@@ -153,7 +153,7 @@
   },
   {
     "name": "@babel/helper-skip-transparent-expression-wrappers",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -161,7 +161,7 @@
   },
   {
     "name": "@babel/helper-string-parser",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-string-parser",
@@ -169,7 +169,7 @@
   },
   {
     "name": "@babel/helper-validator-identifier",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -177,7 +177,7 @@
   },
   {
     "name": "@babel/helper-validator-option",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -185,7 +185,7 @@
   },
   {
     "name": "@babel/helper-wrap-function",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helper-wrap-function",
@@ -193,7 +193,7 @@
   },
   {
     "name": "@babel/helpers",
-    "version": "7.29.2",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-helpers",
@@ -209,7 +209,7 @@
   },
   {
     "name": "@babel/parser",
-    "version": "7.29.2",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-parser",
@@ -217,7 +217,7 @@
   },
   {
     "name": "@babel/plugin-proposal-decorators",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-proposal-decorators",
@@ -225,7 +225,7 @@
   },
   {
     "name": "@babel/plugin-proposal-export-default-from",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-proposal-export-default-from",
@@ -265,7 +265,7 @@
   },
   {
     "name": "@babel/plugin-syntax-decorators",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-syntax-decorators",
@@ -281,7 +281,7 @@
   },
   {
     "name": "@babel/plugin-syntax-export-default-from",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-syntax-export-default-from",
@@ -289,7 +289,7 @@
   },
   {
     "name": "@babel/plugin-syntax-flow",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-syntax-flow",
@@ -321,7 +321,7 @@
   },
   {
     "name": "@babel/plugin-syntax-jsx",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-syntax-jsx",
@@ -393,7 +393,7 @@
   },
   {
     "name": "@babel/plugin-syntax-typescript",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-syntax-typescript",
@@ -401,7 +401,7 @@
   },
   {
     "name": "@babel/plugin-transform-arrow-functions",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-arrow-functions",
@@ -409,7 +409,7 @@
   },
   {
     "name": "@babel/plugin-transform-async-generator-functions",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-async-generator-functions",
@@ -417,7 +417,7 @@
   },
   {
     "name": "@babel/plugin-transform-async-to-generator",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-async-to-generator",
@@ -425,7 +425,7 @@
   },
   {
     "name": "@babel/plugin-transform-block-scoping",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-block-scoping",
@@ -433,7 +433,7 @@
   },
   {
     "name": "@babel/plugin-transform-class-properties",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-class-properties",
@@ -441,7 +441,7 @@
   },
   {
     "name": "@babel/plugin-transform-class-static-block",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-class-static-block",
@@ -449,7 +449,7 @@
   },
   {
     "name": "@babel/plugin-transform-classes",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-classes",
@@ -457,7 +457,7 @@
   },
   {
     "name": "@babel/plugin-transform-computed-properties",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-computed-properties",
@@ -465,7 +465,7 @@
   },
   {
     "name": "@babel/plugin-transform-destructuring",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-destructuring",
@@ -473,7 +473,7 @@
   },
   {
     "name": "@babel/plugin-transform-export-namespace-from",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-export-namespace-from",
@@ -481,7 +481,7 @@
   },
   {
     "name": "@babel/plugin-transform-flow-strip-types",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-flow-strip-types",
@@ -489,7 +489,7 @@
   },
   {
     "name": "@babel/plugin-transform-for-of",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-for-of",
@@ -497,7 +497,7 @@
   },
   {
     "name": "@babel/plugin-transform-function-name",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-function-name",
@@ -505,7 +505,7 @@
   },
   {
     "name": "@babel/plugin-transform-literals",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-literals",
@@ -513,7 +513,7 @@
   },
   {
     "name": "@babel/plugin-transform-logical-assignment-operators",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-logical-assignment-operators",
@@ -521,7 +521,7 @@
   },
   {
     "name": "@babel/plugin-transform-modules-commonjs",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-modules-commonjs",
@@ -529,7 +529,7 @@
   },
   {
     "name": "@babel/plugin-transform-named-capturing-groups-regex",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-named-capturing-groups-regex",
@@ -537,7 +537,7 @@
   },
   {
     "name": "@babel/plugin-transform-nullish-coalescing-operator",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-nullish-coalescing-operator",
@@ -545,7 +545,7 @@
   },
   {
     "name": "@babel/plugin-transform-numeric-separator",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-numeric-separator",
@@ -553,7 +553,7 @@
   },
   {
     "name": "@babel/plugin-transform-object-rest-spread",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-object-rest-spread",
@@ -561,7 +561,7 @@
   },
   {
     "name": "@babel/plugin-transform-optional-catch-binding",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-optional-catch-binding",
@@ -569,7 +569,7 @@
   },
   {
     "name": "@babel/plugin-transform-optional-chaining",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-optional-chaining",
@@ -577,7 +577,7 @@
   },
   {
     "name": "@babel/plugin-transform-parameters",
-    "version": "7.27.7",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-parameters",
@@ -585,7 +585,7 @@
   },
   {
     "name": "@babel/plugin-transform-private-methods",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-private-methods",
@@ -593,7 +593,7 @@
   },
   {
     "name": "@babel/plugin-transform-private-property-in-object",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-private-property-in-object",
@@ -601,7 +601,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-display-name",
-    "version": "7.28.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-react-display-name",
@@ -609,7 +609,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-jsx",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-react-jsx",
@@ -617,7 +617,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-jsx-development",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -625,7 +625,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-jsx-self",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-react-jsx-self",
@@ -633,7 +633,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-jsx-source",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-react-jsx-source",
@@ -641,7 +641,7 @@
   },
   {
     "name": "@babel/plugin-transform-react-pure-annotations",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://github.com/babel/babel.git",
@@ -649,7 +649,7 @@
   },
   {
     "name": "@babel/plugin-transform-regenerator",
-    "version": "7.29.0",
+    "version": "7.29.8",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-regenerator",
@@ -657,7 +657,7 @@
   },
   {
     "name": "@babel/plugin-transform-runtime",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-runtime",
@@ -665,7 +665,7 @@
   },
   {
     "name": "@babel/plugin-transform-shorthand-properties",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-shorthand-properties",
@@ -673,7 +673,7 @@
   },
   {
     "name": "@babel/plugin-transform-spread",
-    "version": "7.28.6",
+    "version": "7.29.8",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-spread",
@@ -681,7 +681,7 @@
   },
   {
     "name": "@babel/plugin-transform-sticky-regex",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-sticky-regex",
@@ -689,7 +689,7 @@
   },
   {
     "name": "@babel/plugin-transform-typescript",
-    "version": "7.28.6",
+    "version": "7.29.9",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-typescript",
@@ -697,7 +697,7 @@
   },
   {
     "name": "@babel/plugin-transform-unicode-regex",
-    "version": "7.27.1",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-plugin-transform-unicode-regex",
@@ -705,7 +705,7 @@
   },
   {
     "name": "@babel/preset-react",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-preset-react",
@@ -713,7 +713,7 @@
   },
   {
     "name": "@babel/preset-typescript",
-    "version": "7.28.5",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-preset-typescript",
@@ -729,7 +729,7 @@
   },
   {
     "name": "@babel/template",
-    "version": "7.28.6",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-template",
@@ -737,7 +737,7 @@
   },
   {
     "name": "@babel/traverse",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-traverse",
@@ -753,7 +753,7 @@
   },
   {
     "name": "@babel/types",
-    "version": "7.29.0",
+    "version": "7.29.7",
     "license": "MIT",
     "author": "The Babel Team (https://babel.dev/team)",
     "homepage": "https://babel.dev/docs/en/next/babel-types",
@@ -761,7 +761,7 @@
   },
   {
     "name": "@expo/cli",
-    "version": "54.0.24",
+    "version": "54.0.27",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/cli",
@@ -777,7 +777,7 @@
   },
   {
     "name": "@expo/config",
-    "version": "12.0.13",
+    "version": "12.0.14",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/config#readme",
@@ -785,7 +785,7 @@
   },
   {
     "name": "@expo/config-plugins",
-    "version": "54.0.4",
+    "version": "54.0.5",
     "license": "MIT",
     "author": null,
     "homepage": "https://docs.expo.dev/guides/config-plugins/",
@@ -817,7 +817,7 @@
   },
   {
     "name": "@expo/env",
-    "version": "2.0.11",
+    "version": "2.0.12",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/env#readme",
@@ -841,7 +841,15 @@
   },
   {
     "name": "@expo/json-file",
-    "version": "10.0.13",
+    "version": "10.0.16",
+    "license": "MIT",
+    "author": null,
+    "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/json-file#readme",
+    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2015-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+  },
+  {
+    "name": "@expo/json-file",
+    "version": "11.0.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/json-file#readme",
@@ -857,7 +865,7 @@
   },
   {
     "name": "@expo/metro-config",
-    "version": "54.0.15",
+    "version": "54.0.17",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/metro-config#readme",
@@ -865,7 +873,7 @@
   },
   {
     "name": "@expo/osascript",
-    "version": "2.4.2",
+    "version": "2.7.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/osascript#readme",
@@ -873,7 +881,7 @@
   },
   {
     "name": "@expo/package-manager",
-    "version": "1.10.4",
+    "version": "1.13.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/package-manager#readme",
@@ -881,7 +889,7 @@
   },
   {
     "name": "@expo/plist",
-    "version": "0.4.8",
+    "version": "0.4.9",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/plist#readme",
@@ -889,7 +897,7 @@
   },
   {
     "name": "@expo/prebuild-config",
-    "version": "54.0.8",
+    "version": "54.0.9",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/prebuild-config#readme",
@@ -897,7 +905,7 @@
   },
   {
     "name": "@expo/require-utils",
-    "version": "55.0.4",
+    "version": "55.0.5",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/require-utils#readme",
@@ -905,7 +913,7 @@
   },
   {
     "name": "@expo/schema-utils",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/@expo/schema-utils#readme",
@@ -921,7 +929,7 @@
   },
   {
     "name": "@expo/spawn-async",
-    "version": "1.7.2",
+    "version": "1.8.0",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/spawn-async#readme",
@@ -953,7 +961,7 @@
   },
   {
     "name": "@expo/xcpretty",
-    "version": "4.4.3",
+    "version": "4.4.5",
     "license": "BSD-3-Clause",
     "author": "Evan Bacon <bacon@expo.io> (https://github.com/evanbacon)",
     "homepage": "https://github.com/expo/expo-cli",
@@ -1209,7 +1217,7 @@
   },
   {
     "name": "@react-navigation/core",
-    "version": "7.17.2",
+    "version": "7.22.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org",
@@ -1217,7 +1225,7 @@
   },
   {
     "name": "@react-navigation/elements",
-    "version": "2.9.15",
+    "version": "2.9.18",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org",
@@ -1225,7 +1233,7 @@
   },
   {
     "name": "@react-navigation/native",
-    "version": "7.2.2",
+    "version": "7.2.4",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org",
@@ -1233,7 +1241,7 @@
   },
   {
     "name": "@react-navigation/native-stack",
-    "version": "7.14.12",
+    "version": "7.15.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/software-mansion/react-native-screens#readme",
@@ -1241,7 +1249,7 @@
   },
   {
     "name": "@react-navigation/routers",
-    "version": "7.5.3",
+    "version": "7.6.4",
     "license": "MIT",
     "author": null,
     "homepage": "https://reactnavigation.org/docs/custom-routers/",
@@ -1249,10 +1257,10 @@
   },
   {
     "name": "@sinclair/typebox",
-    "version": "0.27.10",
+    "version": "0.27.12",
     "license": "MIT",
     "author": "sinclairzx81",
-    "homepage": "https://github.com/sinclairzx81/typebox-legacy",
+    "homepage": "https://github.com/sinclairzx81/sinclair-typebox",
     "licenseText": "TypeBox: JSON Schema Type Builder with Static Type Resolution for TypeScript \n\nThe MIT License (MIT)\n\nCopyright (c) 2017-2023 Haydn Paterson (sinclair) <haydn.developer@gmail.com>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
   },
   {
@@ -1401,7 +1409,7 @@
   },
   {
     "name": "@xmldom/xmldom",
-    "version": "0.8.13",
+    "version": "0.8.15",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/xmldom/xmldom",
@@ -1409,7 +1417,7 @@
   },
   {
     "name": "@xmldom/xmldom",
-    "version": "0.9.10",
+    "version": "0.9.12",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/xmldom/xmldom",
@@ -1446,6 +1454,14 @@
     "author": "Nathan Rajlich <nathan@tootallnate.net> (http://n8.io/)",
     "homepage": "https://github.com/TooTallNate/proxy-agents.git",
     "licenseText": "(The MIT License)\n\nCopyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n'Software'), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\nCLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\nTORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\nSOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  },
+  {
+    "name": "agent-cli-detector",
+    "version": "0.1.7",
+    "license": "MIT",
+    "author": null,
+    "homepage": "https://github.com/expo/agent-cli-detector#readme",
+    "licenseText": "MIT License\n\nCopyright (c) 2026 David Mokos\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
   },
   {
     "name": "anser",
@@ -1673,7 +1689,7 @@
   },
   {
     "name": "babel-preset-expo",
-    "version": "54.0.10",
+    "version": "54.0.12",
     "license": "MIT",
     "author": "Expo <support@expo.dev>",
     "homepage": "https://github.com/expo/expo/tree/main/packages/babel-preset-expo#readme",
@@ -1721,7 +1737,7 @@
   },
   {
     "name": "baseline-browser-mapping",
-    "version": "2.10.23",
+    "version": "2.11.25",
     "license": "Apache-2.0",
     "author": null,
     "homepage": "git+https://github.com/web-platform-dx/baseline-browser-mapping.git",
@@ -1761,7 +1777,7 @@
   },
   {
     "name": "brace-expansion",
-    "version": "1.1.14",
+    "version": "1.1.21",
     "license": "MIT",
     "author": "Julian Gruber",
     "homepage": "https://github.com/juliangruber/brace-expansion",
@@ -1769,15 +1785,15 @@
   },
   {
     "name": "brace-expansion",
-    "version": "5.0.5",
+    "version": "5.0.12",
     "license": "MIT",
     "author": null,
-    "homepage": "git+ssh://git@github.com/juliangruber/brace-expansion.git",
+    "homepage": "git+https://github.com/juliangruber/brace-expansion.git",
     "licenseText": "MIT License\n\nCopyright Julian Gruber <julian@juliangruber.com>\n\nTypeScript port Copyright Isaac Z. Schlueter <i@izs.me>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
   },
   {
     "name": "brace-expansion",
-    "version": "2.1.0",
+    "version": "2.1.7",
     "license": "MIT",
     "author": "Julian Gruber",
     "homepage": "https://github.com/juliangruber/brace-expansion",
@@ -1793,7 +1809,7 @@
   },
   {
     "name": "browserslist",
-    "version": "4.28.2",
+    "version": "4.29.0",
     "license": "MIT",
     "author": "Andrey Sitnik <andrey@sitnik.es>",
     "homepage": "browserslist/browserslist",
@@ -1873,7 +1889,7 @@
   },
   {
     "name": "caniuse-lite",
-    "version": "1.0.30001791",
+    "version": "1.0.30001810",
     "license": "CC-BY-4.0",
     "author": "Ben Briggs",
     "homepage": "browserslist/caniuse-lite",
@@ -2057,7 +2073,7 @@
   },
   {
     "name": "compression",
-    "version": "1.8.1",
+    "version": "1.8.2",
     "license": "MIT",
     "author": null,
     "homepage": "expressjs/compression",
@@ -2089,7 +2105,7 @@
   },
   {
     "name": "core-js-compat",
-    "version": "3.49.0",
+    "version": "3.50.0",
     "license": "MIT",
     "author": "Denis Pushkarev",
     "homepage": "https://core-js.io",
@@ -2134,14 +2150,6 @@
     "author": "Josh Junon (https://github.com/qix-)",
     "homepage": "git://github.com/debug-js/debug.git",
     "licenseText": "(The MIT License)\n\nCopyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>\nCopyright (c) 2018-2021 Josh Junon\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software\nand associated documentation files (the 'Software'), to deal in the Software without restriction,\nincluding without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,\nand/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial\nportions of the Software.\n\nTHE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT\nLIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nWHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\nSOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-  },
-  {
-    "name": "decode-uri-component",
-    "version": "0.2.2",
-    "license": "MIT",
-    "author": "Sam Verschueren",
-    "homepage": "SamVerschueren/decode-uri-component",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2017, Sam Verschueren <sam.verschueren@gmail.com> (github.com/SamVerschueren)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   },
   {
     "name": "deep-extend",
@@ -2249,7 +2257,7 @@
   },
   {
     "name": "electron-to-chromium",
-    "version": "1.5.344",
+    "version": "1.5.434",
     "license": "ISC",
     "author": "Kilian Valkhof",
     "homepage": "git+https://github.com/Kilian/electron-to-chromium.git",
@@ -2385,7 +2393,7 @@
   },
   {
     "name": "expo",
-    "version": "54.0.34",
+    "version": "54.0.37",
     "license": "MIT",
     "author": "Expo",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo",
@@ -2409,7 +2417,7 @@
   },
   {
     "name": "expo-constants",
-    "version": "18.0.13",
+    "version": "18.0.14",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/constants/",
@@ -2425,7 +2433,7 @@
   },
   {
     "name": "expo-file-system",
-    "version": "19.0.22",
+    "version": "19.0.24",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/filesystem/",
@@ -2433,7 +2441,7 @@
   },
   {
     "name": "expo-font",
-    "version": "14.0.11",
+    "version": "14.0.12",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/font/",
@@ -2449,7 +2457,7 @@
   },
   {
     "name": "expo-local-authentication",
-    "version": "17.0.8",
+    "version": "17.0.9",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://docs.expo.dev/versions/latest/sdk/local-authentication/",
@@ -2457,7 +2465,7 @@
   },
   {
     "name": "expo-modules-autolinking",
-    "version": "3.0.25",
+    "version": "3.0.27",
     "license": "MIT",
     "author": "650 Industries, Inc.",
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-modules-autolinking#readme",
@@ -2481,7 +2489,7 @@
   },
   {
     "name": "expo-server",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/expo/expo/tree/main/packages/expo-server#readme",
@@ -2558,14 +2566,6 @@
     "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
     "homepage": "https://github.com/jonschlinkert/fill-range",
     "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2014-present, Jon Schlinkert.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
-  },
-  {
-    "name": "filter-obj",
-    "version": "1.1.0",
-    "license": "MIT",
-    "author": "Sindre Sorhus",
-    "homepage": "sindresorhus/filter-obj",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
   },
   {
     "name": "finalhandler",
@@ -2777,7 +2777,7 @@
   },
   {
     "name": "hasown",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "license": "MIT",
     "author": "Jordan Harband <ljharb@gmail.com>",
     "homepage": "https://github.com/inspect-js/hasOwn#readme",
@@ -2937,7 +2937,7 @@
   },
   {
     "name": "is-core-module",
-    "version": "2.16.1",
+    "version": "2.17.0",
     "license": "MIT",
     "author": "Jordan Harband <ljharb@gmail.com>",
     "homepage": "https://github.com/inspect-js/is-core-module",
@@ -3129,7 +3129,7 @@
   },
   {
     "name": "js-yaml",
-    "version": "4.1.1",
+    "version": "4.3.2",
     "license": "MIT",
     "author": "Vladimir Zapparov <dervus.grim@gmail.com>",
     "homepage": "nodeca/js-yaml",
@@ -3137,7 +3137,7 @@
   },
   {
     "name": "js-yaml",
-    "version": "3.14.2",
+    "version": "3.15.2",
     "license": "MIT",
     "author": "Vladimir Zapparov <dervus.grim@gmail.com>",
     "homepage": "https://github.com/nodeca/js-yaml",
@@ -3201,7 +3201,7 @@
   },
   {
     "name": "lightningcss",
-    "version": "1.32.0",
+    "version": "1.33.0",
     "license": "MPL-2.0",
     "author": null,
     "homepage": "https://github.com/parcel-bundler/lightningcss.git",
@@ -3209,7 +3209,7 @@
   },
   {
     "name": "lightningcss-darwin-arm64",
-    "version": "1.32.0",
+    "version": "1.33.0",
     "license": "MPL-2.0",
     "author": null,
     "homepage": "https://github.com/parcel-bundler/lightningcss.git",
@@ -3289,7 +3289,7 @@
   },
   {
     "name": "lru-cache",
-    "version": "11.3.5",
+    "version": "11.5.3",
     "license": "BlueOak-1.0.0",
     "author": "Isaac Z. Schlueter <i@izs.me>",
     "homepage": "git+ssh://git@github.com/isaacs/node-lru-cache.git",
@@ -3513,7 +3513,7 @@
   },
   {
     "name": "minimatch",
-    "version": "10.2.5",
+    "version": "10.2.6",
     "license": "BlueOak-1.0.0",
     "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me)",
     "homepage": "git@github.com:isaacs/minimatch",
@@ -3585,7 +3585,7 @@
   },
   {
     "name": "nanoid",
-    "version": "3.3.11",
+    "version": "3.3.19",
     "license": "MIT",
     "author": "Andrey Sitnik <andrey@sitnik.ru>",
     "homepage": "ai/nanoid",
@@ -3633,10 +3633,10 @@
   },
   {
     "name": "node-releases",
-    "version": "2.0.38",
+    "version": "2.0.56",
     "license": "MIT",
     "author": "Sergey Rubanov <chi187@gmail.com>",
-    "homepage": "git+https://github.com/chicoxyzzy/node-releases.git",
+    "homepage": "https://github.com/chicoxyzzy/node-releases.git",
     "licenseText": "The MIT License\n\nCopyright (c) 2017 Sergey Rubanov (https://github.com/chicoxyzzy)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
   },
   {
@@ -3865,7 +3865,7 @@
   },
   {
     "name": "picomatch",
-    "version": "4.0.4",
+    "version": "4.0.7",
     "license": "MIT",
     "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
     "homepage": "https://github.com/micromatch/picomatch",
@@ -3913,11 +3913,11 @@
   },
   {
     "name": "postcss",
-    "version": "8.4.49",
+    "version": "8.5.28",
     "license": "MIT",
-    "author": "Andrey Sitnik <andrey@sitnik.ru>",
+    "author": "Andrey Sitnik <andrey@sitnik.es>",
     "homepage": "https://postcss.org/",
-    "licenseText": "The MIT License (MIT)\n\nCopyright 2013 Andrey Sitnik <andrey@sitnik.ru>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+    "licenseText": "The MIT License (MIT)\n\nCopyright 2013 Andrey Sitnik <andrey@sitnik.es>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   },
   {
     "name": "pretty-bytes",
@@ -3992,14 +3992,6 @@
     "licenseText": "Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n\n==============================================================\nThis product also include the following software:\n==============================================================\n\n QRCode for JavaScript\n\n Copyright (c) 2009 Kazuhiko Arase\n\n URL: http://www.d-project.com/\n\n Licensed under the MIT license:\n   http://www.opensource.org/licenses/mit-license.php\n\n The word \"QR Code\" is registered trademark of \n DENSO WAVE INCORPORATED\n   http://www.denso-wave.com/qrcode/faqpatent-e.html\n\nLocated in ./vendor/QRCode\n- project has been modified to work in Node and some refactoring was done for code cleanup"
   },
   {
-    "name": "query-string",
-    "version": "7.1.3",
-    "license": "MIT",
-    "author": "Sindre Sorhus",
-    "homepage": "sindresorhus/query-string",
-    "licenseText": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (http://sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-  },
-  {
     "name": "queue",
     "version": "6.0.2",
     "license": "MIT",
@@ -4049,7 +4041,7 @@
   },
   {
     "name": "react-is",
-    "version": "19.2.5",
+    "version": "19.3.0",
     "license": "MIT",
     "author": null,
     "homepage": "https://react.dev/",
@@ -4177,7 +4169,7 @@
   },
   {
     "name": "regjsparser",
-    "version": "0.13.1",
+    "version": "0.13.3",
     "license": "BSD-2-Clause",
     "author": "'Julian Viereck' <julian.viereck@gmail.com>",
     "homepage": "https://github.com/jviereck/regjsparser",
@@ -4305,7 +4297,7 @@
   },
   {
     "name": "semver",
-    "version": "7.7.4",
+    "version": "7.8.5",
     "license": "ISC",
     "author": "GitHub Inc.",
     "homepage": "git+https://github.com/npm/node-semver.git",
@@ -4377,7 +4369,7 @@
   },
   {
     "name": "shell-quote",
-    "version": "1.8.3",
+    "version": "1.10.0",
     "license": "MIT",
     "author": "James Halliday",
     "homepage": "https://github.com/ljharb/shell-quote",
@@ -4433,7 +4425,7 @@
   },
   {
     "name": "source-map",
-    "version": "0.5.7",
+    "version": "0.5.6",
     "license": "BSD-3-Clause",
     "author": "Nick Fitzgerald <nfitzgerald@mozilla.com>",
     "homepage": "https://github.com/mozilla/source-map",
@@ -4462,14 +4454,6 @@
     "author": null,
     "homepage": "https://github.com/evanw/node-source-map-support",
     "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2014 Evan Wallace\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
-  },
-  {
-    "name": "split-on-first",
-    "version": "1.1.0",
-    "license": "MIT",
-    "author": "Sindre Sorhus",
-    "homepage": "sindresorhus/split-on-first",
-    "licenseText": "MIT License\n\nCopyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   },
   {
     "name": "sprintf-js",
@@ -4526,14 +4510,6 @@
     "author": "Sam Day <me@samcday.com.au>",
     "homepage": "https://github.com/samcday/node-stream-buffer.git",
     "licenseText": null
-  },
-  {
-    "name": "strict-uri-encode",
-    "version": "2.0.0",
-    "license": "MIT",
-    "author": "Kevin Mårtensson",
-    "homepage": "kevva/strict-uri-encode",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) Kevin Martensson <kevinmartensson@gmail.com> (github.com/kevva)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
   },
   {
     "name": "string-width",
@@ -4625,7 +4601,7 @@
   },
   {
     "name": "tar",
-    "version": "7.5.13",
+    "version": "7.5.22",
     "license": "BlueOak-1.0.0",
     "author": "Isaac Z. Schlueter",
     "homepage": "https://github.com/isaacs/node-tar.git",
@@ -4761,7 +4737,7 @@
   },
   {
     "name": "undici",
-    "version": "6.25.0",
+    "version": "6.28.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://undici.nodejs.org",
@@ -4817,11 +4793,11 @@
   },
   {
     "name": "update-browserslist-db",
-    "version": "1.2.3",
+    "version": "1.3.3",
     "license": "MIT",
-    "author": "Andrey Sitnik <andrey@sitnik.ru>",
+    "author": "Andrey Sitnik <andrey@sitnik.es>",
     "homepage": "browserslist/update-db",
-    "licenseText": "The MIT License (MIT)\n\nCopyright 2022 Andrey Sitnik <andrey@sitnik.ru> and other contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+    "licenseText": "The MIT License (MIT)\n\nCopyright 2022 Andrey Sitnik <andrey@sitnik.es> and other contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   },
   {
     "name": "use-latest-callback",
@@ -4857,11 +4833,11 @@
   },
   {
     "name": "uuid",
-    "version": "7.0.3",
+    "version": "11.1.1",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/uuidjs/uuid.git",
-    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2010-2016 Robert Kieffer and other contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+    "licenseText": "The MIT License (MIT)\n\nCopyright (c) 2010-2020 Robert Kieffer and other contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   },
   {
     "name": "validate-npm-package-name",
@@ -4985,7 +4961,7 @@
   },
   {
     "name": "ws",
-    "version": "6.2.3",
+    "version": "6.2.6",
     "license": "MIT",
     "author": "Einar Otto Stangvik <einaros@gmail.com> (http://2x.io)",
     "homepage": "https://github.com/websockets/ws",
@@ -4993,7 +4969,7 @@
   },
   {
     "name": "ws",
-    "version": "8.20.0",
+    "version": "8.21.3",
     "license": "MIT",
     "author": "Einar Otto Stangvik <einaros@gmail.com> (http://2x.io)",
     "homepage": "https://github.com/websockets/ws",
@@ -5001,7 +4977,7 @@
   },
   {
     "name": "ws",
-    "version": "7.5.10",
+    "version": "7.5.13",
     "license": "MIT",
     "author": "Einar Otto Stangvik <einaros@gmail.com> (http://2x.io)",
     "homepage": "https://github.com/websockets/ws",
