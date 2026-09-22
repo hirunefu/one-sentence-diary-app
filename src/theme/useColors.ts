@@ -1,10 +1,11 @@
-import { useColorScheme } from 'react-native';
+import { useColorScheme, type ColorSchemeName } from 'react-native';
 import { lightColors, darkColors, type Colors } from './colors';
 import { useSettings } from '../contexts/SettingsContext';
 
 function resolveScheme(
   preference: 'system' | 'light' | 'dark',
-  systemScheme: 'light' | 'dark' | null | undefined
+  // RN 0.83+ can also report 'unspecified'; anything but 'dark' resolves to light.
+  systemScheme: ColorSchemeName | null | undefined
 ): 'light' | 'dark' {
   if (preference === 'light') return 'light';
   if (preference === 'dark') return 'dark';
