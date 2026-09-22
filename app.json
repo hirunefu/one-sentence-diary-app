@@ -45,7 +45,8 @@
           "faceIDPermission": "アプリのロックを解除するために使用します"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font"
     ]
   }
 }
