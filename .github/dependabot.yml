@@ -15,6 +15,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/jest"
         update-types: ["version-update:semver-major"]
+      # Exact pins that must equal another package's version: the preset
+      # matches react-native (whose peer on it is exact) and the renderer
+      # matches react. A standalone bump of either breaks `npm ci` with
+      # ERESOLVE, so they only move together with the SDK upgrade.
+      - dependency-name: "@react-native/jest-preset"
+      - dependency-name: "react-test-renderer"
 
   - package-ecosystem: github-actions
     directory: "/"
