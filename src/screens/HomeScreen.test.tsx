@@ -138,6 +138,26 @@ describe('HomeScreen Milestone celebration', () => {
     expect(screen.queryByTestId('celebration')).toBeNull();
   });
 
+  test('a new Longest streak alone is told in place and in the save announcement', async () => {
+    // An earlier stretch of 10, a gap, and 10 days up to yesterday: today makes 11.
+    await writeBeforeLaunch([
+      ...Array.from({ length: 10 }, (_, i) => -13 - i),
+      ...Array.from({ length: 10 }, (_, i) => -1 - i),
+    ]);
+    await openHome();
+    await saveToday('eleventh day');
+
+    expect(announce).toHaveBeenLastCalledWith(
+      '保存しました。11日連続。いちばん長く続いています。これまでの最長記録は、10日でした。'
+    );
+    await wait(SAVED_FEEDBACK_MS);
+    expect(screen.getByTestId('longest-today')).toBeTruthy();
+    expect(screen.queryByTestId('celebration')).toBeNull();
+    expect(mockRemind).toHaveBeenCalledTimes(1);
+    // Announced once, with the save.
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
   // The E2E flows check that no celebration appeared once the saved feedback
   // is over, which only holds while it comes first.
   test.each([

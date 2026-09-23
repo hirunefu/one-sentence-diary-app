@@ -15,6 +15,7 @@ let mockAppActive = true;
 jest.mock('./useAppActive', () => ({ useAppActive: () => mockAppActive }));
 
 import { AFTER_CLOSE_PAUSE_MS, revealDelayMs, useCelebration } from './useCelebration';
+import { STREAK_IN_PLACE_MS } from '../components/StreakDisplay';
 import { EntriesProvider, useEntries } from '../contexts/EntriesContext';
 import type { DiaryDatabase } from '../db/database';
 import { openTestDatabase } from '../db/testDatabase';
@@ -32,11 +33,14 @@ async function writeBeforeLaunch(offsets: number[]) {
 
 async function launch(enabled = true) {
   const hook = await renderHook(
-    ({ enabled }: { enabled: boolean }) => ({
+    ({ enabled, todayStr }: { enabled: boolean; todayStr?: string }) => ({
       entries: useEntries(),
-      celebration: useCelebration({ enabled, todayStr: today() }),
+      celebration: useCelebration({ enabled, todayStr: todayStr ?? today() }),
     }),
-    { wrapper: EntriesProvider, initialProps: { enabled } }
+    {
+      wrapper: EntriesProvider,
+      initialProps: { enabled } as { enabled: boolean; todayStr?: string },
+    }
   );
   await waitFor(() => expect(hook.result.current.entries.ready).toBe(true));
   return hook;
@@ -233,5 +237,83 @@ describe('useCelebration', () => {
     await write(hook, 0);
     await act(async () => hook.result.current.celebration.afterCelebration(remind));
     expect(remind).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useCelebration, a new Longest streak alone', () => {
+  // An earlier stretch of 10, a gap, and a current Streak of 10 ending yesterday:
+  // saving today makes 11, past the Longest streak but not a Milestone.
+  const EARLIER_AND_CURRENT = [
+    ...Array.from({ length: 10 }, (_, i) => -13 - i),
+    ...Array.from({ length: 10 }, (_, i) => -1 - i),
+  ];
+  const longest = (hook: Hook) => {
+    const l = hook.result.current.celebration.longestToday;
+    return l && `${l.previousLongest}@${l.streak}`;
+  };
+
+  beforeEach(async () => {
+    jest.useFakeTimers();
+    await AsyncStorage.clear();
+    mockSharedDb = openTestDatabase();
+    mockReduceMotion = false;
+    mockScreenReader = false;
+    mockAppActive = true;
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    mockSharedDb = null;
+  });
+
+  test('is told in place once the number settles, never on the full screen', async () => {
+    await writeBeforeLaunch(EARLIER_AND_CURRENT);
+    const hook = await launch();
+    await write(hook, 0);
+    expect(hook.result.current.celebration.longestDue?.previousLongest).toBe(10);
+    expect(hook.result.current.celebration.due).toBe(false);
+    await wait(STREAK_IN_PLACE_MS - 1);
+    expect(longest(hook)).toBeNull();
+    await wait(1);
+    expect(longest(hook)).toBe('10@11');
+    await wait(5000);
+    expect(shown(hook)).toBeNull();
+  });
+
+  test('does not hold the backup reminder back', async () => {
+    await writeBeforeLaunch(EARLIER_AND_CURRENT);
+    const hook = await launch();
+    const remind = jest.fn();
+    await write(hook, 0);
+    await act(async () => hook.result.current.celebration.afterCelebration(remind));
+    expect(remind).toHaveBeenCalledTimes(1);
+  });
+
+  test('is told once: not again after a restart, and gone the next day', async () => {
+    await writeBeforeLaunch(EARLIER_AND_CURRENT);
+    const first = await launch();
+    await write(first, 0);
+    await wait(STREAK_IN_PLACE_MS);
+    expect(longest(first)).toBe('10@11');
+
+    await first.rerender({ enabled: true, todayStr: addDays(today(), 1) });
+    expect(longest(first)).toBeNull();
+    await first.unmount();
+
+    const again = await launch();
+    await wait(5000);
+    expect(longest(again)).toBeNull();
+    expect(again.result.current.celebration.longestDue).toBeNull();
+  });
+
+  test('waits for Home when today is written from History', async () => {
+    await writeBeforeLaunch(EARLIER_AND_CURRENT);
+    const hook = await launch(false);
+    await write(hook, 0);
+    await wait(5000);
+    expect(longest(hook)).toBeNull();
+
+    await hook.rerender({ enabled: true });
+    await wait(STREAK_IN_PLACE_MS);
+    expect(longest(hook)).toBe('10@11');
   });
 });

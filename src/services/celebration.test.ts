@@ -273,6 +273,14 @@ describe('Milestones', () => {
     expect(diary.streak()).toBe(8);
   });
 
+  test('after an import, writing the day that reaches the next Milestone tells it', () => {
+    const diary = new Diary(TODAY);
+    diary.toHistory().importDates(daysBefore(TODAY, 1, 29)).toHome();
+    expect(diary.streak()).toBe(29);
+    diary.write(0);
+    expect(diary.told()).toEqual(['30/-@30']);
+  });
+
   test('an import that leaves the Streak as it was does not swallow a pending Milestone', () => {
     const diary = savedDaily(2);
     diary.told();

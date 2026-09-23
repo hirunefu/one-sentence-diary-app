@@ -4,8 +4,8 @@ import { useEntries } from '../contexts/EntriesContext';
 import { STREAK_IN_PLACE_MS } from '../components/StreakDisplay';
 import {
   decideCelebration,
-  type Celebration,
   type CelebrationLedger,
+  type MilestoneCelebration,
 } from '../services/celebration';
 import { useAppActive } from './useAppActive';
 import { useReduceMotion } from './useReduceMotion';
@@ -25,16 +25,30 @@ export function revealDelayMs(o: { reduceMotion: boolean; screenReader: boolean 
   return STREAK_IN_PLACE_MS + REVEAL_PAUSE_MS;
 }
 
-type Showing = { celebration: Celebration; next: CelebrationLedger; told: boolean };
+type Showing = { celebration: MilestoneCelebration; next: CelebrationLedger; told: boolean };
 
-// Home's full-screen celebration of a Milestone or a new Longest streak.
-// Decides from the Entries, today and the ledger on every render; shows a due
-// celebration only while Home is in front (`enabled`) and the app is active;
-// counts it as told once it has been seen (at rest, or closed).
+// A new Longest streak on a day that is not a Milestone: told by a quiet line
+// on Home rather than the full screen, which stays for Milestones.
+export type LongestToday = {
+  // One per stretch and length, to announce it once.
+  key: string;
+  streak: number;
+  previousLongest: number;
+};
+
+// Home's celebrations: the full screen for a Milestone, a quiet line for a new
+// Longest streak alone. Decides from the Entries, today and the ledger on every
+// render; shows a due celebration only while Home is in front (`enabled`) and
+// the app is active; counts it as told once it has been seen (the full screen
+// at rest or closed, the line shown).
 export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayStr: string }): {
-  // A celebration is waiting or on screen.
+  // A full-screen celebration is waiting or on screen.
   due: boolean;
-  showing: Celebration | null;
+  showing: MilestoneCelebration | null;
+  // A new Longest streak alone, decided but not yet shown.
+  longestDue: LongestToday | null;
+  // A new Longest streak alone, shown on Home for the rest of the day.
+  longestToday: LongestToday | null;
   // The entrance came to rest.
   settled: () => void;
   // Closed with 閉じる or Back.
@@ -60,7 +74,22 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
     [ready, datesKey, todayStr, ledger]
   );
 
+  const due = decision?.celebration ?? null;
+  const milestoneDue = due && due.milestone !== null ? (due as MilestoneCelebration) : null;
+  const longestDue = useMemo<LongestToday | null>(
+    () =>
+      due && due.milestone === null && due.previousLongest !== null
+        ? {
+            key: `${due.stretchStart}@${due.streak}`,
+            streak: due.streak,
+            previousLongest: due.previousLongest,
+          }
+        : null,
+    [due]
+  );
+
   const [showing, setShowing] = useState<Showing | null>(null);
+  const [longestToday, setLongestToday] = useState<(LongestToday & { date: string }) | null>(null);
   const showingRef = useRef(showing);
   useLayoutEffect(() => {
     showingRef.current = showing;
@@ -72,17 +101,32 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
     if (decision && !decision.celebration) commit(decision.next);
   }, [decision, commit]);
 
-  // A due celebration waits for Home in front and the in-place celebration.
+  // A due Milestone waits for Home in front and the in-place celebration.
   useEffect(() => {
-    if (!enabled || !appActive || showing || !decision?.celebration) return;
-    const due = decision;
+    if (!enabled || !appActive || showing || !milestoneDue || !decision) return;
+    const { next } = decision;
     const timer = setTimeout(() => {
       Keyboard.dismiss();
-      setShowing({ celebration: due.celebration!, next: due.next, told: false });
+      setShowing({ celebration: milestoneDue, next, told: false });
     }, revealDelayMs({ reduceMotion, screenReader }));
     // Leaving Home, the background, a lock or a newer state: nothing is told.
     return () => clearTimeout(timer);
-  }, [enabled, appActive, showing, decision, reduceMotion, screenReader]);
+  }, [enabled, appActive, showing, milestoneDue, decision, reduceMotion, screenReader]);
+
+  // A new Longest streak alone joins the in-place celebration once the number
+  // has settled; being shown on Home in the foreground counts as told.
+  useEffect(() => {
+    if (!enabled || !appActive || !longestDue || !decision) return;
+    const { next } = decision;
+    const timer = setTimeout(
+      () => {
+        setLongestToday({ ...longestDue, date: todayStr });
+        commit(next);
+      },
+      reduceMotion ? 0 : STREAK_IN_PLACE_MS
+    );
+    return () => clearTimeout(timer);
+  }, [enabled, appActive, longestDue, decision, todayStr, reduceMotion, commit]);
 
   // Home left while it is showing (only by navigation from code, since it
   // covers the tabs): hide it. If not yet told, it stays due.
@@ -110,8 +154,9 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
     setShowing(null);
   }, [tell]);
 
-  // The backup reminder must not open over the celebration.
-  const busy = showing !== null || !!decision?.celebration;
+  // The backup reminder must not open over the full screen. The quiet line
+  // stays on Home, so it holds nothing back.
+  const busy = showing !== null || milestoneDue !== null;
   const busyRef = useRef(busy);
   useLayoutEffect(() => {
     busyRef.current = busy;
@@ -137,6 +182,9 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
   return {
     due: busy,
     showing: showing?.celebration ?? null,
+    longestDue,
+    // Only for the day it was told on.
+    longestToday: longestToday && longestToday.date === todayStr ? longestToday : null,
     settled,
     close,
     afterCelebration,

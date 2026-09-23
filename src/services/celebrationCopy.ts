@@ -1,7 +1,13 @@
-import type { Celebration } from './celebration';
+import type { MilestoneCelebration } from './celebration';
 
-// What the full-screen celebration says. Calm and without pressure: no
-// exclamation marks, no next goal, nothing about tomorrow.
+// What a celebration says. Calm, informational feedback about the writer's own
+// progress (not controlling praise):
+// - no exclamation marks, no next goal, nothing about tomorrow;
+// - no 「あなた」 (Apple's Japanese HIG: avoid possessive pronouns);
+// - no requests such as 「この調子で」 or 「続けましょう」, no comparison with others;
+// - never claim a habit has formed (「習慣になりました」): habits form gradually
+//   and at very different speeds (Lally et al. 2010);
+// - every line has a 「、」, where it can wrap at large font sizes.
 export type CelebrationCopy = {
   // The big number: always the current Streak, so it matches Home.
   number: string;
@@ -14,7 +20,7 @@ export type CelebrationCopy = {
 };
 
 const MILESTONES: Record<number, { headline: string; line: string }> = {
-  3: { headline: '3日、続きました。', line: '一文ずつ、あなたのペースで。' },
+  3: { headline: '3日、続きました。', line: '一文ずつ、自分のペースで。' },
   7: { headline: '1週間、続きました。', line: '毎日の一文が、ここに残っています。' },
   14: { headline: '2週間、続きました。', line: '書くことが、日々になじんできました。' },
   30: { headline: 'ひと月、続きました。', line: '一文ずつ、日々がかたちになりました。' },
@@ -22,6 +28,7 @@ const MILESTONES: Record<number, { headline: string; line: string }> = {
   100: { headline: '100日、続きました。', line: 'どの一文も、その日だけのことばです。' },
   200: { headline: '200日、続きました。', line: 'いくつもの季節を、一文ずつ。' },
   365: { headline: '1年、続きました。', line: '1年分の日々が、ここにあります。' },
+  1000: { headline: '1000日、続きました。', line: '1000日分の一文が、ここにあります。' },
 };
 
 function milestoneCopy(milestone: number): { headline: string; line: string } {
@@ -33,18 +40,11 @@ function milestoneCopy(milestone: number): { headline: string; line: string } {
   );
 }
 
-export function celebrationCopy(c: Celebration): CelebrationCopy {
-  const { headline, line } =
-    c.milestone !== null
-      ? milestoneCopy(c.milestone)
-      : {
-          headline: 'いちばん長く続いています。',
-          line: `これまでの最長記録は${c.previousLongest}日でした。`,
-        };
+// The full-screen celebration of a Milestone.
+export function celebrationCopy(c: MilestoneCelebration): CelebrationCopy {
+  const { headline, line } = milestoneCopy(c.milestone);
   const longest =
-    c.milestone !== null && c.previousLongest !== null
-      ? `これまでの最長記録（${c.previousLongest}日）を超えました。`
-      : null;
+    c.previousLongest !== null ? `最長記録だった${c.previousLongest}日を、超えました。` : null;
   return {
     number: String(c.streak),
     headline,
@@ -52,4 +52,16 @@ export function celebrationCopy(c: Celebration): CelebrationCopy {
     longest,
     spoken: `${c.streak}日連続。${headline}${line}${longest ?? ''}`,
   };
+}
+
+// The quiet line on Home for a day that passes the Longest streak without
+// reaching a Milestone.
+export function longestTodayCopy(previousLongest: number): {
+  headline: string;
+  line: string;
+  spoken: string;
+} {
+  const headline = 'いちばん長く続いています。';
+  const line = `これまでの最長記録は、${previousLongest}日でした。`;
+  return { headline, line, spoken: `${headline}${line}` };
 }
