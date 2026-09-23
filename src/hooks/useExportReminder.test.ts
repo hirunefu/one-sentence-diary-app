@@ -133,6 +133,27 @@ describe('useExportReminder', () => {
     );
   });
 
+  test('a reminder started before the setting was turned off does not prompt', async () => {
+    await AsyncStorage.setItem(
+      'exportReminder.lastExportedAt',
+      addDays(today(), -8)
+    );
+    const { result, rerender } = await renderHook(() => useExportReminder());
+    // Held by a save handler (or queued behind a celebration) from before.
+    const remindAfterSave = result.current.remindAfterSave;
+    mockSettings = { ...DEFAULT_SETTINGS, exportReminderEnabled: false };
+    await rerender({});
+
+    let settled = false;
+    await act(async () => {
+      void remindAfterSave(today()).then(() => {
+        settled = true;
+      });
+    });
+    await waitFor(() => expect(settled || alertSpy.mock.calls.length > 0).toBe(true));
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
   test('does not prompt when the reminder is disabled', async () => {
     mockSettings = { ...DEFAULT_SETTINGS, exportReminderEnabled: false };
     await AsyncStorage.setItem(

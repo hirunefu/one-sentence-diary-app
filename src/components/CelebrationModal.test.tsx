@@ -9,7 +9,7 @@ jest.mock('../theme/useColors', () => {
 let mockReduceMotion = false;
 jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduceMotion }));
 
-import { CelebrationModal, ENTRANCE_MS, EXIT_MS } from './CelebrationModal';
+import { CelebrationModal, ENTRANCE_MS, EXIT_MS, PAGE_MS } from './CelebrationModal';
 import type { Celebration } from '../services/celebration';
 
 const seven: Celebration = {
@@ -55,6 +55,12 @@ describe('CelebrationModal', () => {
     ).toBeTruthy();
   });
 
+  test('a line that has to wrap breaks between phrases, not inside a word', async () => {
+    await show();
+    expect(screen.getByText('毎日の一文が、')).toBeTruthy();
+    expect(screen.getByText('ここに残っています。')).toBeTruthy();
+  });
+
   test('a new Longest streak on the same day is one more line', async () => {
     await show({ ...seven, streak: 14, milestone: 14, previousLongest: 13 });
     expect(screen.getByText('これまでの最長記録（13日）を超えました。')).toBeTruthy();
@@ -68,11 +74,18 @@ describe('CelebrationModal', () => {
     expect(onSettled).toHaveBeenCalledTimes(1);
   });
 
-  test('with reduce motion, the first frame is the end state', async () => {
+  test('with reduce motion nothing moves, and the page only fades in', async () => {
     mockReduceMotion = true;
     const { onSettled } = await show();
+    expect(screen.getByTestId('celebration-number')).toHaveStyle({
+      opacity: 1,
+      transform: [{ translateY: 0 }, { scale: 1 }],
+    });
+    expect(onSettled).not.toHaveBeenCalled();
+
+    // The fade also hides the first layout of the window.
+    await wait(PAGE_MS + 50);
     expect(onSettled).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId('celebration-number')).toHaveStyle({ opacity: 1 });
     expect(screen.getByTestId('celebration')).toHaveStyle({ opacity: 1 });
   });
 
@@ -83,8 +96,30 @@ describe('CelebrationModal', () => {
     await rerender(
       <CelebrationModal celebration={seven} onSettled={onSettled} onClose={onClose} />
     );
+    await wait(PAGE_MS + 50);
     expect(onSettled).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('celebration-number')).toHaveStyle({ opacity: 1 });
+  });
+
+  test('stays until closed: neither time nor a tap elsewhere closes it', async () => {
+    const { onClose } = await show();
+    await wait(ENTRANCE_MS + 60_000);
+    await fireEvent.press(screen.getByTestId('celebration-number'));
+    await fireEvent.press(screen.getByTestId('celebration'));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByTestId('celebration')).toBeTruthy();
+  });
+
+  test('閉じる takes no press before it has appeared; Back works from the start', async () => {
+    const { onClose } = await show();
+    await wait(100);
+    await fireEvent.press(screen.getByTestId('celebration-close'));
+    await wait(EXIT_MS + 50);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await fireEvent(screen.getByTestId('celebration'), 'requestClose');
+    await wait(EXIT_MS + 50);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   test('閉じる closes it once, after the exit', async () => {
@@ -100,7 +135,7 @@ describe('CelebrationModal', () => {
   test('closed during the entrance, it fades out without coming to rest', async () => {
     const { onSettled, onClose } = await show();
     await wait(100);
-    await fireEvent.press(screen.getByTestId('celebration-close'));
+    await fireEvent(screen.getByTestId('celebration'), 'requestClose');
     await wait(ENTRANCE_MS + 1000);
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onSettled).not.toHaveBeenCalled();
@@ -125,3 +160,4 @@ describe('CelebrationModal', () => {
     expect(announce).not.toHaveBeenCalled();
   });
 });
+

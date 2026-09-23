@@ -24,6 +24,7 @@ import type { DiaryDatabase } from '../db/database';
 import { openTestDatabase } from '../db/testDatabase';
 import { upsertEntry } from '../repositories/entriesRepository';
 import { AFTER_CLOSE_PAUSE_MS, revealDelayMs } from '../hooks/useCelebration';
+import { ENTRANCE_MS } from '../components/CelebrationModal';
 import { addDays, today } from '../utils/date';
 import { HomeScreen, SAVED_FEEDBACK_MS } from './HomeScreen';
 
@@ -118,6 +119,8 @@ describe('HomeScreen Milestone celebration', () => {
     await openHome();
     await saveToday('third day');
     await wait(SAVED_FEEDBACK_MS + 1000);
+    // Once it has come to rest, 閉じる takes the press.
+    await wait(ENTRANCE_MS);
     expect(mockRemind).not.toHaveBeenCalled();
 
     await fireEvent.press(screen.getByTestId('celebration-close'));

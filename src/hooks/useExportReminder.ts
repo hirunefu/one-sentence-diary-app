@@ -29,6 +29,12 @@ export function useExportReminder(): {
   useEffect(() => {
     entriesRef.current = entries;
   }, [entries]);
+  // The same holds for the settings: a reminder queued behind a celebration
+  // must follow a setting changed meanwhile.
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const runExport = useCallback(async () => {
     await exportEntries(entriesRef.current, Constants.expoConfig?.version ?? '1.0.0');
@@ -81,8 +87,8 @@ export function useExportReminder(): {
           {
             savedDate,
             todayStr: today(),
-            enabled: settings.exportReminderEnabled,
-            intervalDays: settings.exportReminderIntervalDays,
+            enabled: settingsRef.current.exportReminderEnabled,
+            intervalDays: settingsRef.current.exportReminderIntervalDays,
           }
         );
       } catch (e) {
@@ -90,11 +96,7 @@ export function useExportReminder(): {
         console.error('export reminder failed', e);
       }
     },
-    [
-      promptExport,
-      settings.exportReminderEnabled,
-      settings.exportReminderIntervalDays,
-    ]
+    [promptExport]
   );
 
   return { remindAfterSave, exportNow };

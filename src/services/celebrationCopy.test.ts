@@ -43,7 +43,7 @@ describe('celebrationCopy', () => {
   test('a new Longest streak alone has its own headline and line', () => {
     const copy = celebrationCopy(celebration({ streak: 11, milestone: null, previousLongest: 10 }));
     expect(copy.number).toBe('11');
-    expect(copy.headline).toBe('これまででいちばん長く続いています。');
+    expect(copy.headline).toBe('いちばん長く続いています。');
     expect(copy.line).toBe('これまでの最長記録は10日でした。');
     expect(copy.longest).toBeNull();
   });

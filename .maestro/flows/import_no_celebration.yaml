@@ -21,6 +21,15 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "tab-home"
 - assertVisible: "7"
+# A celebration would come about 1 s after Home is in front: give it the time,
+# then check that none came.
+- extendedWaitUntil:
+    visible:
+      id: "celebration"
+    timeout: 3000
+    optional: true
+- assertNotVisible:
+    id: "celebration"
 - tapOn:
     id: "entry-input"
 - inputText: "after import"
