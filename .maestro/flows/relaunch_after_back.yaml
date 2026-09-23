@@ -1,0 +1,33 @@
+appId: com.hirunefu.onesentencediary
+---
+# Regression: leaving the app with Back finishes the activity but keeps the
+# process (and its JS runtime) alive. Reopening used to open a second
+# expo-sqlite handle to the same file; once the first handle was garbage
+# collected it closed the shared connection, so from the second reopen on
+# every query failed and Home showed "データベースを開けませんでした".
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "entry-input"
+- inputText: "survives back and reopen"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+
+- repeat:
+    times: 4
+    commands:
+      - pressKey: back
+      # A still-focused input can keep the keyboard up, in which case the
+      # first Back only hides it.
+      - runFlow:
+          when:
+            visible:
+              id: "entry-input"
+          commands:
+            - pressKey: back
+      - launchApp:
+          stopApp: false
+      - assertVisible: "survives back and reopen"
+      - assertNotVisible: "データベースを開けませんでした。アプリを再起動してください。"

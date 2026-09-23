@@ -18,7 +18,26 @@ export interface DiaryDatabase {
   closeAsync(): Promise<void>;
 }
 
-export async function openDatabase(): Promise<DiaryDatabase> {
+// One connection per JS runtime. On Android, leaving with Back finishes the
+// activity but keeps the process and its JS runtime, and the next launch
+// mounts the React tree again. Opening diary.db a second time would get
+// expo-sqlite's cached native connection behind a second JS wrapper; once the
+// first wrapper is garbage collected it closes that shared connection, and
+// every later query fails.
+let opening: Promise<DiaryDatabase> | null = null;
+
+export function openDatabase(): Promise<DiaryDatabase> {
+  if (!opening) {
+    // Don't cache a failure, so the retry on the Home screen really retries.
+    opening = openConnection().catch((e: unknown) => {
+      opening = null;
+      throw e;
+    });
+  }
+  return opening;
+}
+
+async function openConnection(): Promise<DiaryDatabase> {
   const db = await SQLite.openDatabaseAsync('diary.db');
   await runMigrations((sql) => db.execAsync(sql));
   return {
