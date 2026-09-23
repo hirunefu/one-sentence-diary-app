@@ -12,6 +12,8 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
@@ -58,6 +60,7 @@ export function HomeScreen() {
   const { ready, initError, retryInit, getByDate, upsert, streak, entries } = useEntries();
   const { remindAfterSave } = useExportReminder();
   const reduceMotion = useReduceMotion();
+  const isFocused = useIsFocused();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -65,7 +68,8 @@ export function HomeScreen() {
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 保存ボタンのアニメーション
-  // bgPhase: 0 = primary (有効), 1 = disabled (無効/保存中), 2 = success (保存しました)
+  // bgPhase: 0 = primary (有効), 1 = disabled (無効/保存中), 2 = saved (保存しました)
+  // The saved state stays monochrome (primary); the checkmark carries it.
   const bgPhase = useRef(new Animated.Value(0)).current;
   const tapScale = useRef(new Animated.Value(1)).current;
 
@@ -193,11 +197,10 @@ export function HomeScreen() {
   };
 
   const buttonDisabled = saving || justSaved || isEmpty;
-  const buttonLabel = justSaved ? '✓ 保存しました' : '保存';
 
   const animatedBg = bgPhase.interpolate({
     inputRange: [0, 1, 2],
-    outputRange: [colors.primary, colors.disabled, colors.success],
+    outputRange: [colors.primary, colors.disabled, colors.primary],
   });
 
   return (
@@ -207,7 +210,7 @@ export function HomeScreen() {
           <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
           <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
         </View>
-        <StreakDisplay days={streak} last7={last7} />
+        <StreakDisplay days={streak} last7={last7} active={isFocused} />
       </View>
 
       <View style={styles.body}>
@@ -230,11 +233,41 @@ export function HomeScreen() {
             accessibilityState={{ disabled: buttonDisabled }}
             style={[styles.saveButton, { backgroundColor: animatedBg }]}
           >
-            <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>
+            {justSaved ? (
+              <SavedLabel color={colors.primaryText} reduceMotion={reduceMotion} />
+            ) : (
+              <Text style={[styles.buttonText, { color: colors.primaryText }]}>保存</Text>
+            )}
           </AnimatedPressable>
         </Animated.View>
       </View>
     </SafeAreaView>
+  );
+}
+
+// "保存しました" with a checkmark that pops in, so the saved state reads without
+// a colour change.
+function SavedLabel({ color, reduceMotion }: { color: string; reduceMotion: boolean }) {
+  const pop = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+  useEffect(() => {
+    if (reduceMotion) return;
+    const anim = Animated.spring(pop, {
+      toValue: 1,
+      friction: 5,
+      tension: 160,
+      useNativeDriver: true,
+    });
+    anim.start();
+    return () => anim.stop();
+  }, [pop, reduceMotion]);
+
+  return (
+    <View style={styles.savedRow}>
+      <Animated.View style={{ transform: [{ scale: pop }] }}>
+        <Ionicons name="checkmark" size={14} color={color} importantForAccessibility="no" />
+      </Animated.View>
+      <Text style={[styles.buttonText, { color }]}>保存しました</Text>
+    </View>
   );
 }
 
@@ -282,6 +315,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: typography.size.button,
     fontWeight: typography.weight.medium,
+  },
+  savedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
   },
   errorText: {
     marginBottom: space.lg,

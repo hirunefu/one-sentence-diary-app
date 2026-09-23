@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 jest.mock('../theme/useColors', () => {
   const { lightColors } = require('../theme/colors');
@@ -8,6 +8,9 @@ jest.mock('../theme/useColors', () => {
     useIsDark: () => false,
   };
 });
+
+let mockReduceMotion = false;
+jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduceMotion }));
 
 import { StreakDisplay } from './StreakDisplay';
 
@@ -63,5 +66,62 @@ describe('StreakDisplay', () => {
       <StreakDisplay days={7} last7={allRecorded('2026-04-28')} />
     );
     expect(getByLabelText('7日連続。直近7日のうち7日記録あり')).toBeTruthy();
+  });
+
+  describe('when the Streak grows', () => {
+    const weekEndingToday = (recordedToday: boolean) =>
+      Array.from({ length: 7 }, (_, i) => ({
+        date: `2026-04-${22 + i}`,
+        recorded: i < 6 || recordedToday,
+        isToday: i === 6,
+      }));
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      mockReduceMotion = false;
+    });
+    afterEach(() => jest.useRealTimers());
+
+    test('rolls from the old number to the new one and keeps only the new one', async () => {
+      const { queryByText, rerender } = await render(
+        <StreakDisplay days={6} last7={weekEndingToday(false)} />
+      );
+      await rerender(<StreakDisplay days={7} last7={weekEndingToday(true)} />);
+      // Mid-roll both numbers are drawn, but the outgoing one is hidden from
+      // screen readers, which only ever get the new number.
+      const hidden = { includeHiddenElements: true };
+      expect(queryByText('6', hidden)).toBeTruthy();
+      expect(queryByText('6')).toBeNull();
+      expect(queryByText('7')).toBeTruthy();
+
+      await act(() => jest.advanceTimersByTime(3000));
+      expect(queryByText('6', hidden)).toBeNull();
+      expect(queryByText('7')).toBeTruthy();
+    });
+
+    test('with reduce motion, shows the new number straight away', async () => {
+      mockReduceMotion = true;
+      const { queryByText, rerender } = await render(
+        <StreakDisplay days={6} last7={weekEndingToday(false)} />
+      );
+      await rerender(<StreakDisplay days={7} last7={weekEndingToday(true)} />);
+      expect(queryByText('6')).toBeNull();
+      expect(queryByText('7')).toBeTruthy();
+    });
+
+    test('while inactive, keeps the old number until the screen is shown again', async () => {
+      const { queryByText, rerender } = await render(
+        <StreakDisplay days={6} last7={weekEndingToday(false)} active={false} />
+      );
+      await rerender(<StreakDisplay days={7} last7={weekEndingToday(true)} active={false} />);
+      await act(() => jest.advanceTimersByTime(3000));
+      expect(queryByText('6')).toBeTruthy();
+      expect(queryByText('7')).toBeNull();
+
+      await rerender(<StreakDisplay days={7} last7={weekEndingToday(true)} active />);
+      await act(() => jest.advanceTimersByTime(3000));
+      expect(queryByText('6')).toBeNull();
+      expect(queryByText('7')).toBeTruthy();
+    });
   });
 });
