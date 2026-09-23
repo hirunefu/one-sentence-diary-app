@@ -10,6 +10,9 @@ type Props = {
   onChangeText: (text: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  // What the text field is, for screen readers (the placeholder disappears
+  // as soon as there is text).
+  accessibilityLabel?: string;
 };
 
 const WARNING_THRESHOLD = 20;
@@ -20,6 +23,7 @@ export function EntryInput({
   onChangeText,
   placeholder = '今日の一文を書く',
   autoFocus,
+  accessibilityLabel = '今日の一文',
 }: Props) {
   const colors = useColors();
 
@@ -63,6 +67,7 @@ export function EntryInput({
         placeholder={placeholder}
         placeholderTextColor={colors.textPlaceholder}
         autoFocus={autoFocus}
+        accessibilityLabel={accessibilityLabel}
         multiline
         textAlignVertical="top"
         style={[styles.input, { color: colors.text }]}

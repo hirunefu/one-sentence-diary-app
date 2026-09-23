@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 
 export type StreakDay = {
   date: string;
@@ -18,19 +19,28 @@ export function StreakDisplay({ days, last7 }: Props) {
   const colors = useColors();
   const scale = useRef(new Animated.Value(1)).current;
   const prevDaysRef = useRef(days);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
-    if (days > prevDaysRef.current) {
+    if (days > prevDaysRef.current && !reduceMotion) {
       Animated.sequence([
         Animated.timing(scale, { toValue: 1.18, duration: 140, useNativeDriver: true }),
         Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 4, tension: 80 }),
       ]).start();
     }
     prevDaysRef.current = days;
-  }, [days, scale]);
+  }, [days, scale, reduceMotion]);
+
+  const recordedCount = last7.filter((d) => d.recorded).length;
 
   return (
-    <View style={styles.container}>
+    // Read as one sentence by screen readers instead of a number, a suffix and
+    // seven unlabeled dots.
+    <View
+      style={styles.container}
+      accessible
+      accessibilityLabel={`${days}日連続。直近7日のうち${recordedCount}日記録あり`}
+    >
       <View style={styles.numRow}>
         <Animated.Text
           style={[
@@ -80,7 +90,7 @@ const styles = StyleSheet.create({
     lineHeight: typography.size.streakNum,
   },
   suffix: {
-    fontSize: 10,
+    fontSize: typography.size.caption,
   },
   dots: {
     flexDirection: 'row',

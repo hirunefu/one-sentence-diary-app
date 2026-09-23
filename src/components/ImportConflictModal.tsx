@@ -4,6 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ImportStrategy } from '../repositories/entriesRepository';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from './PressableScale';
+import { useReduceMotion } from '../hooks/useReduceMotion';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
+import { radius } from '../theme/radius';
 
 type Props = {
   visible: boolean;
@@ -36,12 +40,20 @@ export function ImportConflictModal({
 }: Props) {
   const colors = useColors();
   const [strategy, setStrategy] = useState<ImportStrategy>('overwrite');
+  const reduceMotion = useReduceMotion();
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType={reduceMotion ? 'none' : 'fade'}
+      onRequestClose={onCancel}
+    >
       <View style={styles.backdrop}>
         <View style={[styles.card, { backgroundColor: colors.background }]}>
-          <Text style={[styles.title, { color: colors.text }]}>インポート内容の確認</Text>
+          <Text accessibilityRole="header" style={[styles.title, { color: colors.text }]}>
+            インポート内容の確認
+          </Text>
 
           <Text style={[styles.summary, { color: colors.textMuted }]}>
             合計 {totalCount} 件 (新規 {newCount} / 重複 {conflictCount} / 不正 {invalidCount})
@@ -58,6 +70,9 @@ export function ImportConflictModal({
                 testID={`import-strategy-${opt.value}`}
                 key={opt.value}
                 onPress={() => setStrategy(opt.value)}
+                accessibilityRole="radio"
+                accessibilityLabel={`${opt.label}。${opt.description}`}
+                accessibilityState={{ checked: isSelected }}
                 style={[styles.row, { borderBottomColor: colors.divider }]}
               >
                 <View style={styles.rowText}>
@@ -100,18 +115,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
-    padding: 24,
+    padding: space.xl,
   },
   card: {
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: radius.lg,
+    padding: space.xl,
   },
-  title: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
-  summary: { fontSize: 14, marginBottom: 16 },
+  title: {
+    fontSize: typography.size.heading,
+    fontWeight: typography.weight.semibold,
+    marginBottom: space.sm,
+  },
+  summary: { fontSize: typography.size.button, marginBottom: space.lg },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.semibold,
+    marginBottom: space.xs,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -119,24 +138,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: space.md,
     borderBottomWidth: 1,
   },
-  rowText: { flex: 1, paddingRight: 12 },
-  label: { fontSize: 16 },
-  desc: { fontSize: 12, marginTop: 2 },
+  rowText: { flex: 1, paddingRight: space.md },
+  label: { fontSize: typography.size.title },
+  desc: { fontSize: typography.size.caption, marginTop: 2 },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 20,
-    gap: 12,
+    marginTop: space.xl,
+    gap: space.md,
   },
-  cancelBtn: { paddingVertical: 12, paddingHorizontal: 16 },
-  cancelText: { fontSize: 16 },
+  cancelBtn: { paddingVertical: space.md, paddingHorizontal: space.lg },
+  cancelText: { fontSize: typography.size.title },
   confirmBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: space.md,
+    paddingHorizontal: space.xl,
+    borderRadius: radius.md,
   },
-  confirmText: { fontSize: 16, fontWeight: '600' },
+  confirmText: { fontSize: typography.size.title, fontWeight: typography.weight.semibold },
 });

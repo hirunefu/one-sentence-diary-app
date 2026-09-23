@@ -18,6 +18,8 @@ export function TimelineRow({ entry, onPress }: Props) {
   return (
     <Pressable
       onPress={() => onPress(entry.date)}
+      accessibilityRole="button"
+      accessibilityLabel={`${Number(month)}月${Number(day)}日。${entry.text}`}
       style={({ pressed }) => [
         styles.row,
         { borderBottomColor: colors.divider },
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 14,
+    gap: space.md + 2,
     paddingVertical: space.md + 2,
     paddingHorizontal: space.lg + 2,
     borderBottomWidth: 1,

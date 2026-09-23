@@ -14,9 +14,9 @@ import {
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { PressableScale } from '../components/PressableScale';
-import { IS_E2E } from '../config/e2eMode';
 import { useEntries } from '../contexts/EntriesContext';
 import { useExportReminder } from '../hooks/useExportReminder';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import { today, addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
@@ -34,7 +34,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 // Material Design Standard easing (easeInOut) 相当の幅遷移
-function animateButtonLayout() {
+function animateButtonLayout(reduceMotion: boolean) {
+  if (reduceMotion) return;
   LayoutAnimation.configureNext({
     duration: LAYOUT_TRANSITION_MS,
     update: { type: 'easeInEaseOut' },
@@ -54,6 +55,7 @@ export function HomeScreen() {
   const colors = useColors();
   const { ready, initError, retryInit, getByDate, upsert, streak, entries } = useEntries();
   const { remindAfterSave } = useExportReminder();
+  const reduceMotion = useReduceMotion();
   const [text, setText] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -103,28 +105,30 @@ export function HomeScreen() {
     // two drivers, one per property.
     Animated.timing(bgPhase, {
       toValue: target,
-      duration: BG_TRANSITION_MS,
+      duration: reduceMotion ? 0 : BG_TRANSITION_MS,
       useNativeDriver: false,
     }).start();
-  }, [justSaved, isEmpty, bgPhase]);
+  }, [justSaved, isEmpty, bgPhase, reduceMotion]);
 
   const handlePressIn = useCallback(() => {
+    if (reduceMotion) return;
     Animated.spring(tapScale, {
       toValue: 0.96,
       useNativeDriver: true,
       speed: 50,
       bounciness: 0,
     }).start();
-  }, [tapScale]);
+  }, [tapScale, reduceMotion]);
 
   const handlePressOut = useCallback(() => {
+    if (reduceMotion) return;
     Animated.spring(tapScale, {
       toValue: 1,
       useNativeDriver: true,
       speed: 30,
       bounciness: 8,
     }).start();
-  }, [tapScale]);
+  }, [tapScale, reduceMotion]);
 
   if (initError) {
     return (
@@ -151,7 +155,7 @@ export function HomeScreen() {
   const handleChangeText = (next: string) => {
     setText(next);
     if (justSaved) {
-      animateButtonLayout();
+      animateButtonLayout(reduceMotion);
       setJustSaved(false);
     }
   };
@@ -162,11 +166,11 @@ export function HomeScreen() {
       // saving 中もラベルは "保存" のまま、disabled 状態だけが変わる (二重タップ防止)
       setSaving(true);
       await upsert(todayStr, text);
-      animateButtonLayout(); // "保存" → "✓ 保存しました" の幅変化を滑らかに
+      animateButtonLayout(reduceMotion); // "保存" → "✓ 保存しました" の幅変化を滑らかに
       setJustSaved(true);
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
       savedTimerRef.current = setTimeout(() => {
-        animateButtonLayout(); // "✓ 保存しました" → "保存"
+        animateButtonLayout(reduceMotion); // "✓ 保存しました" → "保存"
         setJustSaved(false);
       }, SAVED_FEEDBACK_MS);
       // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
@@ -198,11 +202,9 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.body}>
-        {/* Skip autoFocus under E2E: the soft keyboard would cover the
-            save button and bottom tab bar before Maestro can dismiss it,
-            and the asynchronous focus event makes hideKeyboard timing
-            flaky. Flows that need the keyboard tap entry-input explicitly. */}
-        <EntryInput value={text} onChangeText={handleChangeText} autoFocus={!IS_E2E} />
+        {/* No autoFocus: the soft keyboard would hide the streak and the tab
+            bar the moment Home opens. Tapping the input brings it up. */}
+        <EntryInput value={text} onChangeText={handleChangeText} />
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
@@ -214,6 +216,9 @@ export function HomeScreen() {
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             disabled={buttonDisabled}
+            accessibilityRole="button"
+            accessibilityLabel={buttonLabel}
+            accessibilityState={{ disabled: buttonDisabled }}
             style={[styles.saveButton, { backgroundColor: animatedBg }]}
           >
             <Text style={[styles.buttonText, { color: colors.primaryText }]}>{buttonLabel}</Text>

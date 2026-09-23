@@ -56,6 +56,7 @@ import { classifyEntries } from './importService';
 
 describe('classifyEntries', () => {
   const existingDates = new Set(['2026-04-29']);
+  const TODAY = '2026-05-01';
 
   test('有効・新規・重複・不正を正しく分類する', () => {
     const raw = [
@@ -69,7 +70,7 @@ describe('classifyEntries', () => {
       'not an object',
       null,
     ];
-    const r = classifyEntries(raw, existingDates);
+    const r = classifyEntries(raw, existingDates, TODAY);
     expect(r.newEntries).toEqual([
       { date: '2026-04-30', text: 'new', createdAt: 1, updatedAt: 1 },
     ]);
@@ -83,7 +84,8 @@ describe('classifyEntries', () => {
     const text = 'あ'.repeat(140);
     const r = classifyEntries(
       [{ date: '2026-04-30', text, createdAt: 1, updatedAt: 1 }],
-      new Set()
+      new Set(),
+      TODAY
     );
     expect(r.newEntries).toHaveLength(1);
   });
@@ -92,7 +94,8 @@ describe('classifyEntries', () => {
     const text = '😀'.repeat(140);
     const r = classifyEntries(
       [{ date: '2026-04-30', text, createdAt: 1, updatedAt: 1 }],
-      new Set()
+      new Set(),
+      TODAY
     );
     expect(r.newEntries).toHaveLength(1);
   });
@@ -100,14 +103,29 @@ describe('classifyEntries', () => {
   test('CR (\\r) も改行として不正扱い', () => {
     const r = classifyEntries(
       [{ date: '2026-04-30', text: 'a\rb', createdAt: 1, updatedAt: 1 }],
-      new Set()
+      new Set(),
+      TODAY
     );
     expect(r.newEntries).toHaveLength(0);
     expect(r.invalid).toBe(1);
   });
 
+  test('今日より後の日付の記録は不正扱い（今日は有効）', () => {
+    const r = classifyEntries(
+      [
+        { date: '2026-05-01', text: 'today', createdAt: 1, updatedAt: 1 },
+        { date: '2026-05-02', text: 'tomorrow', createdAt: 1, updatedAt: 1 },
+        { date: '2027-01-01', text: 'next year', createdAt: 1, updatedAt: 1 },
+      ],
+      new Set(),
+      TODAY
+    );
+    expect(r.newEntries.map((e) => e.date)).toEqual(['2026-05-01']);
+    expect(r.invalid).toBe(2);
+  });
+
   test('空配列を渡すと全部 0', () => {
-    const r = classifyEntries([], new Set());
+    const r = classifyEntries([], new Set(), TODAY);
     expect(r.newEntries).toEqual([]);
     expect(r.conflicts).toEqual([]);
     expect(r.invalid).toBe(0);

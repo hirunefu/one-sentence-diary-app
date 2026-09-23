@@ -77,6 +77,8 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
   const upsert = useCallback(
     async (date: string, text: string) => {
       if (!db) throw new Error('DB not ready');
+      // Only today or a past day can have an Entry (see CONTEXT.md).
+      if (date > today()) throw new Error(`Cannot write an Entry for a future day: ${date}`);
       await repoUpsert(db, { date, text, now: Date.now() });
       await refresh(db);
     },

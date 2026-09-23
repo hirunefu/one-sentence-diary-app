@@ -1,6 +1,7 @@
 export const typography = {
   size: {
     body: 22,
+    heading: 18,     // screen and dialog headings
     streakNum: 18,
     title: 16,
     cardBody: 16,
