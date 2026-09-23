@@ -9,6 +9,7 @@ import type { Stretch } from '../utils/streak';
 
 // What the user has already been told. App state, not diary data: it stays out
 // of the export JSON and out of the settings, like the backup reminder's state.
+// See docs/adr/0001-celebration-ledger.md.
 const KEY = 'celebration.ledger';
 const VERSION = 1;
 
