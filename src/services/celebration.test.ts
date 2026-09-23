@@ -1,5 +1,6 @@
 import {
   acknowledge,
+  acknowledgeImport,
   decideCelebration,
   EMPTY_LEDGER,
   MAX_REMEMBERED_STRETCHES,
@@ -82,8 +83,9 @@ class Diary {
     return again;
   }
   importDates(dates: string[]): this {
+    const before = this.sorted();
     for (const d of dates) this.dates.add(d);
-    this.ledger = acknowledge(this.sorted(), this.today, this.ledger!);
+    this.ledger = acknowledgeImport(before, this.sorted(), this.today, this.ledger!);
     this.decide();
     return this;
   }
@@ -271,6 +273,23 @@ describe('Milestones', () => {
     expect(diary.streak()).toBe(8);
   });
 
+  test('an import that leaves the Streak as it was does not swallow a pending Milestone', () => {
+    const diary = savedDaily(2);
+    diary.told();
+    diary.toHistory().write(-2);
+    diary.importDates(daysBefore(addDays(diary.today, -40), 0, 4)).toHome();
+    expect(diary.told()).toEqual(['3/-@3']);
+  });
+
+  test('an import that extends the Streak counts it as told, pending Milestone included', () => {
+    const diary = savedDaily(2);
+    diary.told();
+    diary.toHistory().write(-2);
+    diary.importDates(daysBefore(diary.today, 3, 9)).toHome();
+    expect(diary.streak()).toBe(10);
+    expect(diary.told()).toEqual([]);
+  });
+
   test('a celebration not yet seen survives a restart', () => {
     let diary = savedDaily(5);
     diary.told();
@@ -403,8 +422,44 @@ describe('Longest streak', () => {
     diary.told();
     diary.toHistory();
     for (let i = 30; i < 42; i++) diary.write(-i);
-    diary.toHome();
+    diary.toHome().nextDay().write(0);
+    expect(diary.streak()).toBe(16);
     expect(diary.told()).toEqual([]);
+  });
+
+  test('passing the earlier Longest streak is not told while a longer one was backfilled', () => {
+    const diary = withEarlierStretch(10, 30);
+    diary.write(0);
+    for (let i = 0; i < 4; i++) diary.nextDay().write(0);
+    diary.told();
+    diary.toHistory().write(-5).write(-6);
+    for (let i = 60; i < 80; i++) diary.write(-i);
+    for (let i = 7; i <= 11; i++) diary.write(-i);
+    diary.toHome();
+    expect(diary.told()).toEqual(['7/-@12']);
+  });
+
+  test('a Longest streak deleted meanwhile is not told as passed', () => {
+    const diary = withEarlierStretch(10, 30);
+    diary.write(0);
+    for (let i = 0; i < 4; i++) diary.nextDay().write(0);
+    diary.told();
+    diary.toHistory().write(-5).write(-6).write(-7);
+    for (let i = 35; i <= 44; i++) diary.delete(-i);
+    diary.toHome();
+    expect(diary.told()).toEqual(['7/-@8']);
+  });
+
+  test('growth counts from 0 when the last Streak acknowledged was another stretch', () => {
+    const old = { start: '2026-05-01', end: '2026-05-07', length: 7 };
+    const ledger: CelebrationLedger = {
+      stretches: [{ start: old.start, end: old.end, milestone: 7, held: 7 }],
+      seen: old,
+      longest: old,
+    };
+    const dates = ['2026-05-15', '2026-05-14', '2026-05-13', ...daysBefore('2026-05-07', 0, 6)];
+    const { celebration } = decideCelebration(dates, '2026-05-15', ledger);
+    expect(celebration?.milestone).toBe(3);
   });
 
   test('days pass on History while an old stretch grows back into the Streak: nothing', () => {
@@ -421,6 +476,31 @@ describe('the ledger', () => {
     const diary = savedDaily(9);
     const once = acknowledge(diary.sorted(), diary.today, diary.ledger!);
     expect(sameLedger(acknowledge(diary.sorted(), diary.today, once), once)).toBe(true);
+  });
+
+  test('many short stretches do not push out a Milestone before a Streak repair', () => {
+    const diary = savedDaily(50);
+    diary.told();
+    // Nine stretches of two days, each after a missed day.
+    for (let k = 0; k < 9; k++) diary.nextDay(2).write(0).nextDay().write(0);
+    diary.told();
+    // Repair: fill every missed day, joining them all to the 50.
+    diary.toHistory();
+    for (let offset = -1; offset >= -27; offset--) diary.write(offset);
+    diary.toHome();
+    expect(diary.streak()).toBe(77);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('many stretches that each told 3 do not push out a 50 before a Streak repair', () => {
+    const diary = savedDaily(50);
+    diary.told();
+    for (let k = 0; k < 9; k++) diary.nextDay(2).write(0).nextDay().write(0).nextDay().write(0);
+    expect(diary.told()).toHaveLength(9);
+    diary.toHistory();
+    for (let offset = -1; offset >= -36; offset--) diary.write(offset);
+    diary.toHome();
+    expect(diary.told()).toEqual([]);
   });
 
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
