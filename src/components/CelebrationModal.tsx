@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Text,
   View,
+  type StyleProp,
+  type TextStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressableScale } from './PressableScale';
@@ -21,7 +23,7 @@ import { radius } from '../theme/radius';
 
 // The page fades in, the Streak rises into place and settles, then the words
 // and the button follow. After that nothing moves.
-const PAGE_MS = 200;
+export const PAGE_MS = 200;
 const RISE_DELAY_MS = 120;
 const RISE_MS = 560;
 const WORDS_DELAY_MS = RISE_DELAY_MS + RISE_MS;
@@ -57,8 +59,11 @@ function CelebrationScreen({
   const insets = useSafeAreaInsets();
   const copy = useMemo(() => celebrationCopy(celebration), [celebration]);
 
+  // With reduce motion nothing moves: everything but the page starts in place,
+  // and the page only fades in. The fade also hides the window's first layout,
+  // which Android draws at a smaller size.
   const initial = reduceMotion ? 1 : 0;
-  const page = useRef(new Animated.Value(initial)).current;
+  const page = useRef(new Animated.Value(0)).current;
   const rise = useRef(new Animated.Value(initial)).current;
   const words = useRef(new Animated.Value(initial)).current;
   const button = useRef(new Animated.Value(initial)).current;
@@ -67,6 +72,9 @@ function CelebrationScreen({
   const [distance, setDistance] = useState(48);
   const landedRef = useRef(false);
   const exitingRef = useRef(false);
+  // 閉じる takes presses only once it is fully shown, so a tap meant for the tab
+  // bar under it cannot close a celebration nobody has seen. Back always works.
+  const [closable, setClosable] = useState(false);
   const entranceRef = useRef<Animated.CompositeAnimation | null>(null);
   const messageRef = useRef<View>(null);
   const onSettledRef = useRef(onSettled);
@@ -81,12 +89,23 @@ function CelebrationScreen({
       // having synced its end values back to JS.
       landedRef.current = true;
       [page, rise, words, button, settle].forEach((v) => v.setValue(1));
+      setClosable(true);
       onSettledRef.current();
     };
     // Also the way out of an entrance stopped half-way by reduce motion.
     if (reduceMotion) {
-      land();
-      return;
+      [rise, words, button, settle].forEach((v) => v.setValue(1));
+      const fade = Animated.timing(page, {
+        toValue: 1,
+        duration: PAGE_MS,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      });
+      entranceRef.current = fade;
+      fade.start(({ finished }) => {
+        if (finished) land();
+      });
+      return () => fade.stop();
     }
     const after = (delay: number, anim: Animated.CompositeAnimation) =>
       Animated.sequence([Animated.delay(delay), anim]);
@@ -225,15 +244,16 @@ function CelebrationScreen({
             >
               <Text style={[styles.unit, { color: colors.textMuted }]}>日連続</Text>
               <Text style={[styles.headline, { color: colors.text }]}>{copy.headline}</Text>
-              <Text style={[styles.line, { color: colors.textMuted }]}>{copy.line}</Text>
+              <Phrases text={copy.line} style={[styles.line, { color: colors.textMuted }]} />
               {copy.longest && (
-                <Text style={[styles.line, { color: colors.textMuted }]}>{copy.longest}</Text>
+                <Phrases text={copy.longest} style={[styles.line, { color: colors.textMuted }]} />
               )}
             </Animated.View>
           </View>
         </ScrollView>
         {/* Pinned below the scrolling message, so it stays in reach at large font sizes. */}
         <Animated.View
+          pointerEvents={closable ? 'auto' : 'none'}
           style={[styles.footer, { opacity: button, paddingBottom: insets.bottom + space.lg }]}
         >
           <PressableScale
@@ -247,6 +267,22 @@ function CelebrationScreen({
         </Animated.View>
       </Animated.View>
     </Modal>
+  );
+}
+
+// A line that must wrap (at a large font size) breaks after 「、」, between
+// phrases, instead of inside a word.
+function Phrases({ text, style }: { text: string; style: StyleProp<TextStyle> }) {
+  const phrases = text.replace(/、/g, '、\n').split('\n');
+  if (phrases.length === 1) return <Text style={[styles.lineBox, style]}>{text}</Text>;
+  return (
+    <View style={[styles.lineBox, styles.phrases]}>
+      {phrases.map((phrase, i) => (
+        <Text key={i} style={style}>
+          {phrase}
+        </Text>
+      ))}
+    </View>
   );
 }
 
@@ -282,12 +318,19 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.medium,
     textAlign: 'center',
   },
-  line: {
+  lineBox: {
     marginTop: space.sm,
+    maxWidth: 300,
+  },
+  phrases: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  line: {
     fontSize: typography.size.button,
     lineHeight: 22,
     textAlign: 'center',
-    maxWidth: 300,
   },
   footer: {
     alignItems: 'center',

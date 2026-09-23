@@ -116,17 +116,18 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
   useLayoutEffect(() => {
     busyRef.current = busy;
   });
-  const queue = useRef<Array<() => void>>([]);
+  // One slot, latest wins: two saves behind one celebration remind once.
+  const pending = useRef<(() => void) | null>(null);
   const afterCelebration = useCallback((fn: () => void) => {
-    if (busyRef.current) queue.current.push(fn);
+    if (busyRef.current) pending.current = fn;
     else fn();
   }, []);
   useEffect(() => {
-    if (busy || queue.current.length === 0) return;
+    if (busy || !pending.current) return;
     const timer = setTimeout(() => {
-      const queued = queue.current;
-      queue.current = [];
-      queued.forEach((fn) => fn());
+      const queued = pending.current;
+      pending.current = null;
+      queued?.();
     }, AFTER_CLOSE_PAUSE_MS);
     // Dropped on unmount: the reminder records nothing until it is shown, so
     // the next save reminds again.

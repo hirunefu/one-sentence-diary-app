@@ -20,6 +20,18 @@ describe('useAppActive', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
+  test('starts false when the app is already in the background', async () => {
+    const state = AppState as { currentState: unknown };
+    const original = state.currentState;
+    state.currentState = 'background';
+    try {
+      const { result } = await renderHook(() => useAppActive());
+      expect(result.current).toBe(false);
+    } finally {
+      state.currentState = original;
+    }
+  });
+
   test('is false while the app is in the background', async () => {
     const { result, unmount } = await renderHook(() => useAppActive());
 

@@ -17,11 +17,11 @@ const MILESTONES: Record<number, { headline: string; line: string }> = {
   3: { headline: '3日、続きました。', line: '一文ずつ、あなたのペースで。' },
   7: { headline: '1週間、続きました。', line: '毎日の一文が、ここに残っています。' },
   14: { headline: '2週間、続きました。', line: '書くことが、日々になじんできました。' },
-  30: { headline: 'ひと月、続きました。', line: '一文ずつ、ひと月がかたちになりました。' },
+  30: { headline: 'ひと月、続きました。', line: '一文ずつ、日々がかたちになりました。' },
   50: { headline: '50日、続きました。', line: 'ふり返れる日々が、増えてきました。' },
   100: { headline: '100日、続きました。', line: 'どの一文も、その日だけのことばです。' },
   200: { headline: '200日、続きました。', line: 'いくつもの季節を、一文ずつ。' },
-  365: { headline: '1年、続きました。', line: '一年分の日々が、ここにあります。' },
+  365: { headline: '1年、続きました。', line: '1年分の日々が、ここにあります。' },
 };
 
 function milestoneCopy(milestone: number): { headline: string; line: string } {
@@ -38,7 +38,7 @@ export function celebrationCopy(c: Celebration): CelebrationCopy {
     c.milestone !== null
       ? milestoneCopy(c.milestone)
       : {
-          headline: 'これまででいちばん長く続いています。',
+          headline: 'いちばん長く続いています。',
           line: `これまでの最長記録は${c.previousLongest}日でした。`,
         };
   const longest =

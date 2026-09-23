@@ -1,5 +1,5 @@
 import React from 'react';
-import { Keyboard } from 'react-native';
+import { AppState, Keyboard } from 'react-native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -146,6 +146,26 @@ describe('useCelebration', () => {
     expect(shown(again)).toBeNull();
   });
 
+  test('an entrance that ends in the background does not count as seen', async () => {
+    await writeBeforeLaunch([-1, -2]);
+    const first = await launch();
+    await write(first, 0);
+    await wait(REVEAL);
+    const state = AppState as { currentState: unknown };
+    const original = state.currentState;
+    state.currentState = 'background';
+    try {
+      await act(async () => first.result.current.celebration.settled());
+    } finally {
+      state.currentState = original;
+    }
+    await first.unmount();
+
+    const again = await launch();
+    await wait(REVEAL);
+    expect(shown(again)).toBe('3/-@3');
+  });
+
   test('if the app locks before it was seen, it is shown again after unlocking', async () => {
     await writeBeforeLaunch([-1, -2]);
     const first = await launch();
@@ -189,6 +209,21 @@ describe('useCelebration', () => {
     expect(remind).not.toHaveBeenCalled();
     await wait(1);
     expect(remind).toHaveBeenCalledTimes(1);
+  });
+
+  test('two saves behind one celebration remind once', async () => {
+    await writeBeforeLaunch([-1, -2]);
+    const hook = await launch();
+    const first = jest.fn();
+    const second = jest.fn();
+    await write(hook, 0);
+    await act(async () => hook.result.current.celebration.afterCelebration(first));
+    await act(async () => hook.result.current.celebration.afterCelebration(second));
+    await wait(REVEAL);
+    await act(async () => hook.result.current.celebration.close());
+    await wait(AFTER_CLOSE_PAUSE_MS);
+    expect(first.mock.calls.length + second.mock.calls.length).toBe(1);
+    expect(second).toHaveBeenCalledTimes(1);
   });
 
   test('without a celebration, the backup reminder runs at once', async () => {
