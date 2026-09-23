@@ -6,21 +6,42 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     ignore:
-      # The jest toolchain tracks the Expo SDK: expo-doctor enforces the SDK's
-      # expected versions (e.g. SDK 57 -> jest 29 / jest-expo 57 / @types/jest 29).
-      # Bump these together with the SDK, not on their own.
-      - dependency-name: "jest"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "jest-expo"
-        update-types: ["version-update:semver-major"]
+      # The Expo SDK dictates these versions (node_modules/expo/
+      # bundledNativeModules.json plus the SDK's relatedPackages). expo-doctor
+      # fails on any drift and `npx expo install --fix` reverts it, so they
+      # only move with the SDK (`npx expo install expo@^N --fix`). Note that
+      # `ignore` also suppresses Dependabot security PRs for them; alerts
+      # still show in the Security tab.
+      - dependency-name: "expo-*"
+      - dependency-name: "react"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-safe-area-context"
+      - dependency-name: "react-native-screens"
+      - dependency-name: "@react-native-async-storage/async-storage"
+      - dependency-name: "@react-native-community/datetimepicker"
       - dependency-name: "@types/jest"
+      - dependency-name: "jest"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@expo/vector-icons"
+        update-types: ["version-update:semver-major"]
+      # SDK upgrades are deliberate. Patch releases within the SDK still come
+      # through, but run `npx expo install --fix` on the PR before merging so
+      # the expo-* modules follow.
+      - dependency-name: "expo"
         update-types: ["version-update:semver-major"]
       # Exact pins that must equal another package's version: the preset
-      # matches react-native (whose peer on it is exact) and the renderer
-      # matches react. A standalone bump of either breaks `npm ci` with
-      # ERESOLVE, so they only move together with the SDK upgrade.
+      # matches react-native (whose peer on it is exact), and test-renderer's
+      # minor tracks React's (1.2.x = React 19.2). A standalone bump breaks
+      # `npm ci` with ERESOLVE or leaves an invalid peer tree.
       - dependency-name: "@react-native/jest-preset"
-      - dependency-name: "react-test-renderer"
+      - dependency-name: "test-renderer"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: github-actions
     directory: "/"
