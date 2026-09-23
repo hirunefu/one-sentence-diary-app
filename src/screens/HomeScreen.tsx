@@ -66,10 +66,13 @@ export function HomeScreen() {
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The Streak just before the save in progress, so the announcement can say
+  // when it grew.
+  const streakBeforeSaveRef = useRef<number | null>(null);
 
   // 保存ボタンのアニメーション
-  // bgPhase: 0 = primary (有効), 1 = disabled (無効/保存中), 2 = saved (保存しました)
-  // The saved state stays monochrome (primary); the checkmark carries it.
+  // bgPhase: 0 = primary (有効。保存しました の間も), 1 = disabled (空欄)
+  // The saved state keeps the primary fill; the checkmark carries it.
   const bgPhase = useRef(new Animated.Value(0)).current;
   const tapScale = useRef(new Animated.Value(1)).current;
 
@@ -103,10 +106,18 @@ export function HomeScreen() {
 
   const isEmpty = text.trim().length === 0;
 
+  // Announced once the saved state and the new Streak have both rendered.
   useEffect(() => {
-    let target = 0;
-    if (justSaved) target = 2;
-    else if (isEmpty) target = 1;
+    const before = streakBeforeSaveRef.current;
+    if (!justSaved || before === null) return;
+    streakBeforeSaveRef.current = null;
+    AccessibilityInfo.announceForAccessibility(
+      streak > before ? `保存しました。${streak}日連続` : '保存しました'
+    );
+  }, [justSaved, streak]);
+
+  useEffect(() => {
+    const target = isEmpty && !justSaved ? 1 : 0;
     // backgroundColor cannot be interpolated on RN's native driver, so this
     // animation must run on the JS driver. The transform animation (tapScale)
     // is split out into the <Animated.View> below to use the native driver —
@@ -177,6 +188,7 @@ export function HomeScreen() {
     try {
       // saving 中もラベルは "保存" のまま、disabled 状態だけが変わる (二重タップ防止)
       setSaving(true);
+      streakBeforeSaveRef.current = streak;
       await upsert(todayStr, text);
       animateButtonLayout(reduceMotion); // "保存" → "✓ 保存しました" の幅変化を滑らかに
       setJustSaved(true);
@@ -184,11 +196,13 @@ export function HomeScreen() {
       savedTimerRef.current = setTimeout(() => {
         animateButtonLayout(reduceMotion); // "✓ 保存しました" → "保存"
         setJustSaved(false);
+        // The backup reminder waits until the save has been celebrated, so its
+        // dialog does not cover the Streak.
+        // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
+        void remindAfterSave(todayStr);
       }, SAVED_FEEDBACK_MS);
-      AccessibilityInfo.announceForAccessibility('保存しました');
-      // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
-      void remindAfterSave(todayStr);
     } catch (e) {
+      streakBeforeSaveRef.current = null;
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
     } finally {
@@ -199,8 +213,8 @@ export function HomeScreen() {
   const buttonDisabled = saving || justSaved || isEmpty;
 
   const animatedBg = bgPhase.interpolate({
-    inputRange: [0, 1, 2],
-    outputRange: [colors.primary, colors.disabled, colors.primary],
+    inputRange: [0, 1],
+    outputRange: [colors.primary, colors.disabled],
   });
 
   return (
@@ -250,11 +264,15 @@ export function HomeScreen() {
 function SavedLabel({ color, reduceMotion }: { color: string; reduceMotion: boolean }) {
   const pop = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion) {
+      // Also lands a pop that was stopped half-way by reduce motion.
+      pop.setValue(1);
+      return;
+    }
     const anim = Animated.spring(pop, {
       toValue: 1,
-      friction: 5,
-      tension: 160,
+      stiffness: 800,
+      damping: 34,
       useNativeDriver: true,
     });
     anim.start();
