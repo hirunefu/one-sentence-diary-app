@@ -266,16 +266,19 @@ function Dot({
         style={[
           styles.dot,
           { backgroundColor: colors.border, transform: [{ scale: motion.swell }] },
-          isToday && styles.todayOutline,
-          isToday && { borderColor: colors.text },
         ]}
       >
         <Animated.View
           style={[
-            styles.dotFill,
+            styles.dotLayer,
             { backgroundColor: colors.text, transform: [{ scale: fill }] },
           ]}
         />
+        {/* Today's outline is drawn over the fill rather than as the dot's
+            own border, so no seam of the grey ground shows between the two. */}
+        {isToday && (
+          <View style={[styles.dotLayer, styles.todayOutline, { borderColor: colors.text }]} />
+        )}
       </Animated.View>
     </View>
   );
@@ -326,8 +329,9 @@ const styles = StyleSheet.create({
   },
   todayOutline: {
     borderWidth: 1.5,
+    borderRadius: 2,
   },
-  dotFill: {
+  dotLayer: {
     position: 'absolute',
     top: 0,
     right: 0,
