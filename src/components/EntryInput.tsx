@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { AccessibilityInfo, StyleSheet, Text, TextInput, View } from 'react-native';
 import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
 import { useColors } from '../theme/useColors';
@@ -42,6 +42,17 @@ export function EntryInput({
   );
 
   const remaining = MAX_TEXT_LENGTH - countChars(value);
+
+  // The counter only changes colour, so announce the thresholds (and the
+  // hard stop at 0, where further input is dropped) when crossing them.
+  const prevRemainingRef = useRef(remaining);
+  useEffect(() => {
+    const prev = prevRemainingRef.current;
+    prevRemainingRef.current = remaining;
+    if ([WARNING_THRESHOLD, DANGER_THRESHOLD, 0].some((t) => prev > t && remaining <= t)) {
+      AccessibilityInfo.announceForAccessibility(`残り${remaining}字`);
+    }
+  }, [remaining]);
 
   let countColor = colors.textMuted;
   let countWeight: '400' | '600' = '400';

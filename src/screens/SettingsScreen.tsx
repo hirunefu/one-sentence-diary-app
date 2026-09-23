@@ -244,7 +244,9 @@ export function SettingsScreen() {
           セキュリティと通知
         </Text>
         <View style={rowStyle}>
-          <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
+          <Text importantForAccessibility="no" style={[styles.label, { color: colors.text }]}>
+            生体認証ロック
+          </Text>
           <Switch
             testID="settings-switch-lock"
             value={settings.lockEnabled}
@@ -254,7 +256,9 @@ export function SettingsScreen() {
         </View>
 
         <View style={rowStyle}>
-          <Text style={[styles.label, { color: colors.text }]}>リマインダー通知</Text>
+          <Text importantForAccessibility="no" style={[styles.label, { color: colors.text }]}>
+            リマインダー通知
+          </Text>
           <Switch
             testID="settings-switch-reminder"
             value={settings.reminderEnabled}
@@ -313,7 +317,9 @@ export function SettingsScreen() {
         </PressableScale>
 
         <View style={rowStyle}>
-          <Text style={[styles.label, { color: colors.text }]}>エクスポートリマインド</Text>
+          <Text importantForAccessibility="no" style={[styles.label, { color: colors.text }]}>
+            エクスポートリマインド
+          </Text>
           <Switch
             testID="settings-switch-export-reminder"
             value={settings.exportReminderEnabled}

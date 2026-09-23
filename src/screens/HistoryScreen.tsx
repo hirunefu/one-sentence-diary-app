@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   Animated,
   FlatList,
@@ -16,6 +16,8 @@ import { useEntries } from '../contexts/EntriesContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { fromDateString, today } from '../utils/date';
 import { TimelineRow } from '../components/TimelineRow';
+import { CalendarHeader } from '../components/CalendarHeader';
+import { useToday } from '../hooks/useToday';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
@@ -58,7 +60,8 @@ export function HistoryScreen() {
   const { settings, updateSettings } = useSettings();
   const reduceMotion = useReduceMotion();
   // Only today or a past day can have an Entry, so the calendar stops at today.
-  const todayStr = today();
+  // useToday keeps that bound current across midnight and app resumes.
+  const todayStr = useToday();
 
   const [marked, setMarked] = useState<Record<string, { marked: boolean; dotColor?: string }>>({});
   // new Date() ではなく today() を使う: E2E ビルドの日付オーバーライドを
@@ -132,6 +135,17 @@ export function HistoryScreen() {
     outputRange: [tabWidth * 0.125, tabWidth * 1.125],
   });
 
+  const renderCalendarHeader = useMemo(
+    () =>
+      function Header(props: {
+        month: { getFullYear(): number; getMonth(): number };
+        addMonth: (count: number) => void;
+      }) {
+        return <CalendarHeader month={props.month} addMonth={props.addMonth} todayStr={todayStr} />;
+      },
+    [todayStr]
+  );
+
   const onTabsLayout = (e: LayoutChangeEvent) => {
     setTabsWidth(e.nativeEvent.layout.width);
   };
@@ -167,6 +181,8 @@ export function HistoryScreen() {
           testID={`day-${date.dateString}`}
           onPress={() => onPress?.(date)}
           disabled={isDisabled}
+          // 36dp cells + 6dp on each side reach the 48dp minimum touch target.
+          hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={a11yLabel}
           accessibilityState={{ disabled: isDisabled }}
@@ -270,10 +286,7 @@ export function HistoryScreen() {
           // 決める (E2E の日付オーバーライド対応。通常実行では同値)
           initialDate={todayStr}
           maxDate={todayStr}
-          disableArrowRight={
-            year === fromDateString(todayStr).getFullYear() &&
-            month === fromDateString(todayStr).getMonth() + 1
-          }
+          customHeader={renderCalendarHeader}
           markedDates={marked}
           theme={calendarTheme}
           dayComponent={renderDay}

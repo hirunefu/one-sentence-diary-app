@@ -57,4 +57,11 @@ describe('StreakDisplay', () => {
     const { getByTestId } = await render(<StreakDisplay days={0} last7={last7} />);
     expect(getByTestId('streak-dot-6')).toBeTruthy();
   });
+
+  test('is read as one sentence by screen readers', async () => {
+    const { getByLabelText } = await render(
+      <StreakDisplay days={7} last7={allRecorded('2026-04-28')} />
+    );
+    expect(getByLabelText('7日連続。直近7日のうち7日記録あり')).toBeTruthy();
+  });
 });

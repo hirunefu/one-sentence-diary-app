@@ -1,4 +1,4 @@
-import { toDateString, fromDateString, today, yesterday, addDays } from './date';
+import { toDateString, fromDateString, today, yesterday, addDays, isFutureDay } from './date';
 
 describe('toDateString', () => {
   test('formats local date as YYYY-MM-DD', () => {
@@ -96,5 +96,14 @@ describe('addDays', () => {
 
   test('handles non-leap year (2026)', () => {
     expect(addDays('2026-02-28', 1)).toBe('2026-03-01');
+  });
+});
+
+describe('isFutureDay', () => {
+  test('only days after today are in the future', () => {
+    expect(isFutureDay('2026-05-16', '2026-05-15')).toBe(true);
+    expect(isFutureDay('2027-01-01', '2026-12-31')).toBe(true);
+    expect(isFutureDay('2026-05-15', '2026-05-15')).toBe(false);
+    expect(isFutureDay('2026-05-14', '2026-05-15')).toBe(false);
   });
 });

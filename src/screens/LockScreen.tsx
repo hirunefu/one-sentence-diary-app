@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { authenticate, isLocalAuthAvailable } from '../services/localAuth';
 import { useAuthLock } from '../contexts/AuthLockContext';
@@ -15,19 +15,26 @@ export function LockScreen() {
   const [authenticating, setAuthenticating] = useState(false);
 
   const tryAuth = useCallback(async () => {
+    // A live region wouldn't be announced here: the error Text is mounted with
+    // its text already set, right as the system prompt closes.
+    const showError = (message: string) => {
+      setError(message);
+      AccessibilityInfo.announceForAccessibility(message);
+    };
+
     setError(null);
     setAuthenticating(true);
     try {
       const available = await isLocalAuthAvailable();
       if (!available) {
-        setError('設定アプリから生体認証を有効にしてください');
+        showError('設定アプリから生体認証を有効にしてください');
         return;
       }
       const ok = await authenticate();
       if (ok) {
         unlock();
       } else {
-        setError('認証に失敗しました');
+        showError('認証に失敗しました');
       }
     } finally {
       setAuthenticating(false);
@@ -52,17 +59,16 @@ export function LockScreen() {
         <Text accessibilityRole="header" style={[styles.title, { color: colors.text }]}>
           ロックされています
         </Text>
-        {error && (
-          <Text accessibilityLiveRegion="polite" style={[styles.error, { color: colors.error }]}>
-            {error}
-          </Text>
-        )}
+        {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
         <Pressable
           testID="lock-authenticate"
           onPress={tryAuth}
           disabled={authenticating}
           accessibilityRole="button"
-          accessibilityState={{ disabled: authenticating, busy: authenticating }}
+          // An explicit label: on Android a `busy` state would leave a stale
+          // "作業中" description on the button once it's no longer busy.
+          accessibilityLabel={authenticating ? '認証中' : '認証する'}
+          accessibilityState={{ disabled: authenticating }}
           style={({ pressed }) => [
             styles.button,
             { backgroundColor: colors.primary },
