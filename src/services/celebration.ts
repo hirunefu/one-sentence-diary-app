@@ -15,7 +15,7 @@ import {
 // the last acknowledgement, so deleting and rewriting an Entry, a restart or an
 // import never tells anything twice, while a real break lets 3, 7, ... be told
 // again. A stretch that loses days keeps its identity in its oldest surviving
-// part (see continuationOf).
+// part (see continuationOf). Why a ledger at all: docs/adr/0001-celebration-ledger.md.
 
 export type StretchMemory = {
   start: string;
@@ -48,6 +48,10 @@ export type Celebration = {
   // The Longest streak the Streak just passed, if it is to be told.
   previousLongest: number | null;
 };
+
+// Told on the full screen. A new Longest streak alone (milestone null) is told
+// in place on Home instead.
+export type MilestoneCelebration = Celebration & { milestone: number };
 
 export type CelebrationDecision = { celebration: Celebration | null; next: CelebrationLedger };
 
