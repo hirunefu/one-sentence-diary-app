@@ -17,8 +17,10 @@ import { useSettings } from '../contexts/SettingsContext';
 import { fromDateString, today } from '../utils/date';
 import { TimelineRow } from '../components/TimelineRow';
 import { CalendarHeader } from '../components/CalendarHeader';
+import { LongestStreakLine } from '../components/LongestStreakLine';
 import { useToday } from '../hooks/useToday';
 import { useReduceMotion } from '../hooks/useReduceMotion';
+import { longestStreak, stretchesOf } from '../utils/streak';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -62,6 +64,10 @@ export function HistoryScreen() {
   // Only today or a past day can have an Entry, so the calendar stops at today.
   // useToday keeps that bound current across midnight and app resumes.
   const todayStr = useToday();
+  const longest = useMemo(
+    () => longestStreak(stretchesOf(entries.map((e) => e.date), todayStr)),
+    [entries, todayStr]
+  );
 
   const [marked, setMarked] = useState<Record<string, { marked: boolean; dotColor?: string }>>({});
   // new Date() ではなく today() を使う: E2E ビルドの日付オーバーライドを
@@ -276,6 +282,8 @@ export function HistoryScreen() {
           />
         )}
       </View>
+
+      <LongestStreakLine days={longest} />
 
       {settings.viewMode === 'calendar' ? (
         <Calendar

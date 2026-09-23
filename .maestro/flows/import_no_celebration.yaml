@@ -1,0 +1,42 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# This flow assumes the runner set the date to 2026-05-15 via
+# `./scripts/e2e/run.sh --at-date 2026-05-15 import_no_celebration`.
+# The bundled fixture restores 2026-05-08..14: a Streak of 7 anchored on
+# yesterday. A restored Streak was not reached here, so it is not celebrated,
+# nor is the next day built on it.
+
+- tapOn:
+    id: "tab-settings"
+- tapOn:
+    id: "settings-import"
+- assertVisible: "インポートが完了しました"
+- tapOn:
+    text: "OK"
+
+- tapOn:
+    id: "tab-home"
+- assertVisible: "7"
+- tapOn:
+    id: "entry-input"
+- inputText: "after import"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+- extendedWaitUntil:
+    visible:
+      id: "save-button"
+    timeout: 5000
+- assertNotVisible:
+    id: "celebration"
+- assertVisible: "8"
+
+- tapOn:
+    id: "tab-history"
+- assertVisible:
+    id: "history-longest-streak"
+    text: "最長記録 8日"

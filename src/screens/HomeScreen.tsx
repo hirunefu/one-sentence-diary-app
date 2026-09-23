@@ -16,8 +16,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
+import { CelebrationModal } from '../components/CelebrationModal';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
+import { useCelebration } from '../hooks/useCelebration';
 import { useExportReminder } from '../hooks/useExportReminder';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useToday } from '../hooks/useToday';
@@ -27,7 +29,7 @@ import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
 import { radius } from '../theme/radius';
 
-const SAVED_FEEDBACK_MS = 1500;
+export const SAVED_FEEDBACK_MS = 1500;
 const BG_TRANSITION_MS = 250;
 const LAYOUT_TRANSITION_MS = 250;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -80,6 +82,8 @@ export function HomeScreen() {
   // midnight goes to the new day.
   const todayStr = useToday();
   const { md, dow } = formatJpDate(todayStr);
+  // The full-screen celebration of a Milestone or a new Longest streak.
+  const celebration = useCelebration({ enabled: isFocused && ready && loaded, todayStr });
 
   const last7: StreakDay[] = useMemo(() => {
     const recordedSet = new Set(entries.map((e) => e.date));
@@ -106,15 +110,17 @@ export function HomeScreen() {
 
   const isEmpty = text.trim().length === 0;
 
-  // Announced once the saved state and the new Streak have both rendered.
+  // Announced once the saved state and the new Streak have both rendered. A
+  // due celebration tells the Streak itself, so the count is left to it.
+  const celebrationDue = celebration.due;
   useEffect(() => {
     const before = streakBeforeSaveRef.current;
     if (!justSaved || before === null) return;
     streakBeforeSaveRef.current = null;
     AccessibilityInfo.announceForAccessibility(
-      streak > before ? `保存しました。${streak}日連続` : '保存しました'
+      streak > before && !celebrationDue ? `保存しました。${streak}日連続` : '保存しました'
     );
-  }, [justSaved, streak]);
+  }, [justSaved, streak, celebrationDue]);
 
   useEffect(() => {
     const target = isEmpty && !justSaved ? 1 : 0;
@@ -196,10 +202,10 @@ export function HomeScreen() {
       savedTimerRef.current = setTimeout(() => {
         animateButtonLayout(reduceMotion); // "✓ 保存しました" → "保存"
         setJustSaved(false);
-        // The backup reminder waits until the save has been celebrated, so its
-        // dialog does not cover the Streak.
+        // The backup reminder waits until the save has been celebrated (and a
+        // full-screen celebration closed), so its dialog does not cover them.
         // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
-        void remindAfterSave(todayStr);
+        celebration.afterCelebration(() => void remindAfterSave(todayStr));
       }, SAVED_FEEDBACK_MS);
     } catch (e) {
       streakBeforeSaveRef.current = null;
@@ -255,6 +261,11 @@ export function HomeScreen() {
           </AnimatedPressable>
         </Animated.View>
       </View>
+      <CelebrationModal
+        celebration={celebration.showing}
+        onSettled={celebration.settled}
+        onClose={celebration.close}
+      />
     </SafeAreaView>
   );
 }

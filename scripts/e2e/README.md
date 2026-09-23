@@ -45,7 +45,8 @@ pre-E2E behavior.
 
 ## Streak flow time fixation
 
-The `streak` and `streak_break` flows assume `today()` is `2026-05-15`.
+The `streak`, `streak_break`, `milestone_celebration` and
+`import_no_celebration` flows assume `today()` is `2026-05-15`.
 Pin the date for the build:
 
 ```sh
