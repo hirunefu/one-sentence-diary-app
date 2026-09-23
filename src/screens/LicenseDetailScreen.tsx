@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
-import { Linking, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import licensesData from '../assets/licenses.json';
 import type { LicenseEntry } from '../types/license';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from '../components/PressableScale';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
 
 const ENTRIES: LicenseEntry[] = licensesData as LicenseEntry[];
 
@@ -39,7 +41,9 @@ export function LicenseDetailScreen({ route }: Props) {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.name, { color: colors.text }]}>{entry.name}</Text>
+        <Text accessibilityRole="header" style={[styles.name, { color: colors.text }]}>
+          {entry.name}
+        </Text>
         <Text style={[styles.meta, { color: colors.textMuted }]}>
           v{entry.version} · {entry.license}
         </Text>
@@ -51,6 +55,7 @@ export function LicenseDetailScreen({ route }: Props) {
         {entry.homepage && (
           <PressableScale
             onPress={() => Linking.openURL(entry.homepage as string)}
+            accessibilityRole="link"
             style={styles.homepage}
           >
             <Text style={[styles.homepageText, { color: colors.primary }]}>
@@ -62,7 +67,7 @@ export function LicenseDetailScreen({ route }: Props) {
         <View
           style={[
             styles.divider,
-            { backgroundColor: colors.divider, marginVertical: 16 },
+            { backgroundColor: colors.divider },
           ]}
         />
 
@@ -83,16 +88,17 @@ export function LicenseDetailScreen({ route }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16 },
-  name: { fontSize: 20, fontWeight: '700' },
-  meta: { fontSize: 13, marginTop: 4 },
-  homepage: { marginTop: 8, alignSelf: 'flex-start' },
-  homepageText: { fontSize: 13, textDecorationLine: 'underline' },
-  divider: { height: 1 },
+  content: { padding: space.lg },
+  name: { fontSize: typography.size.heading, fontWeight: typography.weight.semibold },
+  meta: { fontSize: typography.size.button, marginTop: space.xs },
+  homepage: { marginTop: space.sm, alignSelf: 'flex-start' },
+  homepageText: { fontSize: typography.size.button, textDecorationLine: 'underline' },
+  divider: { height: 1, marginVertical: space.lg },
   licenseText: {
-    fontFamily: 'Courier',
-    fontSize: 12,
-    lineHeight: 18,
+    // 'Courier' only exists on iOS; Android's monospace family is 'monospace'.
+    fontFamily: Platform.select({ ios: 'Courier', default: 'monospace' }),
+    fontSize: typography.size.button,
+    lineHeight: typography.size.button * typography.lineHeight.default,
   },
-  missing: { textAlign: 'center', marginTop: 32, fontSize: 14 },
+  missing: { textAlign: 'center', marginTop: space.xxl, fontSize: typography.size.button },
 });

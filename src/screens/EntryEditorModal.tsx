@@ -11,6 +11,7 @@ import { EntryInput } from '../components/EntryInput';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useExportReminder } from '../hooks/useExportReminder';
+import { fromDateString, today } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -68,6 +69,16 @@ export function EntryEditorModal({ route, navigation }: Props) {
     ]);
   };
 
+  // The calendar stops at today, but guard any other way of getting here:
+  // only today or a past day can have an Entry.
+  if (date > today()) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.textMuted }}>未来の日には書けません</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!loaded) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -82,7 +93,12 @@ export function EntryEditorModal({ route, navigation }: Props) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
-      <EntryInput value={text} onChangeText={setText} autoFocus />
+      <EntryInput
+        value={text}
+        onChangeText={setText}
+        autoFocus
+        accessibilityLabel={`${fromDateString(date).getMonth() + 1}月${fromDateString(date).getDate()}日の一文`}
+      />
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         {exists && (
           <PressableScale

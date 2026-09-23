@@ -21,6 +21,10 @@ import {
 import type { ImportStrategy } from '../repositories/entriesRepository';
 import { ImportConflictModal } from '../components/ImportConflictModal';
 import { useColors } from '../theme/useColors';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
+import { radius } from '../theme/radius';
+import { today } from '../utils/date';
 import { PressableScale } from '../components/PressableScale';
 import type { ExportReminderIntervalDays, ThemePreference } from '../types';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -164,7 +168,7 @@ export function SettingsScreen() {
     }
 
     const existingDates = new Set(entries.map((e) => e.date));
-    const classified = classifyEntries(parsed.entries, existingDates);
+    const classified = classifyEntries(parsed.entries, existingDates, today());
 
     if (classified.conflicts.length === 0) {
       await runImport(classified, 'skip');
@@ -205,7 +209,9 @@ export function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>カラーテーマ</Text>
+        <Text accessibilityRole="header" style={[styles.sectionTitle, { color: colors.textMuted }]}>
+          カラーテーマ
+        </Text>
         {THEME_OPTIONS.map((option) => {
           const isSelected = settings.themePreference === option.value;
           return (
@@ -213,6 +219,9 @@ export function SettingsScreen() {
               testID={`settings-theme-${option.value}`}
               key={option.value}
               onPress={() => updateSettings({ themePreference: option.value })}
+              accessibilityRole="radio"
+              accessibilityLabel={option.label}
+              accessibilityState={{ checked: isSelected }}
               style={rowStyle}
             >
               <View style={styles.rowLeft}>
@@ -231,12 +240,17 @@ export function SettingsScreen() {
           );
         })}
 
-        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+        <Text accessibilityRole="header" style={[styles.sectionTitle, styles.sectionGap, { color: colors.textMuted }]}>
           セキュリティと通知
         </Text>
         <View style={rowStyle}>
           <Text style={[styles.label, { color: colors.text }]}>生体認証ロック</Text>
-          <Switch testID="settings-switch-lock" value={settings.lockEnabled} onValueChange={toggleLock} />
+          <Switch
+            testID="settings-switch-lock"
+            value={settings.lockEnabled}
+            onValueChange={toggleLock}
+            accessibilityLabel="生体認証ロック"
+          />
         </View>
 
         <View style={rowStyle}>
@@ -245,11 +259,17 @@ export function SettingsScreen() {
             testID="settings-switch-reminder"
             value={settings.reminderEnabled}
             onValueChange={(v) => updateSettings({ reminderEnabled: v })}
+            accessibilityLabel="リマインダー通知"
           />
         </View>
 
         {settings.reminderEnabled && (
-          <PressableScale testID="settings-reminder-time" onPress={() => setShowPicker(true)} style={rowStyle}>
+          <PressableScale
+            testID="settings-reminder-time"
+            onPress={() => setShowPicker(true)}
+            accessibilityLabel={`通知時刻 ${reminderTimeLabel}`}
+            style={rowStyle}
+          >
             <Text style={[styles.label, { color: colors.text }]}>通知時刻</Text>
             <Text style={[styles.value, { color: colors.textMuted }]}>{reminderTimeLabel}</Text>
           </PressableScale>
@@ -265,7 +285,7 @@ export function SettingsScreen() {
           />
         )}
 
-        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+        <Text accessibilityRole="header" style={[styles.sectionTitle, styles.sectionGap, { color: colors.textMuted }]}>
           バックアップ
         </Text>
         <PressableScale
@@ -285,7 +305,7 @@ export function SettingsScreen() {
               backgroundColor: 'transparent',
               borderWidth: 1,
               borderColor: colors.border,
-              marginTop: 12,
+              marginTop: space.md,
             },
           ]}
         >
@@ -298,6 +318,7 @@ export function SettingsScreen() {
             testID="settings-switch-export-reminder"
             value={settings.exportReminderEnabled}
             onValueChange={(v) => updateSettings({ exportReminderEnabled: v })}
+            accessibilityLabel="エクスポートリマインド"
           />
         </View>
 
@@ -312,6 +333,9 @@ export function SettingsScreen() {
                 onPress={() =>
                   updateSettings({ exportReminderIntervalDays: option.value })
                 }
+                accessibilityRole="radio"
+                accessibilityLabel={option.label}
+                accessibilityState={{ checked: isSelected }}
                 style={rowStyle}
               >
                 <Text style={[styles.label, styles.intervalLabel, { color: colors.text }]}>
@@ -324,11 +348,12 @@ export function SettingsScreen() {
             );
           })}
 
-        <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 24 }]}>
+        <Text accessibilityRole="header" style={[styles.sectionTitle, styles.sectionGap, { color: colors.textMuted }]}>
           このアプリについて
         </Text>
         <PressableScale
           onPress={() => navigation.navigate('Licenses')}
+          accessibilityLabel="オープンソースライセンス"
           style={rowStyle}
         >
           <Text style={[styles.label, { color: colors.text }]}>
@@ -362,19 +387,20 @@ export function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16 },
+  content: { padding: space.lg },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: typography.size.caption,
+    fontWeight: typography.weight.semibold,
+    marginBottom: space.xs,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  sectionGap: { marginTop: space.xl },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: space.lg,
     borderBottomWidth: 1,
   },
   rowLeft: {
@@ -382,18 +408,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   themeIcon: {
-    marginRight: 12,
+    marginRight: space.md,
   },
-  label: { fontSize: 16 },
-  value: { fontSize: 16 },
+  label: { fontSize: typography.size.title },
+  value: { fontSize: typography.size.title },
   // 頻度の選択肢はリマインドスイッチの配下であることを字下げで示す
-  intervalLabel: { paddingLeft: 16 },
+  intervalLabel: { paddingLeft: space.lg },
   exportButton: {
-    marginTop: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
+    marginTop: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
     alignItems: 'center',
   },
-  exportText: { fontSize: 16, fontWeight: '600' },
-  version: { textAlign: 'center', marginTop: 32, fontSize: 12 },
+  exportText: { fontSize: typography.size.title, fontWeight: typography.weight.semibold },
+  version: { textAlign: 'center', marginTop: space.xxl, fontSize: typography.size.caption },
 });

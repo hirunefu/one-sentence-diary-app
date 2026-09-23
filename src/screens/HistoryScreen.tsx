@@ -16,6 +16,7 @@ import { useEntries } from '../contexts/EntriesContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { fromDateString, today } from '../utils/date';
 import { TimelineRow } from '../components/TimelineRow';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -40,9 +41,7 @@ LocaleConfig.locales['jp'] = {
 };
 LocaleConfig.defaultLocale = 'jp';
 
-// 日曜・土曜の色 (light/dark 共通の控えめトーン)
-const SUN_COLOR = '#c44d4d';
-const SAT_COLOR = '#3b82c4';
+const WEEKDAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
 type DayCellProps = {
   date?: DateData;
@@ -57,6 +56,9 @@ export function HistoryScreen() {
   const navigation = useNavigation<Nav>();
   const { entries, getDatesInMonth } = useEntries();
   const { settings, updateSettings } = useSettings();
+  const reduceMotion = useReduceMotion();
+  // Only today or a past day can have an Entry, so the calendar stops at today.
+  const todayStr = today();
 
   const [marked, setMarked] = useState<Record<string, { marked: boolean; dotColor?: string }>>({});
   // new Date() ではなく today() を使う: E2E ビルドの日付オーバーライドを
@@ -70,13 +72,18 @@ export function HistoryScreen() {
   const [tabsWidth, setTabsWidth] = useState(0);
 
   useEffect(() => {
+    const toValue = settings.viewMode === 'calendar' ? 0 : 1;
+    if (reduceMotion) {
+      indicatorAnim.setValue(toValue);
+      return;
+    }
     Animated.spring(indicatorAnim, {
-      toValue: settings.viewMode === 'calendar' ? 0 : 1,
+      toValue,
       useNativeDriver: true,
       speed: 18,
       bounciness: 6,
     }).start();
-  }, [settings.viewMode, indicatorAnim]);
+  }, [settings.viewMode, indicatorAnim, reduceMotion]);
 
   const loadMonth = useCallback(
     async (y: number, m: number) => {
@@ -145,16 +152,24 @@ export function HistoryScreen() {
       if (isDisabled) {
         textColor = colors.disabled;
       } else if (isSun) {
-        textColor = SUN_COLOR;
+        textColor = colors.sunday;
       } else if (isSat) {
-        textColor = SAT_COLOR;
+        textColor = colors.saturday;
       }
+
+      const a11yLabel =
+        `${date.month}月${date.day}日 ${WEEKDAY_NAMES[dow]}曜日` +
+        (isToday ? '、今日' : '') +
+        (hasDot ? '、記録あり' : '');
 
       return (
         <Pressable
           testID={`day-${date.dateString}`}
           onPress={() => onPress?.(date)}
           disabled={isDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={a11yLabel}
+          accessibilityState={{ disabled: isDisabled }}
           style={[
             dayStyles.cell,
             isToday && { backgroundColor: colors.surface },
@@ -186,10 +201,12 @@ export function HistoryScreen() {
         style={[styles.toggleWrapper, { borderBottomColor: colors.divider }]}
         onLayout={onTabsLayout}
       >
-        <View style={styles.toggleRow}>
+        <View style={styles.toggleRow} accessibilityRole="tablist">
           <Pressable
             testID="history-tab-calendar"
             onPress={() => updateSettings({ viewMode: 'calendar' })}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: settings.viewMode === 'calendar' }}
             style={styles.tab}
           >
             <Text
@@ -210,6 +227,8 @@ export function HistoryScreen() {
           <Pressable
             testID="history-tab-timeline"
             onPress={() => updateSettings({ viewMode: 'timeline' })}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: settings.viewMode === 'timeline' }}
             style={styles.tab}
           >
             <Text
@@ -249,7 +268,12 @@ export function HistoryScreen() {
           key={colors.background}
           // ライブラリ内部の new Date() ではなく today() 起点で初期表示月を
           // 決める (E2E の日付オーバーライド対応。通常実行では同値)
-          initialDate={today()}
+          initialDate={todayStr}
+          maxDate={todayStr}
+          disableArrowRight={
+            year === fromDateString(todayStr).getFullYear() &&
+            month === fromDateString(todayStr).getMonth() + 1
+          }
           markedDates={marked}
           theme={calendarTheme}
           dayComponent={renderDay}
@@ -288,7 +312,7 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: space.md + 2,
     alignItems: 'center',
   },
   tabText: {

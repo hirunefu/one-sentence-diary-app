@@ -8,6 +8,8 @@ import type { LicenseEntry } from '../types/license';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { useColors } from '../theme/useColors';
 import { PressableScale } from '../components/PressableScale';
+import { typography } from '../theme/typography';
+import { space } from '../theme/spacing';
 
 const ENTRIES: LicenseEntry[] = licensesData as LicenseEntry[];
 
@@ -25,6 +27,7 @@ export function LicensesScreen() {
           version: item.version,
         })
       }
+      accessibilityLabel={`${item.name} ${item.version} ${item.license}`}
       style={[styles.row, { borderBottomColor: colors.divider }]}
     >
       <View style={styles.rowMain}>
@@ -35,7 +38,12 @@ export function LicensesScreen() {
           {item.version} · {item.license}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={colors.textMuted}
+        importantForAccessibility="no"
+      />
     </PressableScale>
   );
 
@@ -62,19 +70,19 @@ export function LicensesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  listContent: { paddingHorizontal: 16, paddingBottom: 32 },
+  listContent: { paddingHorizontal: space.lg, paddingBottom: space.xxl },
   intro: {
-    fontSize: 13,
-    lineHeight: 19,
-    paddingVertical: 16,
+    fontSize: typography.size.button,
+    lineHeight: typography.size.button * typography.lineHeight.default,
+    paddingVertical: space.lg,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: space.md + 2,
     borderBottomWidth: 1,
   },
-  rowMain: { flex: 1, marginRight: 12 },
-  name: { fontSize: 15, fontWeight: '600' },
-  sub: { fontSize: 12, marginTop: 2 },
+  rowMain: { flex: 1, marginRight: space.md },
+  name: { fontSize: typography.size.title, fontWeight: typography.weight.semibold },
+  sub: { fontSize: typography.size.caption, marginTop: 2 },
 });

@@ -97,15 +97,18 @@ function isValidEntry(e: unknown): e is Entry {
   return true;
 }
 
+// `today` is the local YYYY-MM-DD; an Entry can only exist for today or a
+// past day, so later dates are counted as invalid rather than imported.
 export function classifyEntries(
   rawEntries: unknown[],
-  existingDates: ReadonlySet<string>
+  existingDates: ReadonlySet<string>,
+  today: string
 ): ClassifiedEntries {
   const newEntries: Entry[] = [];
   const conflicts: Entry[] = [];
   let invalid = 0;
   for (const raw of rawEntries) {
-    if (!isValidEntry(raw)) {
+    if (!isValidEntry(raw) || raw.date > today) {
       invalid++;
       continue;
     }
