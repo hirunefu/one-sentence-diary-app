@@ -29,7 +29,7 @@ Backfilling the missing day(s) so that a broken Streak counts again.
 _Avoid_: streak freeze, restore purchase
 
 **Milestone** (節目):
-A Streak length that earns a full celebration: 3, 7, 14, 30, 50, 100, 200 and 365 days, then every further 100 days.
+A Streak length that earns a full celebration: 3, 7, 14, 30, 50, 100, 200 and 365 days, then every multiple of 100 from 400 (400, 500, 600, …).
 _Avoid_: achievement, badge, level
 
 **Longest streak** (最長記録):
