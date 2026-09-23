@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import Constants from 'expo-constants';
 import { useEntries } from '../contexts/EntriesContext';
@@ -22,9 +22,17 @@ export function useExportReminder(): {
   const { entries } = useEntries();
   const { settings } = useSettings();
 
-  const runExport = useCallback(async () => {
-    await exportEntries(entries, Constants.expoConfig?.version ?? '1.0.0');
+  // A save handler starts the reminder with this hook's functions from the
+  // render before the save, so the export reads the latest Entries from a ref
+  // and still includes the Entry that was just saved.
+  const entriesRef = useRef(entries);
+  useEffect(() => {
+    entriesRef.current = entries;
   }, [entries]);
+
+  const runExport = useCallback(async () => {
+    await exportEntries(entriesRef.current, Constants.expoConfig?.version ?? '1.0.0');
+  }, []);
 
   // 設定画面の手動エクスポート用。リマインドのカウンターもリセットする
   const exportNow = useCallback(async () => {
