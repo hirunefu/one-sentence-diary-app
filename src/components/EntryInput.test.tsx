@@ -12,47 +12,47 @@ jest.mock('../theme/useColors', () => {
 import { EntryInput } from './EntryInput';
 
 describe('EntryInput', () => {
-  test('shows initial value and remaining count', () => {
-    const { getByDisplayValue, getByText } = render(
+  test('shows initial value and remaining count', async () => {
+    const { getByDisplayValue, getByText } = await render(
       <EntryInput value="hello" onChangeText={() => {}} />
     );
     expect(getByDisplayValue('hello')).toBeTruthy();
     expect(getByText('残り 135 字')).toBeTruthy();
   });
 
-  test('strips newlines from input', () => {
+  test('strips newlines from input', async () => {
     const onChange = jest.fn();
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <EntryInput value="" onChangeText={onChange} />
     );
-    fireEvent.changeText(getByTestId('entry-input'), 'a\nb\rc');
+    await fireEvent.changeText(getByTestId('entry-input'), 'a\nb\rc');
     expect(onChange).toHaveBeenCalledWith('abc');
   });
 
-  test('blocks input beyond 140 codepoints', () => {
+  test('blocks input beyond 140 codepoints', async () => {
     const onChange = jest.fn();
     const longText = 'a'.repeat(140);
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <EntryInput value={longText} onChangeText={onChange} />
     );
-    fireEvent.changeText(getByTestId('entry-input'), longText + 'b');
+    await fireEvent.changeText(getByTestId('entry-input'), longText + 'b');
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  test('counts emoji as 1 in remaining count', () => {
-    const { getByText } = render(
+  test('counts emoji as 1 in remaining count', async () => {
+    const { getByText } = await render(
       <EntryInput value="😀😀😀" onChangeText={() => {}} />
     );
     expect(getByText('残り 137 字')).toBeTruthy();
   });
 
-  test('allows input that fits exactly at the limit', () => {
+  test('allows input that fits exactly at the limit', async () => {
     const onChange = jest.fn();
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <EntryInput value="" onChangeText={onChange} />
     );
     const text = 'a'.repeat(140);
-    fireEvent.changeText(getByTestId('entry-input'), text);
+    await fireEvent.changeText(getByTestId('entry-input'), text);
     expect(onChange).toHaveBeenCalledWith(text);
   });
 });

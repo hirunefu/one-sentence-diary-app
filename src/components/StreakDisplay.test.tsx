@@ -20,41 +20,41 @@ const allRecorded = (todayStr: string) => {
 };
 
 describe('StreakDisplay', () => {
-  test('shows the streak number', () => {
-    const { getByText } = render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
+  test('shows the streak number', async () => {
+    const { getByText } = await render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
     expect(getByText('7')).toBeTruthy();
     expect(getByText('日連続')).toBeTruthy();
   });
 
-  test('shows 0 when days=0', () => {
+  test('shows 0 when days=0', async () => {
     const last7 = Array.from({ length: 7 }, (_, i) => ({
       date: `2026-04-${22 + i}`,
       recorded: false,
       isToday: i === 6,
     }));
-    const { getByText } = render(<StreakDisplay days={0} last7={last7} />);
+    const { getByText } = await render(<StreakDisplay days={0} last7={last7} />);
     expect(getByText('0')).toBeTruthy();
   });
 
-  test('renders 7 dots with correct testIDs', () => {
-    const { getByTestId } = render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
+  test('renders 7 dots with correct testIDs', async () => {
+    const { getByTestId } = await render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
     for (let i = 0; i < 7; i++) {
       expect(getByTestId(`streak-dot-${i}`)).toBeTruthy();
     }
   });
 
-  test('shows the "直近7日" label', () => {
-    const { getByText } = render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
+  test('shows the "直近7日" label', async () => {
+    const { getByText } = await render(<StreakDisplay days={7} last7={allRecorded('2026-04-28')} />);
     expect(getByText('直近7日')).toBeTruthy();
   });
 
-  test('renders dots even when streak is 0', () => {
+  test('renders dots even when streak is 0', async () => {
     const last7 = Array.from({ length: 7 }, (_, i) => ({
       date: `2026-04-${22 + i}`,
       recorded: false,
       isToday: i === 6,
     }));
-    const { getByTestId } = render(<StreakDisplay days={0} last7={last7} />);
+    const { getByTestId } = await render(<StreakDisplay days={0} last7={last7} />);
     expect(getByTestId('streak-dot-6')).toBeTruthy();
   });
 });

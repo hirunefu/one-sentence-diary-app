@@ -48,9 +48,9 @@ describe('useExportReminder', () => {
   async function remindWithElapsedBaseline(): Promise<{
     pressButton: (label: string) => Promise<void>;
   }> {
-    const { result } = renderHook(() => useExportReminder());
+    const { result } = await renderHook(() => useExportReminder());
     let promise: Promise<void> = Promise.resolve();
-    act(() => {
+    await act(() => {
       promise = result.current.remindAfterSave(today());
     });
     await waitFor(() => expect(alertSpy).toHaveBeenCalled());
@@ -103,7 +103,7 @@ describe('useExportReminder', () => {
       'exportReminder.lastExportedAt',
       addDays(today(), -100)
     );
-    const { result } = renderHook(() => useExportReminder());
+    const { result } = await renderHook(() => useExportReminder());
     await act(async () => {
       await result.current.remindAfterSave(today());
     });
@@ -111,7 +111,7 @@ describe('useExportReminder', () => {
   });
 
   test('exportNow exports and records the export date', async () => {
-    const { result } = renderHook(() => useExportReminder());
+    const { result } = await renderHook(() => useExportReminder());
     await act(async () => {
       await result.current.exportNow();
     });
