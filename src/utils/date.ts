@@ -39,3 +39,9 @@ export function addDays(dateStr: string, days: number): string {
   d.setDate(d.getDate() + days);
   return toDateString(d);
 }
+
+// Only today or a past day can have an Entry (see CONTEXT.md). Both
+// arguments are YYYY-MM-DD, so string order is date order.
+export function isFutureDay(date: string, todayStr: string): boolean {
+  return date > todayStr;
+}

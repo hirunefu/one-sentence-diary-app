@@ -47,7 +47,10 @@ export function PressableScale({
 
   const handlePressOut = useCallback(
     (e: GestureResponderEvent) => {
-      if (!reduceMotion) {
+      if (reduceMotion) {
+        // Reduce motion may have turned on mid-press; don't leave it shrunk.
+        scale.setValue(1);
+      } else {
         Animated.spring(scale, {
           toValue: 1,
           useNativeDriver: true,

@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     lineHeight: typography.size.streakNum,
   },
   suffix: {
-    fontSize: typography.size.caption,
+    fontSize: 10, // minimal-redesign spec §3.1
   },
   dots: {
     flexDirection: 'row',

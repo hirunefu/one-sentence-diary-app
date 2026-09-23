@@ -11,7 +11,7 @@ import { EntryInput } from '../components/EntryInput';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useExportReminder } from '../hooks/useExportReminder';
-import { fromDateString, today } from '../utils/date';
+import { fromDateString, isFutureDay, today } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -69,20 +69,40 @@ export function EntryEditorModal({ route, navigation }: Props) {
     ]);
   };
 
-  // The calendar stops at today, but guard any other way of getting here:
-  // only today or a past day can have an Entry.
-  if (date > today()) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.textMuted }}>未来の日には書けません</Text>
-      </SafeAreaView>
-    );
-  }
-
   if (!loaded) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={{ color: colors.loadingMessage }}>読み込み中…</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Only today or a past day can have an Entry. The calendar stops at today,
+  // but versions before 1.3.0 let people write future days, so an existing
+  // future Entry can still be read and deleted, just not saved.
+  if (isFutureDay(date, today())) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
+        {exists ? (
+          <>
+            <Text style={[styles.readOnlyText, { color: colors.text }]}>{text}</Text>
+            <Text style={[styles.notice, { color: colors.textMuted }]}>
+              未来の日付の記録です。編集はできませんが、削除できます。
+            </Text>
+            <View style={[styles.footer, { borderTopColor: colors.divider }]}>
+              <PressableScale
+                testID="editor-delete"
+                onPress={handleDelete}
+                style={[styles.actionButton, { backgroundColor: colors.danger }]}
+              >
+                <Text style={[styles.buttonText, { color: colors.primaryText }]}>削除</Text>
+              </PressableScale>
+            </View>
+          </>
+        ) : (
+          <Text style={[styles.notice, { color: colors.textMuted }]}>未来の日には書けません</Text>
+        )}
       </SafeAreaView>
     );
   }
@@ -133,6 +153,14 @@ const styles = StyleSheet.create({
     fontSize: typography.size.title,
     fontWeight: typography.weight.medium,
     marginBottom: space.lg,
+  },
+  readOnlyText: {
+    fontSize: typography.size.body,
+    lineHeight: typography.size.body * typography.lineHeight.body,
+  },
+  notice: {
+    fontSize: typography.size.button,
+    marginTop: space.md,
   },
   footer: {
     flexDirection: 'row',

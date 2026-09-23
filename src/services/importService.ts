@@ -7,6 +7,7 @@ import {
 import type { Entry } from '../types';
 import { MAX_TEXT_LENGTH } from '../types';
 import { countChars } from '../utils/text';
+import { isFutureDay } from '../utils/date';
 
 export type ImportFileV1 = {
   version: 1;
@@ -108,7 +109,7 @@ export function classifyEntries(
   const conflicts: Entry[] = [];
   let invalid = 0;
   for (const raw of rawEntries) {
-    if (!isValidEntry(raw) || raw.date > today) {
+    if (!isValidEntry(raw) || isFutureDay(raw.date, today)) {
       invalid++;
       continue;
     }

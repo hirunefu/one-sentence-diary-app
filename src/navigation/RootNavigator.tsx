@@ -50,6 +50,7 @@ function MainTabs() {
         options={{
           title: '今日',
           tabBarButtonTestID: 'tab-home',
+          tabBarAccessibilityLabel: '今日',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'create' : 'create-outline'} size={size} color={color} />
           ),
@@ -61,6 +62,7 @@ function MainTabs() {
         options={{
           title: '履歴',
           tabBarButtonTestID: 'tab-history',
+          tabBarAccessibilityLabel: '履歴',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
           ),
@@ -72,6 +74,7 @@ function MainTabs() {
         options={{
           title: '設定',
           tabBarButtonTestID: 'tab-settings',
+          tabBarAccessibilityLabel: '設定',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
           ),

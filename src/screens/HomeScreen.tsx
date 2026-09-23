@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Alert,
   Animated,
   LayoutAnimation,
@@ -17,7 +18,8 @@ import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useExportReminder } from '../hooks/useExportReminder';
 import { useReduceMotion } from '../hooks/useReduceMotion';
-import { today, addDays } from '../utils/date';
+import { useToday } from '../hooks/useToday';
+import { addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -67,7 +69,9 @@ export function HomeScreen() {
   const bgPhase = useRef(new Animated.Value(0)).current;
   const tapScale = useRef(new Animated.Value(1)).current;
 
-  const todayStr = today();
+  // Follows the date across midnight and app resumes, so a save after
+  // midnight goes to the new day.
+  const todayStr = useToday();
   const { md, dow } = formatJpDate(todayStr);
 
   const last7: StreakDay[] = useMemo(() => {
@@ -121,7 +125,11 @@ export function HomeScreen() {
   }, [tapScale, reduceMotion]);
 
   const handlePressOut = useCallback(() => {
-    if (reduceMotion) return;
+    if (reduceMotion) {
+      // Reduce motion may have turned on mid-press; don't leave it shrunk.
+      tapScale.setValue(1);
+      return;
+    }
     Animated.spring(tapScale, {
       toValue: 1,
       useNativeDriver: true,
@@ -173,6 +181,7 @@ export function HomeScreen() {
         animateButtonLayout(reduceMotion); // "✓ 保存しました" → "保存"
         setJustSaved(false);
       }, SAVED_FEEDBACK_MS);
+      AccessibilityInfo.announceForAccessibility('保存しました');
       // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
       void remindAfterSave(todayStr);
     } catch (e) {
@@ -194,7 +203,7 @@ export function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <View>
+        <View accessible accessibilityRole="header" accessibilityLabel={`${md} ${dow}`}>
           <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
           <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
         </View>
@@ -217,7 +226,7 @@ export function HomeScreen() {
             onPressOut={handlePressOut}
             disabled={buttonDisabled}
             accessibilityRole="button"
-            accessibilityLabel={buttonLabel}
+            accessibilityLabel={justSaved ? '保存しました' : '保存'}
             accessibilityState={{ disabled: buttonDisabled }}
             style={[styles.saveButton, { backgroundColor: animatedBg }]}
           >
