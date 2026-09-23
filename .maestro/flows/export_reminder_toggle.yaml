@@ -9,6 +9,11 @@ appId: com.hirunefu.onesentencediary
 - scrollUntilVisible:
     element:
       id: "settings-switch-export-reminder"
+# The interval rows start below the switch; scroll to the default (1週間)
+# rather than relying on how much of the list the screen height shows.
+- scrollUntilVisible:
+    element:
+      id: "settings-export-interval-7"
 - assertVisible:
     id: "settings-export-interval-7"
 - scrollUntilVisible:
