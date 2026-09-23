@@ -244,15 +244,17 @@ export function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <View accessible accessibilityRole="header" accessibilityLabel={`${md} ${dow}`}>
-          <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
-          <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
-        </View>
-        <View style={styles.streakColumn}>
+      <View style={styles.headerBlock}>
+        <View style={styles.header}>
+          <View accessible accessibilityRole="header" accessibilityLabel={`${md} ${dow}`}>
+            <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
+            <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
+          </View>
           <StreakDisplay days={streak} last7={last7} active={isFocused} />
-          {longestToday && <LongestTodayLine previousLongest={longestToday.previousLongest} />}
         </View>
+        {/* Under the Streak, across the full width so it wraps well at large
+            font sizes. */}
+        {longestToday && <LongestTodayLine previousLongest={longestToday.previousLongest} />}
       </View>
 
       <View style={styles.body}>
@@ -329,16 +331,14 @@ const styles = StyleSheet.create({
     paddingTop: space.xl,
     paddingBottom: space.lg + 2,
   },
-  streakColumn: {
-    flexShrink: 1,
-    alignItems: 'flex-end',
+  headerBlock: {
     gap: space.sm,
+    marginBottom: space.xl,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: space.xl,
   },
   dateMd: {
     fontSize: typography.size.title,
