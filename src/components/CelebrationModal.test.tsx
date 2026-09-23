@@ -9,17 +9,23 @@ jest.mock('../theme/useColors', () => {
 let mockReduceMotion = false;
 jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduceMotion }));
 
-import { CelebrationModal, ENTRANCE_MS, EXIT_MS, PAGE_MS } from './CelebrationModal';
-import type { Celebration } from '../services/celebration';
+import {
+  BUTTON_DELAY_MS,
+  CelebrationModal,
+  ENTRANCE_MS,
+  EXIT_MS,
+  PAGE_MS,
+} from './CelebrationModal';
+import type { MilestoneCelebration } from '../services/celebration';
 
-const seven: Celebration = {
+const seven: MilestoneCelebration = {
   stretchStart: '2026-05-09',
   streak: 7,
   milestone: 7,
   previousLongest: null,
 };
 
-async function show(celebration: Celebration | null = seven) {
+async function show(celebration: MilestoneCelebration | null = seven) {
   const onSettled = jest.fn();
   const onClose = jest.fn();
   const view = await render(
@@ -63,7 +69,8 @@ describe('CelebrationModal', () => {
 
   test('a new Longest streak on the same day is one more line', async () => {
     await show({ ...seven, streak: 14, milestone: 14, previousLongest: 13 });
-    expect(screen.getByText('これまでの最長記録（13日）を超えました。')).toBeTruthy();
+    expect(screen.getByText('最長記録だった13日を、')).toBeTruthy();
+    expect(screen.getByText('超えました。')).toBeTruthy();
   });
 
   test('comes to rest once, after the entrance', async () => {
@@ -108,6 +115,17 @@ describe('CelebrationModal', () => {
     await fireEvent.press(screen.getByTestId('celebration'));
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByTestId('celebration')).toBeTruthy();
+  });
+
+  test('閉じる takes presses from the moment it starts to appear', async () => {
+    const { onClose } = await show();
+    await wait(BUTTON_DELAY_MS - 20);
+    await fireEvent.press(screen.getByTestId('celebration-close'));
+    // Just after it starts to appear, before the entrance has come to rest.
+    await wait(25);
+    await fireEvent.press(screen.getByTestId('celebration-close'));
+    await wait(EXIT_MS + 50);
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   test('閉じる takes no press before it has appeared; Back works from the start', async () => {

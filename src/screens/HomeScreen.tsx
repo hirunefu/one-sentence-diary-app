@@ -17,12 +17,14 @@ import { useIsFocused } from '@react-navigation/native';
 import { EntryInput } from '../components/EntryInput';
 import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { CelebrationModal } from '../components/CelebrationModal';
+import { LongestTodayLine } from '../components/LongestTodayLine';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useCelebration } from '../hooks/useCelebration';
 import { useExportReminder } from '../hooks/useExportReminder';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useToday } from '../hooks/useToday';
+import { longestTodayCopy } from '../services/celebrationCopy';
 import { addDays } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
@@ -111,16 +113,33 @@ export function HomeScreen() {
   const isEmpty = text.trim().length === 0;
 
   // Announced once the saved state and the new Streak have both rendered. A
-  // due celebration tells the Streak itself, so the count is left to it.
+  // due full-screen celebration tells the Streak itself, so the count is left
+  // to it; a new Longest streak alone is told in the same announcement.
   const celebrationDue = celebration.due;
+  const longestDue = celebration.longestDue;
+  const longestAnnouncedRef = useRef<string | null>(null);
   useEffect(() => {
     const before = streakBeforeSaveRef.current;
     if (!justSaved || before === null) return;
     streakBeforeSaveRef.current = null;
+    let message = streak > before && !celebrationDue ? `保存しました。${streak}日連続` : '保存しました';
+    if (streak > before && longestDue) {
+      message += `。${longestTodayCopy(longestDue.previousLongest).spoken}`;
+      longestAnnouncedRef.current = longestDue.key;
+    }
+    AccessibilityInfo.announceForAccessibility(message);
+  }, [justSaved, streak, celebrationDue, longestDue]);
+
+  // A new Longest streak alone that no save announced (written from History):
+  // told when its line appears.
+  const longestToday = celebration.longestToday;
+  useEffect(() => {
+    if (!longestToday || longestAnnouncedRef.current === longestToday.key) return;
+    longestAnnouncedRef.current = longestToday.key;
     AccessibilityInfo.announceForAccessibility(
-      streak > before && !celebrationDue ? `保存しました。${streak}日連続` : '保存しました'
+      longestTodayCopy(longestToday.previousLongest).spoken
     );
-  }, [justSaved, streak, celebrationDue]);
+  }, [longestToday]);
 
   useEffect(() => {
     const target = isEmpty && !justSaved ? 1 : 0;
@@ -230,7 +249,10 @@ export function HomeScreen() {
           <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
           <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
         </View>
-        <StreakDisplay days={streak} last7={last7} active={isFocused} />
+        <View style={styles.streakColumn}>
+          <StreakDisplay days={streak} last7={last7} active={isFocused} />
+          {longestToday && <LongestTodayLine previousLongest={longestToday.previousLongest} />}
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -306,6 +328,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg + 2,
     paddingTop: space.xl,
     paddingBottom: space.lg + 2,
+  },
+  streakColumn: {
+    flexShrink: 1,
+    alignItems: 'flex-end',
+    gap: space.sm,
   },
   header: {
     flexDirection: 'row',

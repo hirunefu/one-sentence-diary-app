@@ -8,34 +8,41 @@ import {
   StyleSheet,
   Text,
   View,
-  type StyleProp,
-  type TextStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Phrases } from './Phrases';
 import { PressableScale } from './PressableScale';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { celebrationCopy } from '../services/celebrationCopy';
-import type { Celebration } from '../services/celebration';
+import type { MilestoneCelebration } from '../services/celebration';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
 import { radius } from '../theme/radius';
 
 // The page fades in, the Streak rises into place and settles, then the words
-// and the button follow. After that nothing moves.
+// and the button follow. After that nothing moves (a new onset of motion would
+// pull attention again). References for the values:
+// - 200 ms fades: Material 3 short4, the default for effects;
+// - 560 ms rise: Material 3 long3–long4, "large expressive transitions"; above
+//   NN/g's 400 ms "very slow" on purpose, for a rare moment. Keep every single
+//   movement at 600 ms or less;
+// - settle spring (stiffness 800, damping 34, ratio ~0.6): Material 3 Expressive
+//   fast spatial;
+// - the exit is shorter than the entrance, and eases in.
 export const PAGE_MS = 200;
 const RISE_DELAY_MS = 120;
 const RISE_MS = 560;
 const WORDS_DELAY_MS = RISE_DELAY_MS + RISE_MS;
 const WORDS_MS = 240;
 const SETTLE_GROW_MS = 90;
-const BUTTON_DELAY_MS = 920;
+export const BUTTON_DELAY_MS = 920;
 const BUTTON_MS = 200;
 export const ENTRANCE_MS = BUTTON_DELAY_MS + BUTTON_MS;
 export const EXIT_MS = 180;
 
 type Props = {
-  celebration: Celebration | null;
+  celebration: MilestoneCelebration | null;
   // The entrance came to rest (the celebration has been seen).
   onSettled: () => void;
   // Closed with 閉じる or Back, after the exit.
@@ -53,7 +60,7 @@ function CelebrationScreen({
   celebration,
   onSettled,
   onClose,
-}: Props & { celebration: Celebration }) {
+}: Props & { celebration: MilestoneCelebration }) {
   const colors = useColors();
   const reduceMotion = useReduceMotion();
   const insets = useSafeAreaInsets();
@@ -72,8 +79,9 @@ function CelebrationScreen({
   const [distance, setDistance] = useState(48);
   const landedRef = useRef(false);
   const exitingRef = useRef(false);
-  // 閉じる takes presses only once it is fully shown, so a tap meant for the tab
-  // bar under it cannot close a celebration nobody has seen. Back always works.
+  // 閉じる takes presses once it starts to appear ("dismissive actions are never
+  // disabled"), not while invisible, so a tap meant for the tab bar under it
+  // cannot close a celebration nobody has seen. Back always works.
   const [closable, setClosable] = useState(false);
   const entranceRef = useRef<Animated.CompositeAnimation | null>(null);
   const messageRef = useRef<View>(null);
@@ -164,7 +172,11 @@ function CelebrationScreen({
     anim.start(({ finished }) => {
       if (finished) land();
     });
-    return () => anim.stop();
+    const buttonTimer = setTimeout(() => setClosable(true), BUTTON_DELAY_MS);
+    return () => {
+      anim.stop();
+      clearTimeout(buttonTimer);
+    };
   }, [reduceMotion, page, rise, words, button, settle]);
 
   const motion = useMemo(
@@ -244,9 +256,17 @@ function CelebrationScreen({
             >
               <Text style={[styles.unit, { color: colors.textMuted }]}>日連続</Text>
               <Text style={[styles.headline, { color: colors.text }]}>{copy.headline}</Text>
-              <Phrases text={copy.line} style={[styles.line, { color: colors.textMuted }]} />
+              <Phrases
+                text={copy.line}
+                boxStyle={styles.lineBox}
+                style={[styles.line, { color: colors.textMuted }]}
+              />
               {copy.longest && (
-                <Phrases text={copy.longest} style={[styles.line, { color: colors.textMuted }]} />
+                <Phrases
+                  text={copy.longest}
+                  boxStyle={styles.lineBox}
+                  style={[styles.line, { color: colors.textMuted }]}
+                />
               )}
             </Animated.View>
           </View>
@@ -267,22 +287,6 @@ function CelebrationScreen({
         </Animated.View>
       </Animated.View>
     </Modal>
-  );
-}
-
-// A line that must wrap (at a large font size) breaks after 「、」, between
-// phrases, instead of inside a word.
-function Phrases({ text, style }: { text: string; style: StyleProp<TextStyle> }) {
-  const phrases = text.replace(/、/g, '、\n').split('\n');
-  if (phrases.length === 1) return <Text style={[styles.lineBox, style]}>{text}</Text>;
-  return (
-    <View style={[styles.lineBox, styles.phrases]}>
-      {phrases.map((phrase, i) => (
-        <Text key={i} style={style}>
-          {phrase}
-        </Text>
-      ))}
-    </View>
   );
 }
 
@@ -322,15 +326,9 @@ const styles = StyleSheet.create({
     marginTop: space.sm,
     maxWidth: 300,
   },
-  phrases: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
   line: {
     fontSize: typography.size.button,
     lineHeight: 22,
-    textAlign: 'center',
   },
   footer: {
     alignItems: 'center',
