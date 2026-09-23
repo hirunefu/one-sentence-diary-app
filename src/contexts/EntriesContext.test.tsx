@@ -120,6 +120,38 @@ describe('EntriesProvider celebration ledger', () => {
     expect(await loadCelebrationLedger()).toEqual(result.current.celebrationLedger);
   });
 
+  test('an import that leaves the Streak as it was keeps a Milestone not yet shown', async () => {
+    await writeBeforeLaunch([0, -1]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    // Reached by writing, while Home is not in front: due, not yet shown.
+    await act(async () => {
+      await result.current.upsert(addDays(today(), -2), 'backfilled');
+    });
+
+    const old = [{ date: addDays(today(), -40), text: 'old', createdAt: 1, updatedAt: 1 }];
+    await act(async () => {
+      await result.current.bulkImport(classifyEntries(old, new Set(), today()), 'skip');
+    });
+
+    expect(decide(result)?.milestone).toBe(3);
+  });
+
+  test('the Streak follows the day past midnight', async () => {
+    jest.useFakeTimers({ now: new Date(2026, 4, 15, 23, 59, 58) });
+    try {
+      await writeBeforeLaunch([-1, -2]);
+      const { result } = await renderHook(() => useEntries(), { wrapper });
+      await waitFor(() => expect(result.current.ready).toBe(true));
+      expect(result.current.streak).toBe(2);
+
+      await act(async () => jest.advanceTimersByTime(5000));
+      expect(result.current.streak).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test('a ledger that cannot be saved is still kept for this session', async () => {
     const { result } = await renderHook(() => useEntries(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));

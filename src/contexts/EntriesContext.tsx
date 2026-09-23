@@ -30,10 +30,12 @@ import {
 } from '../repositories/celebrationRepository';
 import {
   acknowledge,
+  acknowledgeImport,
   EMPTY_LEDGER,
   sameLedger,
   type CelebrationLedger,
 } from '../services/celebration';
+import { useToday } from '../hooks/useToday';
 import { calculateStreak } from '../utils/streak';
 import { isFutureDay, today } from '../utils/date';
 
@@ -140,12 +142,16 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       strategy: ImportStrategy
     ): Promise<ApplyImportResult> => {
       if (!db) throw new Error('DB not ready');
+      const datesBefore = await getAllDatesDesc(db);
       const result = await applyImport(db, classified, strategy);
       const list = await getAllEntriesDesc(db);
       setEntries(list);
-      // A restored Streak was not reached here, so it counts as told. Set in
-      // the same batch as the Entries, so no render sees one without the other.
-      commitCelebrationLedger(acknowledge(list.map((e) => e.date), today(), ledgerRef.current));
+      // A Streak the import restored was not reached here, so it counts as
+      // told. Set in the same batch as the Entries, so no render sees one
+      // without the other.
+      commitCelebrationLedger(
+        acknowledgeImport(datesBefore, list.map((e) => e.date), today(), ledgerRef.current)
+      );
       return result;
     },
     [db, commitCelebrationLedger]
@@ -167,10 +173,12 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     [db]
   );
 
+  // Follows the date past midnight and on returning to the app on a later day.
+  const todayStr = useToday();
   const streak = useMemo(() => {
     const dates = entries.map((e) => e.date);
-    return calculateStreak(dates, today());
-  }, [entries]);
+    return calculateStreak(dates, todayStr);
+  }, [entries, todayStr]);
 
   const value = useMemo(
     () => ({

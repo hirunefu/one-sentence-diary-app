@@ -29,7 +29,9 @@ export type StretchMemory = {
 };
 
 export type CelebrationLedger = {
-  // Newest end first, at most MAX_REMEMBERED_STRETCHES.
+  // Newest end first, at most MAX_REMEMBERED_STRETCHES. Memories that carry
+  // nothing are not kept, and when full the least telling one goes first, so a
+  // Streak repair that rejoins an old stretch still finds what it told.
   stretches: readonly StretchMemory[];
   // The Streak's stretch at the last acknowledgement.
   seen: Stretch | null;
@@ -56,6 +58,9 @@ export const MAX_REMEMBERED_STRETCHES = 8;
 type Range = { start: string; end: string };
 
 const overlaps = (a: Range, b: Range) => a.start <= b.end && b.start <= a.end;
+const byEndDesc = (a: Range, b: Range) => (a.end < b.end ? 1 : a.end > b.end ? -1 : 0);
+const byImportance = (a: StretchMemory, b: StretchMemory) =>
+  b.milestone - a.milestone || b.held - a.held || byEndDesc(a, b);
 const max0 = (values: number[]) => values.reduce((a, v) => Math.max(a, v), 0);
 const asStretch = (s: Stretch | null): Stretch | null =>
   s ? { start: s.start, end: s.end, length: s.length } : null;
@@ -97,10 +102,11 @@ function acknowledgeStretches(
     ),
     held: current.length > otherBest ? Math.max(heldBefore, current.length) : heldBefore,
   };
-  const rest = ledger.stretches.filter((m) => !inherited.includes(m));
-  const remembered = [memory, ...rest]
-    .sort((a, b) => (a.end < b.end ? 1 : a.end > b.end ? -1 : 0))
-    .slice(0, MAX_REMEMBERED_STRETCHES);
+  const rest = ledger.stretches
+    .filter((m) => !inherited.includes(m) && (m.milestone > 0 || m.held > 0))
+    .sort(byImportance)
+    .slice(0, MAX_REMEMBERED_STRETCHES - 1);
+  const remembered = [memory, ...rest].sort(byEndDesc);
   return { stretches: remembered, seen: asStretch(current), longest };
 }
 
@@ -113,6 +119,23 @@ export function acknowledge(
 ): CelebrationLedger {
   const stretches = stretchesOf(sortedDescDates, todayStr);
   return acknowledgeStretches(stretches, currentStretch(stretches, todayStr), ledger);
+}
+
+// An import restores Entries the user did not write here. A Streak it brings
+// back or extends counts as told. One it leaves as it was keeps a celebration
+// that is due but not yet shown; only the Longest streak shown is updated.
+export function acknowledgeImport(
+  sortedDescDatesBefore: readonly string[],
+  sortedDescDatesAfter: readonly string[],
+  todayStr: string,
+  ledger: CelebrationLedger
+): CelebrationLedger {
+  const before = currentStretch(stretchesOf(sortedDescDatesBefore, todayStr), todayStr);
+  const stretches = stretchesOf(sortedDescDatesAfter, todayStr);
+  const after = currentStretch(stretches, todayStr);
+  const unchanged = before?.start === after?.start && before?.end === after?.end;
+  if (unchanged) return { ...ledger, longest: asStretch(holderOf(stretches)) };
+  return acknowledgeStretches(stretches, after, ledger);
 }
 
 export function decideCelebration(
