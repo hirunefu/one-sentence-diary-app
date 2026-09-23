@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '../theme/useColors';
 import type { Colors } from '../theme/colors';
@@ -23,24 +23,23 @@ type Props = {
 // The day's dot fills first ("today is recorded"), then the number rolls
 // ("so the Streak grew").
 const ROLL_DELAY_MS = 140;
-const ROLL_MS = 380;
-const NUM_LINE = typography.size.streakNum + 4;
+const ROLL_MS = 280;
+const FILL_MS = 280;
+const RING_MS = 400;
 
-export function StreakDisplay({ days, last7, active = true }: Props) {
+// Memoized so that typing on Home does not re-render the dots.
+export const StreakDisplay = memo(function StreakDisplay({ days, last7, active = true }: Props) {
   const colors = useColors();
   const reduceMotion = useReduceMotion();
   const recordedCount = last7.filter((d) => d.recorded).length;
 
   // What is on screen lags behind the props while inactive, so the change
-  // can be played when the screen comes back.
-  const [shownDays, setShownDays] = useState(days);
-  const [shownLast7, setShownLast7] = useState(last7);
-  useEffect(() => {
-    if (active) {
-      setShownDays(days);
-      setShownLast7(last7);
-    }
-  }, [active, days, last7]);
+  // can be played when the screen comes back. Derived during render rather
+  // than in an effect, so no frame ever shows a half-updated state.
+  const [shown, setShown] = useState({ days, last7 });
+  if (active && (shown.days !== days || shown.last7 !== last7)) {
+    setShown({ days, last7 });
+  }
 
   return (
     // Read as one sentence by screen readers instead of a number, a suffix and
@@ -51,11 +50,11 @@ export function StreakDisplay({ days, last7, active = true }: Props) {
       accessibilityLabel={`${days}日連続。直近7日のうち${recordedCount}日記録あり`}
     >
       <View style={styles.numRow}>
-        <RollingNumber value={shownDays} colors={colors} reduceMotion={reduceMotion} />
+        <RollingNumber value={shown.days} colors={colors} reduceMotion={reduceMotion} />
         <Text style={[styles.suffix, { color: colors.textMuted }]}>日連続</Text>
       </View>
       <View style={styles.dots}>
-        {shownLast7.map((d, i) => (
+        {shown.last7.map((d, i) => (
           <Dot
             key={d.date}
             testID={`streak-dot-${i}`}
@@ -69,10 +68,20 @@ export function StreakDisplay({ days, last7, active = true }: Props) {
       <Text style={[styles.label, { color: colors.textMuted }]}>直近7日</Text>
     </View>
   );
-}
+});
 
-// The old number leaves upwards while the new one rises from below (downwards
-// when the Streak shrinks), then the new number settles with a small bounce.
+type Roll = {
+  value: number;
+  // The number rolling out, or null when at rest.
+  previous: number | null;
+  // 0 = the old number in place, 1 = the new one in place. A fresh value per
+  // roll, so the first frame of a roll is already its starting frame.
+  progress: Animated.Value;
+};
+
+// When the Streak grows, the old number leaves upwards while the new one
+// rises from below, then the new number settles with a small bounce. A
+// shrinking Streak just changes: a loss is not a moment to dwell on.
 function RollingNumber({
   value,
   colors,
@@ -82,55 +91,68 @@ function RollingNumber({
   colors: Colors;
   reduceMotion: boolean;
 }) {
-  const [previous, setPrevious] = useState<number | null>(null);
-  const [direction, setDirection] = useState(1);
-  const progress = useRef(new Animated.Value(1)).current;
+  const [roll, setRoll] = useState<Roll>(() => ({
+    value,
+    previous: null,
+    progress: new Animated.Value(1),
+  }));
+  if (roll.value !== value) {
+    const grew = value > roll.value && !reduceMotion;
+    setRoll({
+      value,
+      previous: grew ? roll.value : null,
+      progress: new Animated.Value(grew ? 0 : 1),
+    });
+  }
   const settle = useRef(new Animated.Value(1)).current;
-  const lastValueRef = useRef(value);
+  // The roll travels one line, which grows with the OS font size.
+  const [distance, setDistance] = useState<number>(typography.size.streakNum);
 
   useEffect(() => {
-    const prev = lastValueRef.current;
-    lastValueRef.current = value;
-    if (prev === value) return;
-    if (reduceMotion) {
-      setPrevious(null);
-      progress.setValue(1);
+    // Also the way out of a roll that was stopped half-way (a newer value,
+    // or reduce motion switched on meanwhile).
+    settle.setValue(1);
+    if (roll.previous === null) return;
+    const land = () => {
+      // Pinned explicitly: a re-render must not depend on the native driver
+      // having synced its end values back to JS.
+      roll.progress.setValue(1);
       settle.setValue(1);
+      setRoll((r) => (r === roll ? { ...r, previous: null } : r));
+    };
+    if (reduceMotion) {
+      land();
       return;
     }
-    setPrevious(prev);
-    setDirection(value > prev ? 1 : -1);
-    progress.setValue(0);
-    settle.setValue(1);
     const anim = Animated.sequence([
-      Animated.timing(progress, {
+      Animated.timing(roll.progress, {
         toValue: 1,
         duration: ROLL_MS,
         delay: ROLL_DELAY_MS,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(settle, { toValue: 1.12, duration: 90, useNativeDriver: true }),
-      Animated.spring(settle, { toValue: 1, friction: 4, tension: 90, useNativeDriver: true }),
+      Animated.timing(settle, { toValue: 1.1, duration: 90, useNativeDriver: true }),
+      Animated.spring(settle, { toValue: 1, stiffness: 800, damping: 34, useNativeDriver: true }),
     ]);
     anim.start(({ finished }) => {
-      if (finished) setPrevious(null);
+      if (finished) land();
     });
     return () => anim.stop();
-  }, [value, reduceMotion, progress, settle]);
+  }, [roll, reduceMotion, settle]);
 
-  const incomingY = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [direction * NUM_LINE, 0],
-  });
-  const outgoingY = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -direction * NUM_LINE],
-  });
+  const motion = useMemo(
+    () => ({
+      incomingY: roll.progress.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }),
+      outgoingY: roll.progress.interpolate({ inputRange: [0, 1], outputRange: [0, -distance] }),
+      outgoingOpacity: roll.progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+    }),
+    [roll.progress, distance]
+  );
 
   return (
-    <View style={styles.numWindow}>
-      {previous !== null && (
+    <View style={styles.numWindow} onLayout={(e) => setDistance(e.nativeEvent.layout.height)}>
+      {roll.previous !== null && (
         <Animated.Text
           importantForAccessibility="no-hide-descendants"
           style={[
@@ -138,12 +160,12 @@ function RollingNumber({
             styles.outgoing,
             {
               color: colors.text,
-              opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-              transform: [{ translateY: outgoingY }],
+              opacity: motion.outgoingOpacity,
+              transform: [{ translateY: motion.outgoingY }],
             },
           ]}
         >
-          {previous}
+          {roll.previous}
         </Animated.Text>
       )}
       <Animated.Text
@@ -151,19 +173,19 @@ function RollingNumber({
           styles.num,
           {
             color: colors.text,
-            opacity: previous === null ? 1 : progress,
-            transform: [{ translateY: previous === null ? 0 : incomingY }, { scale: settle }],
+            opacity: roll.progress,
+            transform: [{ translateY: motion.incomingY }, { scale: settle }],
           },
         ]}
       >
-        {value}
+        {roll.value}
       </Animated.Text>
     </View>
   );
 }
 
-// A day that becomes recorded fills from the centre with a small overshoot,
-// and a thin ring spreads out from it and fades.
+// A day that becomes recorded fills from the centre while the dot swells a
+// little and settles back, and a thin ring spreads out from it and fades.
 function Dot({
   recorded,
   isToday,
@@ -182,9 +204,10 @@ function Dot({
   const wasRecordedRef = useRef(recorded);
 
   useEffect(() => {
-    if (wasRecordedRef.current === recorded) return;
+    const becameRecorded = recorded && !wasRecordedRef.current;
     wasRecordedRef.current = recorded;
-    if (reduceMotion || !recorded) {
+    if (!becameRecorded || reduceMotion) {
+      // Also lands a pop that was stopped half-way by reduce motion.
       fill.setValue(recorded ? 1 : 0);
       ring.setValue(0);
       return;
@@ -192,17 +215,38 @@ function Dot({
     fill.setValue(0);
     ring.setValue(0);
     const anim = Animated.parallel([
-      Animated.spring(fill, { toValue: 1, friction: 4, tension: 140, useNativeDriver: true }),
+      Animated.timing(fill, {
+        toValue: 1,
+        duration: FILL_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
       Animated.timing(ring, {
         toValue: 1,
-        duration: 560,
+        duration: RING_MS,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
     ]);
-    anim.start();
+    anim.start(({ finished }) => {
+      if (finished) {
+        fill.setValue(1);
+        ring.setValue(0);
+      }
+    });
     return () => anim.stop();
   }, [recorded, reduceMotion, fill, ring]);
+
+  const motion = useMemo(
+    () => ({
+      // The fill is clipped by the dot, so the swell is on the dot itself.
+      swell: fill.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.3, 1] }),
+      ringOpacity: ring.interpolate({ inputRange: [0, 0.05, 1], outputRange: [0, 0.6, 0] }),
+      // Stays within the dot's own cell, clear of its neighbours and the text.
+      ringScale: ring.interpolate({ inputRange: [0, 1], outputRange: [1, 1.9] }),
+    }),
+    [fill, ring]
+  );
 
   return (
     <View testID={testID} style={styles.dotSlot}>
@@ -213,15 +257,15 @@ function Dot({
           styles.ring,
           {
             borderColor: colors.text,
-            opacity: ring.interpolate({ inputRange: [0, 0.05, 1], outputRange: [0, 0.6, 0] }),
-            transform: [{ scale: ring.interpolate({ inputRange: [0, 1], outputRange: [1, 2.6] }) }],
+            opacity: motion.ringOpacity,
+            transform: [{ scale: motion.ringScale }],
           },
         ]}
       />
-      <View
+      <Animated.View
         style={[
           styles.dot,
-          { backgroundColor: colors.border },
+          { backgroundColor: colors.border, transform: [{ scale: motion.swell }] },
           isToday && styles.todayOutline,
           isToday && { borderColor: colors.text },
         ]}
@@ -232,7 +276,7 @@ function Dot({
             { backgroundColor: colors.text, transform: [{ scale: fill }] },
           ]}
         />
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -247,15 +291,15 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     gap: 4,
   },
+  // Clips the rolling numbers to one line. Its height comes from the number
+  // itself, so it follows the OS font size.
   numWindow: {
-    height: NUM_LINE,
     overflow: 'hidden',
-    justifyContent: 'flex-end',
   },
   num: {
     fontSize: typography.size.streakNum,
     fontWeight: typography.weight.semibold,
-    lineHeight: NUM_LINE,
+    lineHeight: typography.size.streakNum,
     textAlign: 'right',
   },
   outgoing: {
@@ -293,7 +337,6 @@ const styles = StyleSheet.create({
   ring: {
     position: 'absolute',
     borderWidth: 1,
-    overflow: 'visible',
   },
   label: {
     fontSize: typography.size.micro,
