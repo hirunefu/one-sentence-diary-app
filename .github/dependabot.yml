@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      # The navigators peer-depend on a matching @react-navigation/native
+      # (and each other's shared deps), so update them in one PR.
+      react-navigation:
+        patterns:
+          - "@react-navigation/*"
     ignore:
       # The Expo SDK dictates these versions (node_modules/expo/
       # bundledNativeModules.json plus the SDK's relatedPackages). expo-doctor
