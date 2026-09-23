@@ -8,7 +8,6 @@ export type Colors = {
   divider: string;
   primary: string;
   primaryText: string;
-  success: string;
   warning: string;
   danger: string;
   // Calendar weekday tints for Sunday / Saturday day numbers.
@@ -31,7 +30,6 @@ export const lightColors: Colors = {
   divider: '#f0f0f0',
   primary: '#111111',
   primaryText: '#ffffff',
-  success: '#2e7d32',
   warning: '#b35300',
   danger: '#c62828',
   sunday: '#b83c3c',
@@ -51,7 +49,6 @@ export const darkColors: Colors = {
   divider: '#1f1f1f',
   primary: '#ececec',
   primaryText: '#0d0d0d',
-  success: '#66bb6a',
   warning: '#ffb74d',
   danger: '#ef5350',
   sunday: '#e57373',
