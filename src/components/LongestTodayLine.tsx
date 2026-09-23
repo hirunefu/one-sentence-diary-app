@@ -44,8 +44,8 @@ export function LongestTodayLine({ previousLongest }: { previousLongest: number 
 
 const styles = StyleSheet.create({
   box: {
+    alignSelf: 'flex-end',
     alignItems: 'flex-end',
-    maxWidth: 220,
   },
   text: {
     fontSize: typography.size.caption,
