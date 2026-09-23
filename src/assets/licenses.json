@@ -1121,7 +1121,7 @@
   },
   {
     "name": "@react-navigation/bottom-tabs",
-    "version": "7.15.10",
+    "version": "7.19.2",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/react-navigation/react-navigation.git",
@@ -1153,7 +1153,7 @@
   },
   {
     "name": "@react-navigation/native-stack",
-    "version": "7.15.1",
+    "version": "7.19.2",
     "license": "MIT",
     "author": null,
     "homepage": "https://github.com/software-mansion/react-native-screens#readme",
