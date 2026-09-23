@@ -7,7 +7,7 @@ All data is stored locally on the device via SQLite. No accounts, no servers, no
 ## Features
 
 - **One entry per day** — text capped at 140 characters, single-line input
-- **Streak tracking** — current and longest consecutive-day streaks
+- **Streak tracking** — the current streak on Home, the longest in History, and a quiet full-screen moment at milestones (3, 7, 14, 30 days …)
 - **Two history views** — calendar (Japanese locale, weekend coloring) and timeline
 - **Local reminders** — daily notification that fires only on days you haven't written yet
 - **App lock** — optional biometric unlock (Face ID / Touch ID / fingerprint) via `expo-local-authentication`

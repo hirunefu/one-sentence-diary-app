@@ -1,0 +1,87 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# This flow assumes the runner set the date to 2026-05-15 via
+# `./scripts/e2e/run.sh --at-date 2026-05-15 milestone_celebration`.
+
+# Backfill two days: a Streak of 2, which is not a Milestone.
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-14"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 14"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-13"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 13"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+
+- tapOn:
+    id: "tab-home"
+- assertVisible: "2"
+- assertNotVisible:
+    id: "celebration"
+
+# Saving today makes 3, the first Milestone: the full-screen celebration.
+- tapOn:
+    id: "entry-input"
+- inputText: "day 15"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+- extendedWaitUntil:
+    visible:
+      id: "celebration"
+    timeout: 5000
+- assertVisible:
+    id: "celebration-number"
+    text: "3"
+- assertVisible: "3日、続きました。"
+
+# Back closes it.
+- pressKey: back
+- extendedWaitUntil:
+    notVisible:
+      id: "celebration"
+    timeout: 3000
+- assertVisible:
+    id: "entry-input"
+
+# Deleting today's Entry and writing it again does not tell 3 again. Home keeps
+# the text after the delete, so saving writes it back.
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-15"
+- tapOn:
+    id: "editor-delete"
+- tapOn:
+    text: "削除"
+- tapOn:
+    id: "tab-home"
+- tapOn:
+    id: "save-button"
+# The saved feedback outlasts the pause before a celebration, so any
+# celebration would be on screen by the time the button is back.
+- extendedWaitUntil:
+    visible:
+      id: "save-button"
+    timeout: 5000
+- assertNotVisible:
+    id: "celebration"
+- assertVisible: "3"

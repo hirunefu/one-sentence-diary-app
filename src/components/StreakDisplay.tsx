@@ -24,8 +24,15 @@ type Props = {
 // ("so the Streak grew").
 const ROLL_DELAY_MS = 140;
 const ROLL_MS = 280;
+const SETTLE_GROW_MS = 90;
+// About how long the settle spring (stiffness 800, damping 34) takes to rest.
+const SETTLE_SPRING_MS = 300;
 const FILL_MS = 280;
 const RING_MS = 400;
+
+// From a change of the Streak to the number at rest. What follows the in-place
+// celebration (the full-screen one) waits for it.
+export const STREAK_IN_PLACE_MS = ROLL_DELAY_MS + ROLL_MS + SETTLE_GROW_MS + SETTLE_SPRING_MS;
 
 // Memoized so that typing on Home does not re-render the dots.
 export const StreakDisplay = memo(function StreakDisplay({ days, last7, active = true }: Props) {
@@ -132,7 +139,7 @@ function RollingNumber({
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(settle, { toValue: 1.1, duration: 90, useNativeDriver: true }),
+      Animated.timing(settle, { toValue: 1.1, duration: SETTLE_GROW_MS, useNativeDriver: true }),
       Animated.spring(settle, { toValue: 1, stiffness: 800, damping: 34, useNativeDriver: true }),
     ]);
     anim.start(({ finished }) => {

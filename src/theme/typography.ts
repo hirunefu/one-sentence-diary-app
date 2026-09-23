@@ -1,5 +1,6 @@
 export const typography = {
   size: {
+    display: 88,     // the Streak on the full-screen celebration
     body: 22,
     heading: 18,     // screen and dialog headings
     streakNum: 18,

@@ -77,8 +77,30 @@ appId: com.hirunefu.onesentencediary
 - tapOn:
     id: "editor-save"
 
-# Back to home, the streak counter must read 7.
+# Back to home. The Streak jumped from 1 to 7 while Home was hidden, so the
+# full-screen celebration tells only the highest Milestone crossed: 7, not 3.
 - tapOn:
     id: "tab-home"
+- extendedWaitUntil:
+    visible:
+      id: "celebration"
+    timeout: 5000
+- assertVisible:
+    id: "celebration-number"
+    text: "7"
+- assertVisible: "1週間、続きました。"
+- tapOn:
+    id: "celebration-close"
+- extendedWaitUntil:
+    notVisible:
+      id: "celebration"
+    timeout: 3000
+
+# The streak counter must read 7, and History shows it as the Longest streak.
 - assertVisible: "7"
 - assertVisible: "日連続"
+- tapOn:
+    id: "tab-history"
+- assertVisible:
+    id: "history-longest-streak"
+    text: "最長記録 7日"
