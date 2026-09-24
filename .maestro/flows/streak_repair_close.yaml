@@ -1,0 +1,91 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Frozen at 2026-05-15. Backfill 05-11..05-13, leaving 05-14 (yesterday) missing
+# and today unwritten.
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-13"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 13"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-12"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 12"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-11"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 11"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "streak-repair"
+- assertVisible: "4日連続になります。"
+- assertNotVisible:
+    id: "streak-number"
+
+# 閉じる declines it for this missing day: 「また今日から」 instead.
+- tapOn:
+    id: "streak-repair-close"
+- assertVisible:
+    id: "streak-restart"
+    text: "また今日から"
+- assertNotVisible:
+    id: "streak-repair"
+
+# Still closed after a relaunch.
+- launchApp:
+    stopApp: true
+- assertVisible:
+    id: "streak-restart"
+- assertNotVisible:
+    id: "streak-repair"
+
+# Backfill from History still repairs. This stretch was never the Streak on
+# Home, so reaching 4 tells its highest Milestone, 3.
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-14"
+- tapOn:
+    id: "entry-input"
+- inputText: "yesterday after all"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "tab-home"
+- extendedWaitUntil:
+    visible:
+      id: "celebration"
+    timeout: 5000
+- pressKey: back
+- extendedWaitUntil:
+    notVisible:
+      id: "celebration"
+    timeout: 3000
+- assertVisible:
+    id: "streak-number"
+    text: "4"
+- assertNotVisible:
+    id: "streak-restart"
