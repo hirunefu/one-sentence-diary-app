@@ -18,6 +18,18 @@ describe('useKeyboardShown', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
+  test('runs the given callback just before each change', async () => {
+    jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
+    const order: string[] = [];
+    const { result } = await renderHook(() => {
+      const shown = useKeyboardShown(() => order.push(`before:${shown}`));
+      return shown;
+    });
+    await act(() => handlers.keyboardDidShow?.());
+    expect(order).toEqual(['before:false']);
+    expect(result.current).toBe(true);
+  });
+
   test('starts from whether the keyboard is up, then follows it', async () => {
     jest.spyOn(Keyboard, 'isVisible').mockReturnValue(true);
     const { result, unmount } = await renderHook(() => useKeyboardShown());

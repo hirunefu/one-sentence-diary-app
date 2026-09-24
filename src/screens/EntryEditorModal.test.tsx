@@ -38,12 +38,19 @@ describe('EntryEditorModal', () => {
   });
   afterEach(() => jest.restoreAllMocks());
 
+  test("asks for that day's sentence, not today's", async () => {
+    await open();
+    const input = await screen.findByTestId('entry-input');
+    const d = new Date(`${day()}T00:00:00`);
+    expect(input.props.placeholder).toBe(`${d.getMonth() + 1}月${d.getDate()}日の一文を書く`);
+  });
+
   test('names the day as a date, not as digits', async () => {
     await open();
     expect(await screen.findByText(toJpDate(day()))).toBeTruthy();
   });
 
-  test('the delete confirmation names the day and that it cannot be undone, not the Streak', async () => {
+  test('the delete confirmation names the day and the undo, not the Streak', async () => {
     const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     await open();
     await fireEvent.press(await screen.findByTestId('editor-delete'));

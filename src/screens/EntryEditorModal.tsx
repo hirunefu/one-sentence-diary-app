@@ -109,6 +109,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
   }
 
   const isEmpty = text.trim().length === 0;
+  const dayLabel = `${fromDateString(date).getMonth() + 1}月${fromDateString(date).getDate()}日`;
   const saveBg = isEmpty ? colors.disabled : colors.primary;
 
   return (
@@ -118,7 +119,9 @@ export function EntryEditorModal({ route, navigation }: Props) {
         value={text}
         onChangeText={setText}
         autoFocus
-        accessibilityLabel={`${fromDateString(date).getMonth() + 1}月${fromDateString(date).getDate()}日の一文`}
+        accessibilityLabel={`${dayLabel}の一文`}
+        // Names the day being written, not 「今日」.
+        placeholder={`${dayLabel}の一文を書く`}
       />
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         {exists && (

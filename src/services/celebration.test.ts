@@ -27,7 +27,7 @@ class Diary {
   ) {
     this.dates = new Set(dates);
     // First launch: what is already there counts as told.
-    this.ledger ??= acknowledge(this.sorted(), today, EMPTY_LEDGER);
+    this.ledger ??= seedLedger(this.sorted(), today);
     this.decide();
   }
 
@@ -272,6 +272,22 @@ describe('Milestones', () => {
     diary.write(0);
     expect(diary.told()).toEqual([]);
     expect(diary.streak()).toBe(8);
+  });
+
+  test('an import ending the day before yesterday, then a one-tap repair, tells nothing', () => {
+    const diary = new Diary(TODAY);
+    diary.toHistory().importDates(daysBefore(TODAY, 2, 101)).toHome();
+    diary.write(-1);
+    expect(diary.streak()).toBe(101);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('an imported old stretch, later joined by Backfill, tells nothing it had reached', () => {
+    const diary = new Diary(TODAY);
+    diary.toHistory().importDates(daysBefore(TODAY, 3, 42));
+    diary.write(-2).write(-1).toHome();
+    expect(diary.streak()).toBe(42);
+    expect(diary.told()).toEqual([]);
   });
 
   test('after an import, writing the day that reaches the next Milestone tells it', () => {
@@ -594,13 +610,25 @@ describe('seedLedger', () => {
     expect(seedLedger([], TODAY)).toEqual(EMPTY_LEDGER);
   });
 
-  test('is the plain acknowledgement whenever yesterday has an Entry', () => {
+  test('agrees with the plain acknowledgement on today: the Streak and the Longest streak', () => {
     for (let mask = 0; mask < 1 << 14; mask++) {
-      if (!(mask & 0b10)) continue;
       const dates = datesOf(mask, 14);
       const plain = acknowledge(dates, TODAY, EMPTY_LEDGER);
-      expect(sameLedger(seedLedger(dates, TODAY), plain)).toBe(true);
+      const seeded = seedLedger(dates, TODAY);
+      expect(seeded.seen).toEqual(plain.seen);
+      expect(seeded.longest).toEqual(plain.longest);
     }
+  });
+
+  test('an older stretch joined by Backfill and a repair tells nothing it had reached', () => {
+    // 40 days ending three days ago, from before this version.
+    const dates = daysBefore(TODAY, 3, 42);
+    const ledger = seedLedger(dates, TODAY);
+    const backfilled = [addDays(TODAY, -2), ...dates];
+    const afterBackfill = decideCelebration(backfilled, TODAY, ledger);
+    expect(afterBackfill.celebration).toBeNull();
+    const repaired = [addDays(TODAY, -1), ...backfilled];
+    expect(decideCelebration(repaired, TODAY, afterBackfill.next).celebration).toBeNull();
   });
 
   test('a one-tap repair of yesterday tells nothing the stretch before the gap had reached', () => {

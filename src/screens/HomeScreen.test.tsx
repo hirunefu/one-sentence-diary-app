@@ -11,7 +11,8 @@ jest.mock('../theme/useColors', () => {
   const { lightColors } = require('../theme/colors');
   return { useColors: () => lightColors, useIsDark: () => false };
 });
-jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
+let mockReduceMotion = true;
+jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduceMotion }));
 const mockRemind = jest.fn(async () => {});
 jest.mock('../hooks/useExportReminder', () => ({
   useExportReminder: () => ({ remindAfterSave: mockRemind }),
@@ -37,6 +38,8 @@ import { upsertEntry } from '../repositories/entriesRepository';
 import { AFTER_CLOSE_PAUSE_MS, revealDelayMs } from '../hooks/useCelebration';
 import { ENTRANCE_MS } from '../components/CelebrationModal';
 import { STREAK_IN_PLACE_MS } from '../components/StreakDisplay';
+import { FADE_MS } from '../components/LongestTodayLine';
+import { LayoutAnimation } from 'react-native';
 import { addDays, today } from '../utils/date';
 import { HomeScreen, SAVED_FEEDBACK_MS } from './HomeScreen';
 
@@ -47,6 +50,7 @@ beforeEach(async () => {
   mockFocused = true;
   mockScreenReader = false;
   mockKeyboard = false;
+  mockReduceMotion = true;
   await AsyncStorage.clear();
 });
 
@@ -280,6 +284,9 @@ describe('HomeScreen Streak break and repair', () => {
     expect(focus).not.toHaveBeenCalled();
     await wait(STREAK_IN_PLACE_MS);
     expect(focus).toHaveBeenCalledTimes(1);
+    expect(focus.mock.calls[0]![0].props.accessibilityLabel).toMatch(/^5日連続。/);
+    // The seed remembered the stretch before the gap: no late Milestone.
+    await wait(revealDelayMs({ reduceMotion: true, screenReader: true }));
     expect(screen.queryByTestId('celebration')).toBeNull();
   });
 
@@ -301,9 +308,12 @@ describe('HomeScreen Streak break and repair', () => {
     await repairFromEditor(rerender);
     await wait(STREAK_IN_PLACE_MS + 100);
     expect(screen.getByTestId('longest-today')).toBeTruthy();
-    // Focus follows on the next frame after the line appears.
-    await wait(50);
+    // Focus follows once the line has faded in, not while it is transparent.
+    await wait(FADE_MS - 20);
+    expect(focus).not.toHaveBeenCalled();
+    await wait(20);
     expect(focus).toHaveBeenCalledTimes(1);
+    expect(focus.mock.calls[0]![0].props.testID).toBe('longest-today');
     expect(announce).not.toHaveBeenCalled();
   });
 
@@ -318,6 +328,28 @@ describe('HomeScreen Streak break and repair', () => {
     await open();
     expect(screen.queryByTestId('streak-repair')).toBeNull();
     expect(screen.getByTestId('streak-restart')).toBeTruthy();
+  });
+
+  test('閉じる takes TalkBack to the Streak, now 「また今日から」', async () => {
+    mockScreenReader = true;
+    await writeBeforeLaunch([-2, -3]);
+    await open();
+    await fireEvent.press(screen.getByTestId('streak-repair-close'));
+    await wait(50);
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(focus.mock.calls[0]![0].props.accessibilityLabel).toMatch(/^また今日から。/);
+  });
+
+  test('saving today from 「また今日から」 lets the number rise without a layout animation', async () => {
+    mockReduceMotion = false;
+    await writeBeforeLaunch([-3, -4]);
+    await open();
+    const layout = jest.spyOn(LayoutAnimation, 'configureNext');
+    await fireEvent.changeText(screen.getByTestId('entry-input'), 'back again');
+    await fireEvent.press(screen.getByTestId('save-button'));
+    await waitFor(() => expect(screen.getByTestId('streak-number')).toHaveTextContent('1'));
+    expect(layout).not.toHaveBeenCalled();
+    layout.mockRestore();
   });
 
   test("deleting yesterday's Entry does not ask for it back", async () => {
