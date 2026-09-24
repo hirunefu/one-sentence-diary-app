@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -29,15 +30,24 @@ import {
   saveCelebrationLedger,
 } from '../repositories/celebrationRepository';
 import {
-  acknowledge,
+  loadDeclinedRepairDay,
+  saveDeclinedRepairDay,
+} from '../repositories/streakRepairRepository';
+import {
   acknowledgeImport,
   EMPTY_LEDGER,
   sameLedger,
+  seedLedger,
   type CelebrationLedger,
 } from '../services/celebration';
 import { useToday } from '../hooks/useToday';
-import { calculateStreak } from '../utils/streak';
-import { isFutureDay, today } from '../utils/date';
+import {
+  currentStretch,
+  streakBreakOf,
+  stretchesOf,
+  type StreakBreak,
+} from '../utils/streak';
+import { addDays, isFutureDay, today } from '../utils/date';
 
 type EntriesContextValue = {
   ready: boolean;
@@ -58,6 +68,12 @@ type EntriesContextValue = {
   celebrationLedger: CelebrationLedger;
   // Keeps it in memory at once and saves it in the background.
   commitCelebrationLedger: (next: CelebrationLedger) => void;
+  // The date everything here is computed from; follows midnight and resumes.
+  todayStr: string;
+  // What Home says about a break, and the Streak repair it can offer.
+  streakBreak: StreakBreak;
+  // Closes the repair offer for that missing day (kept across restarts).
+  declineRepair: (missingDay: string) => void;
 };
 
 const EntriesContext = createContext<EntriesContextValue | null>(null);
@@ -69,6 +85,18 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [celebrationLedger, setCelebrationLedger] = useState<CelebrationLedger>(EMPTY_LEDGER);
   const ledgerRef = useRef(celebrationLedger);
+  const [declinedRepairDay, setDeclinedRepairDay] = useState<string | null>(null);
+  // Follows the date past midnight and on returning to the app on a later day.
+  const todayStr = useToday();
+  const todayRef = useRef(todayStr);
+  useLayoutEffect(() => {
+    todayRef.current = todayStr;
+  }, [todayStr]);
+
+  const declineRepair = useCallback((missingDay: string) => {
+    setDeclinedRepairDay(missingDay);
+    saveDeclinedRepairDay(missingDay).catch((e) => console.error('declined repair save failed', e));
+  }, []);
 
   const commitCelebrationLedger = useCallback((next: CelebrationLedger) => {
     if (sameLedger(next, ledgerRef.current)) return;
@@ -81,23 +109,26 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     setInitError(null);
     setReady(false);
     try {
-      const [opened, stored] = await Promise.all([
+      const [opened, stored, declined] = await Promise.all([
         openDatabase(),
         loadCelebrationLedger().catch((e) => {
           console.error('celebration ledger load failed', e);
           return null;
         }),
+        // Known before ready, so a declined offer never flashes.
+        loadDeclinedRepairDay().catch(() => null),
       ]);
       const list = await getAllEntriesDesc(opened);
       setDb(opened);
       setEntries(list);
+      setDeclinedRepairDay(declined);
       if (stored) {
         ledgerRef.current = stored;
         setCelebrationLedger(stored);
       } else {
         // First launch, the first launch after an update, or an unreadable
-        // ledger: the Streak already there counts as told.
-        commitCelebrationLedger(acknowledge(list.map((e) => e.date), today(), EMPTY_LEDGER));
+        // ledger: what is already there counts as told.
+        commitCelebrationLedger(seedLedger(list.map((e) => e.date), todayRef.current));
       }
       setReady(true);
     } catch (e) {
@@ -131,9 +162,11 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     async (date: string) => {
       if (!db) throw new Error('DB not ready');
       await repoDelete(db, date);
+      // Deleting yesterday on purpose is not a gap to be offered back.
+      if (date === addDays(todayRef.current, -1)) declineRepair(date);
       await refresh(db);
     },
-    [db, refresh]
+    [db, refresh, declineRepair]
   );
 
   const bulkImport = useCallback(
@@ -173,12 +206,15 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     [db]
   );
 
-  // Follows the date past midnight and on returning to the app on a later day.
-  const todayStr = useToday();
-  const streak = useMemo(() => {
-    const dates = entries.map((e) => e.date);
-    return calculateStreak(dates, todayStr);
-  }, [entries, todayStr]);
+  const stretches = useMemo(
+    () => stretchesOf(entries.map((e) => e.date), todayStr),
+    [entries, todayStr]
+  );
+  const streak = currentStretch(stretches, todayStr)?.length ?? 0;
+  const streakBreak = useMemo(
+    () => streakBreakOf(stretches, todayStr, declinedRepairDay),
+    [stretches, todayStr, declinedRepairDay]
+  );
 
   const value = useMemo(
     () => ({
@@ -194,6 +230,9 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       bulkImport,
       celebrationLedger,
       commitCelebrationLedger,
+      todayStr,
+      streakBreak,
+      declineRepair,
     }),
     [
       ready,
@@ -208,6 +247,9 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       bulkImport,
       celebrationLedger,
       commitCelebrationLedger,
+      todayStr,
+      streakBreak,
+      declineRepair,
     ]
   );
 

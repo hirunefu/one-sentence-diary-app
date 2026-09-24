@@ -8,6 +8,12 @@ export function toDateString(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+// '2026-05-14' → '2026年5月14日', so screen readers read a date, not digits.
+export function toJpDate(s: string): string {
+  const [y, m, d] = s.split('-').map(Number) as [number, number, number];
+  return `${y}年${m}月${d}日`;
+}
+
 export function fromDateString(s: string): Date {
   const [y, m, d] = s.split('-').map(Number) as [number, number, number];
   return new Date(y, m - 1, d);

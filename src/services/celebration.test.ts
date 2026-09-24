@@ -5,6 +5,7 @@ import {
   EMPTY_LEDGER,
   MAX_REMEMBERED_STRETCHES,
   sameLedger,
+  seedLedger,
   type CelebrationLedger,
 } from './celebration';
 import { calculateStreak } from '../utils/streak';
@@ -579,5 +580,45 @@ describe('random walks', () => {
         expect(again.celebration).toBeNull();
       }
     }
+  });
+});
+
+// The ledger for a first launch, an update or an unreadable ledger.
+describe('seedLedger', () => {
+  const datesOf = (mask: number, span: number) =>
+    Array.from({ length: span }, (_, i) => i)
+      .filter((i) => mask & (1 << i))
+      .map((i) => addDays(TODAY, -i));
+
+  test('is empty without Entries', () => {
+    expect(seedLedger([], TODAY)).toEqual(EMPTY_LEDGER);
+  });
+
+  test('is the plain acknowledgement whenever yesterday has an Entry', () => {
+    for (let mask = 0; mask < 1 << 14; mask++) {
+      if (!(mask & 0b10)) continue;
+      const dates = datesOf(mask, 14);
+      const plain = acknowledge(dates, TODAY, EMPTY_LEDGER);
+      expect(sameLedger(seedLedger(dates, TODAY), plain)).toBe(true);
+    }
+  });
+
+  test('a one-tap repair of yesterday tells nothing the stretch before the gap had reached', () => {
+    for (let mask = 0; mask < 1 << 14; mask++) {
+      if (mask & 0b10 || !(mask & 0b100)) continue;
+      const dates = datesOf(mask, 14);
+      let before = 0;
+      while (mask & (1 << (2 + before))) before++;
+      const repaired = [...dates, addDays(TODAY, -1)].sort().reverse();
+      const { celebration } = decideCelebration(repaired, TODAY, seedLedger(dates, TODAY));
+      if (celebration?.milestone != null) expect(celebration.milestone).toBeGreaterThan(before);
+    }
+  });
+
+  test('a Milestone the repair itself reaches is still told', () => {
+    const dates = daysBefore(TODAY, 2, 7);
+    const repaired = [...dates, addDays(TODAY, -1)].sort().reverse();
+    const { celebration } = decideCelebration(repaired, TODAY, seedLedger(dates, TODAY));
+    expect(celebration?.milestone).toBe(7);
   });
 });

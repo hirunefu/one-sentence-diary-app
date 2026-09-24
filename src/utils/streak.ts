@@ -49,3 +49,33 @@ export function holderOf(stretches: readonly Stretch[]): Stretch | null {
 export function calculateStreak(sortedDescDates: readonly string[], todayStr: string): number {
   return currentStretch(stretchesOf(sortedDescDates, todayStr), todayStr)?.length ?? 0;
 }
+
+// What Home says about a break in the Streak (Streak repair in CONTEXT.md).
+// - count: the Streak as a number (also before the first Entry, which is not a break);
+// - restart: two or more days missing: 「また今日から」, never a 0;
+// - blank: only yesterday missing and today unwritten: no number, the offer speaks.
+export type StreakHeadline = 'count' | 'restart' | 'blank';
+// Offered only when yesterday is the one missing day. streakAfter is exactly what
+// Home shows once yesterday has an Entry (it counts today if written).
+export type RepairOffer = { missingDay: string; streakAfter: number };
+export type StreakBreak = { headline: StreakHeadline; offer: RepairOffer | null };
+
+export function streakBreakOf(
+  stretches: readonly Stretch[],
+  todayStr: string,
+  // The missing day whose offer was closed (or whose Entry was deleted).
+  declinedDay: string | null
+): StreakBreak {
+  const newest = stretches[0];
+  if (!newest) return { headline: 'count', offer: null };
+  const yesterday = addDays(todayStr, -1);
+  const todayWritten = newest.end === todayStr;
+  const yesterdayWritten = todayWritten ? newest.length > 1 : newest.end === yesterday;
+  if (yesterdayWritten) return { headline: 'count', offer: null };
+  const before = todayWritten ? stretches[1] : newest;
+  const offer =
+    before !== undefined && before.end === addDays(todayStr, -2) && declinedDay !== yesterday
+      ? { missingDay: yesterday, streakAfter: before.length + 1 + (todayWritten ? 1 : 0) }
+      : null;
+  return { headline: todayWritten ? 'count' : offer ? 'blank' : 'restart', offer };
+}
