@@ -1,0 +1,104 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+# Frozen at 2026-05-15. Write today, then backfill 05-09..05-13, leaving 05-14
+# (yesterday) as the only missing day.
+- tapOn:
+    id: "entry-input"
+- inputText: "today"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+- assertVisible:
+    id: "streak-number"
+    text: "1"
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-13"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 13"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-12"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 12"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-11"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 11"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-10"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 10"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "day-2026-05-09"
+- tapOn:
+    id: "entry-input"
+- inputText: "day 9"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+
+# Home: 「1日連続」 stays, and the offer counts today: 5 + 1 + 1 = 7.
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "streak-repair"
+- assertVisible: "7日連続になります。"
+- assertVisible:
+    id: "streak-number"
+    text: "1"
+
+# One tap opens the editor on yesterday, named as a date.
+- tapOn:
+    id: "streak-repair-write"
+- assertVisible: "2026年5月14日"
+- tapOn:
+    id: "entry-input"
+- inputText: "yesterday"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+
+# Back on Home: the Streak comes back to 7, and the Milestone it reached is told.
+- extendedWaitUntil:
+    visible:
+      id: "celebration"
+    timeout: 5000
+- assertVisible:
+    id: "celebration-number"
+    text: "7"
+- assertVisible: "1週間、続きました。"
+- pressKey: back
+- extendedWaitUntil:
+    notVisible:
+      id: "celebration"
+    timeout: 3000
+- assertVisible:
+    id: "streak-number"
+    text: "7"
+- assertNotVisible:
+    id: "streak-repair"
+- assertNotVisible:
+    id: "streak-restart"

@@ -4,16 +4,55 @@ appId: com.hirunefu.onesentencediary
     clearState: true
     stopApp: true
 
-# Frozen at 2026-05-15. Seed only today + day-before-yesterday → streak = 1
-# (today is recorded, but yesterday is missing → streak does not extend back).
+# Frozen at 2026-05-15 (./scripts/e2e/run.sh --at-date 2026-05-15 streak_break).
+# No Entry yet: the first-use view, nothing about a break.
+- assertVisible:
+    id: "streak-number"
+    text: "0"
+- assertNotVisible:
+    id: "streak-restart"
+- assertNotVisible:
+    id: "streak-repair"
 
+# Only 05-12: 05-13 and 05-14 are missing. 「また今日から」 takes the number's
+# place: no 0, no offer.
+- tapOn:
+    id: "tab-history"
+- tapOn:
+    id: "history-tab-calendar"
+- tapOn:
+    id: "day-2026-05-12"
+- tapOn:
+    id: "entry-input"
+- inputText: "three days ago"
+- hideKeyboard
+- tapOn:
+    id: "editor-save"
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "streak-restart"
+    text: "また今日から"
+- assertNotVisible:
+    id: "streak-number"
+- assertNotVisible:
+    id: "streak-repair"
+
+# Writing today: 「1日連続」 takes the place again.
 - tapOn:
     id: "entry-input"
 - inputText: "today"
 - hideKeyboard
 - tapOn:
     id: "save-button"
+- assertVisible:
+    id: "streak-number"
+    text: "1"
+- assertNotVisible:
+    id: "streak-restart"
 
+# With 05-13 too, only yesterday is missing: the Streak stays 1 (today is not
+# connected to 05-13), and writing yesterday is offered: 2 + 1 + today = 4.
 - tapOn:
     id: "tab-history"
 - tapOn:
@@ -26,8 +65,12 @@ appId: com.hirunefu.onesentencediary
 - hideKeyboard
 - tapOn:
     id: "editor-save"
-
 - tapOn:
     id: "tab-home"
-- assertVisible: "1"
+- assertVisible:
+    id: "streak-number"
+    text: "1"
 - assertVisible: "日連続"
+- assertVisible:
+    id: "streak-repair"
+- assertVisible: "4日連続になります。"
