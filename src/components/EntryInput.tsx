@@ -1,18 +1,22 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useRef } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, TextInput, View } from 'react-native';
 import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 
-type Props = {
+// What the field is called. TalkBack names an EditText by its text, or by its
+// placeholder while it is empty, and doesn't speak its contentDescription
+// (accessibilityLabel); a visible `label` names it through labelFor instead.
+type Naming =
+  | { label: string; accessibilityLabel?: never }
+  | { label?: never; accessibilityLabel: string };
+
+type Props = Naming & {
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
+  placeholder: string;
   autoFocus?: boolean;
-  // What the text field is, for screen readers (the placeholder disappears
-  // as soon as there is text).
-  accessibilityLabel?: string;
 };
 
 const WARNING_THRESHOLD = 20;
@@ -21,11 +25,15 @@ const DANGER_THRESHOLD = 10;
 export function EntryInput({
   value,
   onChangeText,
-  placeholder = '今日の一文を書く',
+  placeholder,
   autoFocus,
-  accessibilityLabel = '今日の一文',
+  label,
+  accessibilityLabel,
 }: Props) {
   const colors = useColors();
+  // Unique per field: Home stays mounted under the Backfill editor, and
+  // Android names a field by the first view it finds with this id.
+  const labelId = useId();
 
   // Enforce the "one-sentence diary" contract at the input layer: strip
   // newlines, and on length overflow drop the change entirely instead of
@@ -65,12 +73,19 @@ export function EntryInput({
 
   return (
     <View style={styles.container}>
-      <Text
-        testID="remaining-count"
-        style={[styles.count, { color: countColor, fontWeight: countWeight }]}
-      >
-        残り {remaining} 字
-      </Text>
+      <View style={styles.header}>
+        {label !== undefined && (
+          <Text nativeID={labelId} style={[styles.label, { color: colors.textMuted }]}>
+            {label}
+          </Text>
+        )}
+        <Text
+          testID="remaining-count"
+          style={[styles.count, { color: countColor, fontWeight: countWeight }]}
+        >
+          残り {remaining} 字
+        </Text>
+      </View>
       <TextInput
         testID="entry-input"
         value={value}
@@ -79,6 +94,7 @@ export function EntryInput({
         placeholderTextColor={colors.textPlaceholder}
         autoFocus={autoFocus}
         accessibilityLabel={accessibilityLabel}
+        accessibilityLabelledBy={label !== undefined ? labelId : undefined}
         multiline
         textAlignVertical="top"
         style={[styles.input, { color: colors.text }]}
@@ -96,9 +112,20 @@ const styles = StyleSheet.create({
     lineHeight: typography.size.body * typography.lineHeight.body,
     padding: 0,
   },
-  count: {
-    alignSelf: 'flex-end',
-    fontSize: typography.size.caption,
+  // The label on the left, the counter on the right; they wrap at large font
+  // sizes rather than overlap.
+  header: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
     marginBottom: 6,
+  },
+  label: {
+    fontSize: typography.size.caption,
+  },
+  count: {
+    marginLeft: 'auto',
+    fontSize: typography.size.caption,
   },
 });

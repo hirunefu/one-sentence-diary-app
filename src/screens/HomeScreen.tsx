@@ -28,6 +28,7 @@ import { useKeyboardShown } from '../hooks/useKeyboardShown';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useScreenReaderEnabled } from '../hooks/useScreenReaderEnabled';
 import { longestTodayCopy } from '../services/celebrationCopy';
+import { promptFor } from '../services/promptCopy';
 import { addDays } from '../utils/date';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { useColors } from '../theme/useColors';
@@ -350,8 +351,15 @@ export function HomeScreen() {
 
       <View style={styles.body}>
         {/* No autoFocus: the soft keyboard would hide the streak and the tab
-            bar the moment Home opens. Tapping the input brings it up. */}
-        <EntryInput value={text} onChangeText={handleChangeText} />
+            bar the moment Home opens. Tapping the input brings it up.
+            The placeholder is the Prompt of the day (CONTEXT.md), so it is
+            never saved, and it turns over with the date at midnight. */}
+        <EntryInput
+          value={text}
+          onChangeText={handleChangeText}
+          label="今日の一文"
+          placeholder={promptFor(todayStr)}
+        />
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>

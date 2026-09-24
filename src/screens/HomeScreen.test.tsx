@@ -34,13 +34,14 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 import { EntriesProvider, useEntries } from '../contexts/EntriesContext';
 import type { DiaryDatabase } from '../db/database';
 import { openTestDatabase } from '../db/testDatabase';
-import { upsertEntry } from '../repositories/entriesRepository';
+import { getEntryByDate, upsertEntry } from '../repositories/entriesRepository';
 import { AFTER_CLOSE_PAUSE_MS, revealDelayMs } from '../hooks/useCelebration';
 import { ENTRANCE_MS } from '../components/CelebrationModal';
 import { STREAK_IN_PLACE_MS } from '../components/StreakDisplay';
 import { FADE_MS } from '../components/LongestTodayLine';
 import { LayoutAnimation } from 'react-native';
 import { addDays, today } from '../utils/date';
+import { promptFor } from '../services/promptCopy';
 import { HomeScreen, SAVED_FEEDBACK_MS } from './HomeScreen';
 
 beforeEach(async () => {
@@ -368,5 +369,63 @@ describe('HomeScreen Streak break and repair', () => {
     mockKeyboard = false;
     await rerender(app());
     expect(screen.getByTestId('streak-repair')).toBeTruthy();
+  });
+});
+
+describe('HomeScreen Prompt', () => {
+  const input = () => screen.findByTestId('entry-input');
+
+  test("an empty day shows the day's Prompt, not a fixed instruction", async () => {
+    await openHome();
+    expect(await screen.findByPlaceholderText(promptFor(today()))).toBe(await input());
+    expect(screen.queryByPlaceholderText('今日の一文を書く')).toBeNull();
+  });
+
+  test('the field keeps its name, 今日の一文, before and after typing', async () => {
+    await openHome();
+    expect(screen.getByText('今日の一文')).toBeVisible();
+    expect(await input()).toHaveAccessibleName('今日の一文');
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    expect(await input()).toHaveAccessibleName('今日の一文');
+  });
+
+  test('the Prompt is never saved', async () => {
+    await openHome();
+    await fireEvent.press(screen.getByTestId('save-button'));
+    expect(await getEntryByDate(await mockDb, today())).toBeNull();
+
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    await fireEvent.press(screen.getByTestId('save-button'));
+    await waitFor(async () =>
+      expect((await getEntryByDate(await mockDb, today()))?.text).toBe('川沿いを歩いた')
+    );
+  });
+
+  test('clearing the text, or coming back the same day, brings back the same Prompt', async () => {
+    const view = await openHome();
+    const prompt = promptFor(today());
+    await fireEvent.changeText(await input(), '川沿い');
+    await fireEvent.changeText(await input(), '');
+    expect(await input()).toHaveProp('placeholder', prompt);
+
+    await view.unmount();
+    await openHome();
+    expect(await input()).toHaveProp('placeholder', prompt);
+  });
+
+  describe('at midnight', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    test('the Prompt turns over with the date', async () => {
+      jest.setSystemTime(new Date(2026, 8, 25, 23, 59, 0));
+      await openHome();
+      expect(await input()).toHaveProp('placeholder', promptFor('2026-09-25'));
+
+      await act(async () => jest.advanceTimersByTime(2 * 60 * 1000));
+      expect(screen.getByText(/9月26日/)).toBeTruthy();
+      expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
+      expect(promptFor('2026-09-26')).not.toBe(promptFor('2026-09-25'));
+    });
   });
 });
