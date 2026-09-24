@@ -79,6 +79,10 @@ appId: com.hirunefu.onesentencediary
     visible:
       id: "celebration"
     timeout: 5000
+- assertVisible:
+    id: "celebration-number"
+    text: "4"
+- assertVisible: "3日、続きました。"
 - pressKey: back
 - extendedWaitUntil:
     notVisible:

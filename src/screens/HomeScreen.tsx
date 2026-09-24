@@ -18,7 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EntryInput } from '../components/EntryInput';
 import { STREAK_IN_PLACE_MS, StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { CelebrationModal } from '../components/CelebrationModal';
-import { LongestTodayLine } from '../components/LongestTodayLine';
+import { FADE_MS, LongestTodayLine } from '../components/LongestTodayLine';
 import { StreakRepairLine } from '../components/StreakRepairLine';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
@@ -79,7 +79,11 @@ export function HomeScreen() {
   } = useEntries();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const screenReader = useScreenReaderEnabled();
-  const keyboardShown = useKeyboardShown();
+  // The repair offer steps aside while the keyboard is up; the text field
+  // moves with it smoothly rather than in one jump.
+  const keyboardShown = useKeyboardShown(() => {
+    if (streakBreak.offer) animateButtonLayout(reduceMotion);
+  });
   const { remindAfterSave } = useExportReminder();
   const reduceMotion = useReduceMotion();
   const isFocused = useIsFocused();
@@ -201,7 +205,8 @@ export function HomeScreen() {
     longestAnnouncedRef.current = longestToday.key;
     if (focusLongestKey.current === longestToday.key) {
       focusLongestKey.current = null;
-      requestAnimationFrame(() => focusOn(longestLineRef));
+      // Once it has faded in: TalkBack skips a view that is still transparent.
+      setTimeout(() => focusOn(longestLineRef), FADE_MS);
       return;
     }
     AccessibilityInfo.announceForAccessibility(
@@ -282,8 +287,12 @@ export function HomeScreen() {
       // saving 中もラベルは "保存" のまま、disabled 状態だけが変わる (二重タップ防止)
       setSaving(true);
       streakBeforeSaveRef.current = streak;
+      const headlineBeforeSave = streakBreak.headline;
       await upsert(todayStr, text);
-      animateButtonLayout(reduceMotion); // "保存" → "✓ 保存しました" の幅変化を滑らかに
+      // "保存" → "✓ 保存しました" の幅変化を滑らかに. Not when the Streak comes back
+      // from 「また今日から」 or a blank in the same commit: the layout animation
+      // would slide that row sideways, and the number's rise is the moment.
+      if (headlineBeforeSave === 'count') animateButtonLayout(reduceMotion);
       setJustSaved(true);
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
       savedTimerRef.current = setTimeout(() => {

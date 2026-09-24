@@ -1,4 +1,3 @@
-import { addDays } from '../utils/date';
 import { highestMilestoneAtMost } from '../utils/milestone';
 import {
   currentStretch,
@@ -126,33 +125,54 @@ export function acknowledge(
   return acknowledgeStretches(stretches, currentStretch(stretches, todayStr), ledger);
 }
 
-// An import restores Entries the user did not write here. A Streak it brings
-// back or extends counts as told. One it leaves as it was keeps a celebration
-// that is due but not yet shown; only the Longest streak shown is updated.
+// Remembers each given stretch (oldest first) as told, as of its own last day,
+// so a later Backfill or Streak repair that joins it tells nothing it had
+// reached. Only stretches long enough to have reached a Milestone matter.
+function rememberAsTold(
+  sortedDescDates: readonly string[],
+  stretches: readonly Stretch[],
+  ledger: CelebrationLedger
+): CelebrationLedger {
+  let next = ledger;
+  for (const s of [...stretches].reverse()) {
+    if (highestMilestoneAtMost(s.length) === null) continue;
+    next = { ...acknowledge(sortedDescDates, s.end, next), seen: next.seen };
+  }
+  return next;
+}
+
+// An import restores Entries the user did not write here: every stretch it
+// brings or changes counts as told. A Streak it leaves as it was keeps a
+// celebration that is due but not yet shown; only the Longest streak shown is
+// updated.
 export function acknowledgeImport(
   sortedDescDatesBefore: readonly string[],
   sortedDescDatesAfter: readonly string[],
   todayStr: string,
   ledger: CelebrationLedger
 ): CelebrationLedger {
-  const before = currentStretch(stretchesOf(sortedDescDatesBefore, todayStr), todayStr);
+  const beforeStretches = stretchesOf(sortedDescDatesBefore, todayStr);
   const stretches = stretchesOf(sortedDescDatesAfter, todayStr);
+  const known = new Set(beforeStretches.map((s) => `${s.start}|${s.end}`));
+  const changed = stretches.filter((s) => !known.has(`${s.start}|${s.end}`));
+  const remembered = rememberAsTold(sortedDescDatesAfter, changed, ledger);
+  const before = currentStretch(beforeStretches, todayStr);
   const after = currentStretch(stretches, todayStr);
   const unchanged = before?.start === after?.start && before?.end === after?.end;
-  if (unchanged) return { ...ledger, longest: asStretch(holderOf(stretches)) };
-  return acknowledgeStretches(stretches, after, ledger);
+  if (unchanged) return { ...remembered, longest: asStretch(holderOf(stretches)) };
+  return acknowledgeStretches(stretches, after, remembered);
 }
 
 // The ledger for a first launch, an update or an unreadable ledger: what is
-// already there counts as told. Acknowledged as of yesterday first, so the
-// stretch a Streak repair of yesterday would rejoin (it ends the day before
-// yesterday, while the Streak is 0 or 1) counts as told too.
+// already there counts as told, including stretches that are not the Streak
+// now but that a Backfill or a Streak repair could join to it later.
 export function seedLedger(
   sortedDescDates: readonly string[],
   todayStr: string
 ): CelebrationLedger {
-  const asOfYesterday = acknowledge(sortedDescDates, addDays(todayStr, -1), EMPTY_LEDGER);
-  return acknowledge(sortedDescDates, todayStr, asOfYesterday);
+  const stretches = stretchesOf(sortedDescDates, todayStr);
+  const remembered = rememberAsTold(sortedDescDates, stretches, EMPTY_LEDGER);
+  return acknowledge(sortedDescDates, todayStr, remembered);
 }
 
 export function decideCelebration(

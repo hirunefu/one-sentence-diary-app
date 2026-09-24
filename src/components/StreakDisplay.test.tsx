@@ -245,6 +245,8 @@ describe('StreakDisplay after a break', () => {
     expect(queryByText('日連続')).toBeNull();
     expect(queryByTestId('streak-restart')).toBeNull();
     expect(getByLabelText('直近7日のうち2日記録あり')).toBeTruthy();
+    // The row keeps its height with an invisible 「また今日から」.
+    expect(queryByText('また今日から', hidden)).toHaveStyle({ opacity: 0 });
   });
 
   test.each(['restart', 'blank'] as const)(

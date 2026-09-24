@@ -233,17 +233,20 @@ describe('EntriesProvider Streak break and repair', () => {
     expect(again.result.current.streakBreak.offer).toBeNull();
   });
 
-  test("deleting yesterday's Entry declines its repair, another day's does not", async () => {
+  test("deleting yesterday's Entry declines its repair", async () => {
     await writeBeforeLaunch([-1, -2, -3]);
     const { result } = await renderHook(() => useEntries(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
     await act(async () => result.current.remove(yesterday()));
     expect(result.current.streakBreak).toEqual({ headline: 'restart', offer: null });
+  });
 
-    await act(async () => result.current.upsert(yesterday(), 'back'));
-    await act(async () => result.current.upsert(today(), 'today'));
-    await act(async () => result.current.remove(addDays(today(), -3)));
-    expect(result.current.streak).toBe(3);
+  test("deleting another day's Entry leaves the offer standing", async () => {
+    await writeBeforeLaunch([-2, -3, -4]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => result.current.remove(addDays(today(), -4)));
+    expect(result.current.streakBreak.offer).toEqual({ missingDay: yesterday(), streakAfter: 3 });
   });
 
   test('an unreadable declined day still offers the repair', async () => {
