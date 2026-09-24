@@ -305,6 +305,16 @@ describe('useCelebration, a new Longest streak alone', () => {
     expect(again.result.current.celebration.longestDue).toBeNull();
   });
 
+  test("goes when today's Entry is deleted and the Streak drops", async () => {
+    await writeBeforeLaunch(EARLIER_AND_CURRENT);
+    const hook = await launch();
+    await write(hook, 0);
+    await wait(STREAK_IN_PLACE_MS);
+    expect(longest(hook)).toBe('10@11');
+    await act(async () => hook.result.current.entries.remove(today()));
+    expect(longest(hook)).toBeNull();
+  });
+
   test('waits for Home when today is written from History', async () => {
     await writeBeforeLaunch(EARLIER_AND_CURRENT);
     const hook = await launch(false);

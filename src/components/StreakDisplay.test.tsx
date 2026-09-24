@@ -13,7 +13,7 @@ jest.mock('../theme/useColors', () => {
 let mockReduceMotion = false;
 jest.mock('../hooks/useReduceMotion', () => ({ useReduceMotion: () => mockReduceMotion }));
 
-import { StreakDisplay } from './StreakDisplay';
+import { STREAK_IN_PLACE_MS, StreakDisplay } from './StreakDisplay';
 
 const allRecorded = (todayStr: string) => {
   return Array.from({ length: 7 }, (_, i) => ({
@@ -210,3 +210,99 @@ function numbersAtFullOpacity(tree: unknown): string[] {
   walk(tree);
   return found;
 }
+
+describe('StreakDisplay after a break', () => {
+  const week = (recorded: number[]) =>
+    Array.from({ length: 7 }, (_, i) => ({
+      date: `2026-05-${String(9 + i).padStart(2, '0')}`,
+      recorded: recorded.includes(i),
+      isToday: i === 6,
+    }));
+  const hidden = { includeHiddenElements: true };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockReduceMotion = false;
+  });
+  afterEach(() => jest.useRealTimers());
+
+  test('two or more days missing: 「また今日から」 in place of the number, never a 0', async () => {
+    const { queryByText, getByLabelText, getByTestId } = await render(
+      <StreakDisplay days={0} last7={week([2, 3])} headline="restart" />
+    );
+    expect(getByTestId('streak-restart')).toHaveTextContent('また今日から');
+    expect(queryByText('0')).toBeNull();
+    expect(queryByText('日連続')).toBeNull();
+    expect(getByLabelText('また今日から。直近7日のうち2日記録あり')).toBeTruthy();
+    expect(getByTestId('streak-dot-6')).toBeTruthy();
+  });
+
+  test('while a repair is offered: no number and no words, only the dots', async () => {
+    const { queryByText, queryByTestId, getByLabelText } = await render(
+      <StreakDisplay days={0} last7={week([3, 4])} headline="blank" />
+    );
+    expect(queryByText('0')).toBeNull();
+    expect(queryByText('日連続')).toBeNull();
+    expect(queryByTestId('streak-restart')).toBeNull();
+    expect(getByLabelText('直近7日のうち2日記録あり')).toBeTruthy();
+  });
+
+  test.each(['restart', 'blank'] as const)(
+    'coming back from %s, the number rises in and no 0 leaves',
+    async (headline) => {
+      const { queryByText, getByTestId, rerender } = await render(
+        <StreakDisplay days={0} last7={week([3, 4])} headline={headline} />
+      );
+      await rerender(<StreakDisplay days={1} last7={week([3, 4, 6])} headline="count" />);
+      expect(queryByText('0', hidden)).toBeNull();
+      expect(getByTestId('streak-number')).toHaveTextContent('1');
+      expect(getByTestId('streak-number')).toHaveStyle({ opacity: 0 });
+
+      await act(async () => jest.advanceTimersByTime(STREAK_IN_PLACE_MS + 500));
+      expect(queryByText('0', hidden)).toBeNull();
+      expect(getByTestId('streak-number')).toHaveStyle({ opacity: 1 });
+    }
+  );
+
+  test('with reduce motion, the number comes back at once', async () => {
+    mockReduceMotion = true;
+    const { getByTestId, rerender } = await render(
+      <StreakDisplay days={0} last7={week([3])} headline="restart" />
+    );
+    await rerender(<StreakDisplay days={1} last7={week([3, 6])} headline="count" />);
+    expect(getByTestId('streak-number')).toHaveStyle({ opacity: 1 });
+  });
+
+  test('when the last Entries are deleted, the first-use 0 is there at once', async () => {
+    const { getByTestId, rerender } = await render(
+      <StreakDisplay days={0} last7={week([3])} headline="restart" />
+    );
+    await rerender(<StreakDisplay days={0} last7={week([])} headline="count" />);
+    expect(getByTestId('streak-number')).toHaveTextContent('0');
+    expect(getByTestId('streak-number')).toHaveStyle({ opacity: 1 });
+  });
+
+  test('falling into a break changes at once: the old number does not roll out', async () => {
+    const { queryByText, getByTestId, rerender } = await render(
+      <StreakDisplay days={5} last7={week([1, 2, 3, 4, 5])} headline="count" />
+    );
+    await rerender(<StreakDisplay days={0} last7={week([1, 2, 3, 4])} headline="restart" />);
+    expect(queryByText('5', hidden)).toBeNull();
+    expect(getByTestId('streak-restart')).toBeTruthy();
+  });
+
+  test('while inactive, coming back waits for the screen, then plays', async () => {
+    const { queryByTestId, getByTestId, rerender } = await render(
+      <StreakDisplay days={0} last7={week([3])} headline="restart" active={false} />
+    );
+    await rerender(
+      <StreakDisplay days={1} last7={week([3, 6])} headline="count" active={false} />
+    );
+    expect(queryByTestId('streak-restart')).toBeTruthy();
+
+    await rerender(<StreakDisplay days={1} last7={week([3, 6])} headline="count" active />);
+    expect(getByTestId('streak-number')).toHaveStyle({ opacity: 0 });
+    await act(async () => jest.advanceTimersByTime(STREAK_IN_PLACE_MS + 500));
+    expect(getByTestId('streak-number')).toHaveStyle({ opacity: 1 });
+  });
+});

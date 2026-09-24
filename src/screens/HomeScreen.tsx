@@ -13,19 +13,23 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EntryInput } from '../components/EntryInput';
-import { StreakDisplay, StreakDay } from '../components/StreakDisplay';
+import { STREAK_IN_PLACE_MS, StreakDisplay, StreakDay } from '../components/StreakDisplay';
 import { CelebrationModal } from '../components/CelebrationModal';
 import { LongestTodayLine } from '../components/LongestTodayLine';
+import { StreakRepairLine } from '../components/StreakRepairLine';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useCelebration } from '../hooks/useCelebration';
 import { useExportReminder } from '../hooks/useExportReminder';
+import { useKeyboardShown } from '../hooks/useKeyboardShown';
 import { useReduceMotion } from '../hooks/useReduceMotion';
-import { useToday } from '../hooks/useToday';
+import { useScreenReaderEnabled } from '../hooks/useScreenReaderEnabled';
 import { longestTodayCopy } from '../services/celebrationCopy';
 import { addDays } from '../utils/date';
+import type { RootStackParamList } from '../navigation/RootNavigator';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -61,7 +65,21 @@ function formatJpDate(dateStr: string): { md: string; dow: string } {
 
 export function HomeScreen() {
   const colors = useColors();
-  const { ready, initError, retryInit, getByDate, upsert, streak, entries } = useEntries();
+  const {
+    ready,
+    initError,
+    retryInit,
+    getByDate,
+    upsert,
+    streak,
+    entries,
+    todayStr,
+    streakBreak,
+    declineRepair,
+  } = useEntries();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const screenReader = useScreenReaderEnabled();
+  const keyboardShown = useKeyboardShown();
   const { remindAfterSave } = useExportReminder();
   const reduceMotion = useReduceMotion();
   const isFocused = useIsFocused();
@@ -80,9 +98,9 @@ export function HomeScreen() {
   const bgPhase = useRef(new Animated.Value(0)).current;
   const tapScale = useRef(new Animated.Value(1)).current;
 
-  // Follows the date across midnight and app resumes, so a save after
-  // midnight goes to the new day.
-  const todayStr = useToday();
+  // todayStr follows the date across midnight and app resumes (from the
+  // provider, so the number, the dots and a repair offer share one day), and a
+  // save after midnight goes to the new day.
   const { md, dow } = formatJpDate(todayStr);
   // The full-screen celebration of a Milestone or a new Longest streak.
   const celebration = useCelebration({ enabled: isFocused && ready && loaded, todayStr });
@@ -130,12 +148,62 @@ export function HomeScreen() {
     AccessibilityInfo.announceForAccessibility(message);
   }, [justSaved, streak, celebrationDue, longestDue]);
 
+  // Streak repair. The offer steps aside while the keyboard is up: Home does
+  // not scroll, and it asks for nothing while today is being written.
+  const offer = keyboardShown ? null : streakBreak.offer;
+  const streakRef = useRef<View>(null);
+  const longestLineRef = useRef<View>(null);
+  const repairOpenedFor = useRef<string | null>(null);
+  const focusLongestKey = useRef<string | null>(null);
+  const focusOn = (ref: React.RefObject<View | null>) => {
+    if (ref.current) AccessibilityInfo.sendAccessibilityEvent(ref.current, 'focus');
+  };
+
+  const writeYesterday = () => {
+    if (!offer) return;
+    repairOpenedFor.current = offer.missingDay;
+    // Home stays mounted, so today's draft is kept.
+    navigation.navigate('EntryEditor', { date: offer.missingDay });
+  };
+
+  const closeOffer = () => {
+    if (!offer) return;
+    animateButtonLayout(reduceMotion);
+    declineRepair(offer.missingDay);
+    // The pressed button is gone: TalkBack lands on the Streak.
+    if (screenReader) requestAnimationFrame(() => focusOn(streakRef));
+  };
+
+  // Back in front after writing yesterday: TalkBack is taken to the result (the
+  // Streak, or a new Longest streak's line) instead of the button that is gone.
+  // A Milestone's full screen takes focus itself.
+  useEffect(() => {
+    if (!isFocused) return;
+    const day = repairOpenedFor.current;
+    repairOpenedFor.current = null;
+    if (!day || !screenReader || !entries.some((e) => e.date === day)) return;
+    if (celebration.due) return;
+    if (celebration.longestDue) {
+      focusLongestKey.current = celebration.longestDue.key;
+      return;
+    }
+    const timer = setTimeout(() => focusOn(streakRef), STREAK_IN_PLACE_MS);
+    return () => clearTimeout(timer);
+    // Only on coming back into focus.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused]);
+
   // A new Longest streak alone that no save announced (written from History):
-  // told when its line appears.
+  // told when its line appears, or focused when a repair from Home made it.
   const longestToday = celebration.longestToday;
   useEffect(() => {
     if (!longestToday || longestAnnouncedRef.current === longestToday.key) return;
     longestAnnouncedRef.current = longestToday.key;
+    if (focusLongestKey.current === longestToday.key) {
+      focusLongestKey.current = null;
+      requestAnimationFrame(() => focusOn(longestLineRef));
+      return;
+    }
     AccessibilityInfo.announceForAccessibility(
       longestTodayCopy(longestToday.previousLongest).spoken
     );
@@ -250,11 +318,25 @@ export function HomeScreen() {
             <Text style={[styles.dateMd, { color: colors.text }]}>{md}</Text>
             <Text style={[styles.dateDow, { color: colors.textMuted }]}>{dow}</Text>
           </View>
-          <StreakDisplay days={streak} last7={last7} active={isFocused} />
+          <StreakDisplay
+            ref={streakRef}
+            days={streak}
+            last7={last7}
+            active={isFocused}
+            headline={streakBreak.headline}
+          />
         </View>
         {/* Under the Streak, across the full width so it wraps well at large
             font sizes. */}
-        {longestToday && <LongestTodayLine previousLongest={longestToday.previousLongest} />}
+        {offer ? (
+          <StreakRepairLine
+            streakAfter={offer.streakAfter}
+            onWrite={writeYesterday}
+            onClose={closeOffer}
+          />
+        ) : longestToday ? (
+          <LongestTodayLine ref={longestLineRef} previousLongest={longestToday.previousLongest} />
+        ) : null}
       </View>
 
       <View style={styles.body}>

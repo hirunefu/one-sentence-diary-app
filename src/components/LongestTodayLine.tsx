@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import { Animated, Easing, StyleSheet, type View } from 'react-native';
 import { Phrases } from './Phrases';
 import { longestTodayCopy } from '../services/celebrationCopy';
 import { useColors } from '../theme/useColors';
@@ -10,7 +10,14 @@ const FADE_MS = 200;
 // Home's quiet line on the day the Streak passes the Longest streak without
 // reaching a Milestone. It fades in once (opacity only, so also with reduce
 // motion) and then stays still for the rest of the day.
-export function LongestTodayLine({ previousLongest }: { previousLongest: number }) {
+export function LongestTodayLine({
+  previousLongest,
+  ref,
+}: {
+  previousLongest: number;
+  // For moving screen-reader focus to the line.
+  ref?: React.Ref<View>;
+}) {
   const colors = useColors();
   const copy = longestTodayCopy(previousLongest);
   const opacity = useRef(new Animated.Value(0)).current;
@@ -31,6 +38,7 @@ export function LongestTodayLine({ previousLongest }: { previousLongest: number 
   const text = [styles.text, { color: colors.textMuted }];
   return (
     <Animated.View
+      ref={ref}
       testID="longest-today"
       accessible
       accessibilityLabel={copy.spoken}

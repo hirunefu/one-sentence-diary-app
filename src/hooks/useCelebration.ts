@@ -10,6 +10,7 @@ import {
 import { useAppActive } from './useAppActive';
 import { useReduceMotion } from './useReduceMotion';
 import { useScreenReaderEnabled } from './useScreenReaderEnabled';
+import { calculateStreak } from '../utils/streak';
 
 // A short breath between the in-place celebration landing and the full screen.
 export const REVEAL_PAUSE_MS = 200;
@@ -69,9 +70,10 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
   // Stable while only an Entry's text changes, so saving today's Entry again
   // does not restart the pause.
   const datesKey = useMemo(() => entries.map((e) => e.date).join(','), [entries]);
+  const dates = useMemo(() => (datesKey ? datesKey.split(',') : []), [datesKey]);
   const decision = useMemo(
-    () => (ready ? decideCelebration(datesKey ? datesKey.split(',') : [], todayStr, ledger) : null),
-    [ready, datesKey, todayStr, ledger]
+    () => (ready ? decideCelebration(dates, todayStr, ledger) : null),
+    [ready, dates, todayStr, ledger]
   );
 
   const due = decision?.celebration ?? null;
@@ -183,8 +185,13 @@ export function useCelebration({ enabled, todayStr }: { enabled: boolean; todayS
     due: busy,
     showing: showing?.celebration ?? null,
     longestDue,
-    // Only for the day it was told on.
-    longestToday: longestToday && longestToday.date === todayStr ? longestToday : null,
+    // Only for the day it was told on, and while it is still true.
+    longestToday:
+      longestToday &&
+      longestToday.date === todayStr &&
+      calculateStreak(dates, todayStr) >= longestToday.streak
+        ? longestToday
+        : null,
     settled,
     close,
     afterCelebration,
