@@ -11,7 +11,7 @@ import { EntryInput } from '../components/EntryInput';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
 import { useExportReminder } from '../hooks/useExportReminder';
-import { fromDateString, isFutureDay, today } from '../utils/date';
+import { fromDateString, isFutureDay, toJpDate, today } from '../utils/date';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
 import { space } from '../theme/spacing';
@@ -52,7 +52,8 @@ export function EntryEditorModal({ route, navigation }: Props) {
   };
 
   const handleDelete = () => {
-    Alert.alert('削除しますか？', `${date} のエントリを削除します`, [
+    // States what cannot be undone, and nothing more: no Streak, no Backfill.
+    Alert.alert(`${toJpDate(date)}の記録を削除しますか？`, '削除は取り消せません。', [
       { text: 'キャンセル', style: 'cancel' },
       {
         text: '削除',
@@ -83,7 +84,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
   if (isFutureDay(date, today())) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
+        <Text style={[styles.date, { color: colors.text }]}>{toJpDate(date)}</Text>
         {exists ? (
           <>
             <Text style={[styles.readOnlyText, { color: colors.text }]}>{text}</Text>
@@ -112,7 +113,7 @@ export function EntryEditorModal({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.date, { color: colors.text }]}>{date}</Text>
+      <Text style={[styles.date, { color: colors.text }]}>{toJpDate(date)}</Text>
       <EntryInput
         value={text}
         onChangeText={setText}

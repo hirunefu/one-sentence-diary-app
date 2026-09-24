@@ -16,21 +16,37 @@ const mockRemind = jest.fn(async () => {});
 jest.mock('../hooks/useExportReminder', () => ({
   useExportReminder: () => ({ remindAfterSave: mockRemind }),
 }));
-jest.mock('@react-navigation/native', () => ({ useIsFocused: () => true }));
+let mockFocused = true;
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  useIsFocused: () => mockFocused,
+  useNavigation: () => ({ navigate: mockNavigate }),
+}));
+let mockScreenReader = false;
+jest.mock('../hooks/useScreenReaderEnabled', () => ({
+  useScreenReaderEnabled: () => mockScreenReader,
+}));
+let mockKeyboard = false;
+jest.mock('../hooks/useKeyboardShown', () => ({ useKeyboardShown: () => mockKeyboard }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 
-import { EntriesProvider } from '../contexts/EntriesContext';
+import { EntriesProvider, useEntries } from '../contexts/EntriesContext';
 import type { DiaryDatabase } from '../db/database';
 import { openTestDatabase } from '../db/testDatabase';
 import { upsertEntry } from '../repositories/entriesRepository';
 import { AFTER_CLOSE_PAUSE_MS, revealDelayMs } from '../hooks/useCelebration';
 import { ENTRANCE_MS } from '../components/CelebrationModal';
+import { STREAK_IN_PLACE_MS } from '../components/StreakDisplay';
 import { addDays, today } from '../utils/date';
 import { HomeScreen, SAVED_FEEDBACK_MS } from './HomeScreen';
 
 beforeEach(async () => {
   mockDb = openTestDatabase();
   mockRemind.mockClear();
+  mockNavigate.mockClear();
+  mockFocused = true;
+  mockScreenReader = false;
+  mockKeyboard = false;
   await AsyncStorage.clear();
 });
 
@@ -166,5 +182,159 @@ describe('HomeScreen Milestone celebration', () => {
     [false, true],
   ])('appears before the saved feedback ends (reduce motion %p, screen reader %p)', (r, s) => {
     expect(revealDelayMs({ reduceMotion: r, screenReader: s })).toBeLessThan(SAVED_FEEDBACK_MS);
+  });
+});
+
+describe('HomeScreen Streak break and repair', () => {
+  const yesterday = () => addDays(today(), -1);
+  let entries: ReturnType<typeof useEntries>;
+  function Capture() {
+    entries = useEntries();
+    return null;
+  }
+  const app = () => (
+    <EntriesProvider>
+      <HomeScreen />
+      <Capture />
+    </EntriesProvider>
+  );
+  const range = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => -(from + i));
+
+  let focus: jest.SpyInstance;
+  let announce: jest.SpyInstance;
+  beforeEach(() => {
+    jest.useFakeTimers();
+    focus = jest.spyOn(AccessibilityInfo, 'sendAccessibilityEvent').mockImplementation(() => {});
+    announce = jest
+      .spyOn(AccessibilityInfo, 'announceForAccessibility')
+      .mockImplementation(() => {});
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    focus.mockRestore();
+    announce.mockRestore();
+  });
+
+  const wait = (ms: number) => act(async () => jest.advanceTimersByTime(ms));
+  const open = async () => {
+    const view = await render(app());
+    await screen.findByTestId('streak-first-row');
+    return view;
+  };
+  // Writes yesterday the way the editor does, with Home covered meanwhile.
+  const repairFromEditor = async (rerender: (ui: React.ReactElement) => Promise<void>) => {
+    await fireEvent.press(screen.getByTestId('streak-repair-write'));
+    mockFocused = false;
+    await act(async () => entries.upsert(yesterday(), 'yesterday'));
+    mockFocused = true;
+    await rerender(app());
+  };
+
+  test('says nothing about a break before the first Entry', async () => {
+    await open();
+    expect(screen.getByTestId('streak-number')).toHaveTextContent('0');
+    expect(screen.queryByTestId('streak-restart')).toBeNull();
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+  });
+
+  test('two missing days: 「また今日から」, with no 0 and no offer', async () => {
+    await writeBeforeLaunch([-3, -4]);
+    await open();
+    expect(screen.getByTestId('streak-restart')).toHaveTextContent('また今日から');
+    expect(screen.queryByTestId('streak-number')).toBeNull();
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  test('only yesterday missing: the offer, and no number', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    await open();
+    expect(screen.getByLabelText('昨日の分を書けば、3日連続になります。')).toBeTruthy();
+    expect(screen.queryByTestId('streak-number')).toBeNull();
+    expect(announce).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+  });
+
+  test('with today written, the offer counts today too', async () => {
+    await writeBeforeLaunch([0, -2, -3]);
+    await open();
+    expect(screen.getByTestId('streak-number')).toHaveTextContent('1');
+    expect(screen.getByLabelText('昨日の分を書けば、4日連続になります。')).toBeTruthy();
+  });
+
+  test('昨日の分を書く opens the editor on yesterday', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    await open();
+    await fireEvent.press(screen.getByTestId('streak-repair-write'));
+    expect(mockNavigate).toHaveBeenCalledWith('EntryEditor', { date: yesterday() });
+  });
+
+  test('writing yesterday brings the Streak back in place and moves focus to it', async () => {
+    mockScreenReader = true;
+    await writeBeforeLaunch(range(2, 5));
+    const { rerender } = await open();
+    await repairFromEditor(rerender);
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    expect(screen.getByTestId('streak-number')).toHaveTextContent('5');
+    expect(focus).not.toHaveBeenCalled();
+    await wait(STREAK_IN_PLACE_MS);
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('celebration')).toBeNull();
+  });
+
+  test('a repair that reaches a Milestone leaves the telling to the full screen', async () => {
+    mockScreenReader = true;
+    await writeBeforeLaunch(range(2, 7));
+    const { rerender } = await open();
+    await repairFromEditor(rerender);
+    await wait(STREAK_IN_PLACE_MS);
+    expect(focus).not.toHaveBeenCalled();
+    await wait(revealDelayMs({ reduceMotion: true, screenReader: true }));
+    expect(screen.getByTestId('celebration-number')).toHaveTextContent('7');
+  });
+
+  test('a repair that makes a new Longest streak alone focuses its line, unannounced', async () => {
+    mockScreenReader = true;
+    await writeBeforeLaunch([...range(2, 9), ...range(13, 20)]);
+    const { rerender } = await open();
+    await repairFromEditor(rerender);
+    await wait(STREAK_IN_PLACE_MS + 100);
+    expect(screen.getByTestId('longest-today')).toBeTruthy();
+    // Focus follows on the next frame after the line appears.
+    await wait(50);
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  test('閉じる declines the offer for this missing day, also after a relaunch', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    const { unmount } = await open();
+    await fireEvent.press(screen.getByTestId('streak-repair-close'));
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    expect(screen.getByTestId('streak-restart')).toBeTruthy();
+    await unmount();
+
+    await open();
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    expect(screen.getByTestId('streak-restart')).toBeTruthy();
+  });
+
+  test("deleting yesterday's Entry does not ask for it back", async () => {
+    await writeBeforeLaunch([-1, -2, -3]);
+    await open();
+    await act(async () => entries.remove(yesterday()));
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    expect(screen.getByTestId('streak-restart')).toBeTruthy();
+  });
+
+  test('the offer steps aside while the keyboard is up', async () => {
+    mockKeyboard = true;
+    await writeBeforeLaunch([-2, -3]);
+    const { rerender } = await open();
+    expect(screen.queryByTestId('streak-repair')).toBeNull();
+    mockKeyboard = false;
+    await rerender(app());
+    expect(screen.getByTestId('streak-repair')).toBeTruthy();
   });
 });

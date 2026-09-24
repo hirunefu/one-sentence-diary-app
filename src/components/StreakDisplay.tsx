@@ -4,6 +4,8 @@ import { useColors } from '../theme/useColors';
 import type { Colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { useReduceMotion } from '../hooks/useReduceMotion';
+import { RESTART_LINE } from '../services/streakBreakCopy';
+import type { StreakHeadline } from '../utils/streak';
 
 export type StreakDay = {
   date: string;
@@ -18,6 +20,11 @@ type Props = {
   // happen meanwhile are played once it becomes visible again, instead of
   // animating off-screen.
   active?: boolean;
+  // After a break the number gives way: 「また今日から」 (restart), or nothing
+  // while a Streak repair is offered (blank). A 0 is never shown then.
+  headline?: StreakHeadline;
+  // The accessible block, for moving screen-reader focus to the Streak.
+  ref?: React.Ref<View>;
 };
 
 // The day's dot fills first ("today is recorded"), then the number rolls
@@ -35,7 +42,13 @@ const RING_MS = 400;
 export const STREAK_IN_PLACE_MS = ROLL_DELAY_MS + ROLL_MS + SETTLE_GROW_MS + SETTLE_SPRING_MS;
 
 // Memoized so that typing on Home does not re-render the dots.
-export const StreakDisplay = memo(function StreakDisplay({ days, last7, active = true }: Props) {
+export const StreakDisplay = memo(function StreakDisplay({
+  days,
+  last7,
+  active = true,
+  headline = 'count',
+  ref,
+}: Props) {
   const colors = useColors();
   const reduceMotion = useReduceMotion();
   const recordedCount = last7.filter((d) => d.recorded).length;
@@ -43,22 +56,60 @@ export const StreakDisplay = memo(function StreakDisplay({ days, last7, active =
   // What is on screen lags behind the props while inactive, so the change
   // can be played when the screen comes back. Derived during render rather
   // than in an effect, so no frame ever shows a half-updated state.
-  const [shown, setShown] = useState({ days, last7 });
-  if (active && (shown.days !== days || shown.last7 !== last7)) {
-    setShown({ days, last7 });
+  const [shown, setShown] = useState({ days, last7, headline, enter: false });
+  if (
+    active &&
+    (shown.days !== days || shown.last7 !== last7 || shown.headline !== headline)
+  ) {
+    // Coming back after a break: the number rises in, with no 0 leaving.
+    const enter = shown.headline !== 'count' && headline === 'count' && days > 0;
+    setShown({ days, last7, headline, enter });
   }
+
+  const recorded = `直近7日のうち${recordedCount}日記録あり`;
+  const label =
+    headline === 'count'
+      ? `${days}日連続。${recorded}`
+      : headline === 'restart'
+        ? `${RESTART_LINE}。${recorded}`
+        : recorded;
+  const muted = [styles.suffix, { color: colors.textMuted }];
 
   return (
     // Read as one sentence by screen readers instead of a number, a suffix and
     // seven unlabeled dots.
-    <View
-      style={styles.container}
-      accessible
-      accessibilityLabel={`${days}日連続。直近7日のうち${recordedCount}日記録あり`}
-    >
-      <View style={styles.numRow}>
-        <RollingNumber value={shown.days} colors={colors} reduceMotion={reduceMotion} />
-        <Text style={[styles.suffix, { color: colors.textMuted }]}>日連続</Text>
+    <View ref={ref} style={styles.container} accessible accessibilityLabel={label}>
+      {/* Every headline keeps the same two Texts (number style, then CJK in
+          suffix style), so the row keeps its height and the dots stay still. */}
+      <View style={styles.numRow} testID="streak-first-row">
+        {shown.headline === 'count' ? (
+          <>
+            <RollingNumber
+              value={shown.days}
+              enter={shown.enter}
+              colors={colors}
+              reduceMotion={reduceMotion}
+            />
+            <Text style={muted}>日連続</Text>
+          </>
+        ) : (
+          <>
+            <View style={styles.numWindow}>
+              <Text style={styles.num} importantForAccessibility="no">
+                {' '}
+              </Text>
+            </View>
+            {shown.headline === 'restart' ? (
+              <Text testID="streak-restart" style={muted}>
+                {RESTART_LINE}
+              </Text>
+            ) : (
+              <Text style={[muted, styles.sizer]} importantForAccessibility="no-hide-descendants">
+                {RESTART_LINE}
+              </Text>
+            )}
+          </>
+        )}
       </View>
       <View style={styles.dots}>
         {shown.last7.map((d, i) => (
@@ -79,11 +130,13 @@ export const StreakDisplay = memo(function StreakDisplay({ days, last7, active =
 
 type Roll = {
   value: number;
-  // The number rolling out, or null when at rest.
+  // The number rolling out, or null when there is none.
   previous: number | null;
   // 0 = the old number in place, 1 = the new one in place. A fresh value per
   // roll, so the first frame of a roll is already its starting frame.
   progress: Animated.Value;
+  // A roll (or a rise-in) still to play.
+  animate: boolean;
 };
 
 // When the Streak grows, the old number leaves upwards while the new one
@@ -91,24 +144,27 @@ type Roll = {
 // shrinking Streak just changes: a loss is not a moment to dwell on.
 function RollingNumber({
   value,
+  enter,
   colors,
   reduceMotion,
 }: {
   value: number;
+  // Mounted coming back after a break: the number rises in, nothing leaves.
+  enter: boolean;
   colors: Colors;
   reduceMotion: boolean;
 }) {
-  const [roll, setRoll] = useState<Roll>(() => ({
-    value,
-    previous: null,
-    progress: new Animated.Value(1),
-  }));
+  const [roll, setRoll] = useState<Roll>(() => {
+    const rise = enter && !reduceMotion;
+    return { value, previous: null, progress: new Animated.Value(rise ? 0 : 1), animate: rise };
+  });
   if (roll.value !== value) {
     const grew = value > roll.value && !reduceMotion;
     setRoll({
       value,
       previous: grew ? roll.value : null,
       progress: new Animated.Value(grew ? 0 : 1),
+      animate: grew,
     });
   }
   const settle = useRef(new Animated.Value(1)).current;
@@ -119,13 +175,13 @@ function RollingNumber({
     // Also the way out of a roll that was stopped half-way (a newer value,
     // or reduce motion switched on meanwhile).
     settle.setValue(1);
-    if (roll.previous === null) return;
+    if (!roll.animate) return;
     const land = () => {
       // Pinned explicitly: a re-render must not depend on the native driver
       // having synced its end values back to JS.
       roll.progress.setValue(1);
       settle.setValue(1);
-      setRoll((r) => (r === roll ? { ...r, previous: null } : r));
+      setRoll((r) => (r === roll ? { ...r, previous: null, animate: false } : r));
     };
     if (reduceMotion) {
       land();
@@ -176,6 +232,7 @@ function RollingNumber({
         </Animated.Text>
       )}
       <Animated.Text
+        testID="streak-number"
         style={[
           styles.num,
           {
@@ -319,6 +376,10 @@ const styles = StyleSheet.create({
   },
   suffix: {
     fontSize: 10, // minimal-redesign spec §3.1
+  },
+  // Keeps the row's height while showing nothing.
+  sizer: {
+    opacity: 0,
   },
   dots: {
     flexDirection: 'row',
