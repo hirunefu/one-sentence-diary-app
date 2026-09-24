@@ -172,3 +172,106 @@ describe('EntriesProvider celebration ledger', () => {
     error.mockRestore();
   });
 });
+
+describe('EntriesProvider Streak break and repair', () => {
+  const yesterday = () => addDays(today(), -1);
+
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    mockSharedDb = openTestDatabase();
+  });
+  afterEach(() => {
+    mockSharedDb = null;
+  });
+
+  async function writeBeforeLaunch(offsets: number[]) {
+    const db = await mockSharedDb!;
+    for (const offset of offsets) {
+      await upsertEntry(db, { date: addDays(today(), offset), text: 'before', now: 1 });
+    }
+  }
+
+  test('offers to write yesterday when it is the only missing day', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.todayStr).toBe(today());
+    expect(result.current.streakBreak).toEqual({
+      headline: 'blank',
+      offer: { missingDay: yesterday(), streakAfter: 3 },
+    });
+  });
+
+  test('knows a declined day before it is ready, so the offer never flashes', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    await AsyncStorage.setItem('streakRepair.declinedDay', yesterday());
+    const offers: unknown[] = [];
+    const { result } = await renderHook(
+      () => {
+        const value = useEntries();
+        if (value.ready) offers.push(value.streakBreak.offer);
+        return value;
+      },
+      { wrapper }
+    );
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(offers.length).toBeGreaterThan(0);
+    expect(offers.every((o) => o === null)).toBe(true);
+    expect(result.current.streakBreak.headline).toBe('restart');
+  });
+
+  test('declining keeps the day, also after a relaunch', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    const first = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(first.result.current.ready).toBe(true));
+    await act(async () => first.result.current.declineRepair(yesterday()));
+    expect(first.result.current.streakBreak).toEqual({ headline: 'restart', offer: null });
+    await first.unmount();
+
+    const again = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(again.result.current.ready).toBe(true));
+    expect(again.result.current.streakBreak.offer).toBeNull();
+  });
+
+  test("deleting yesterday's Entry declines its repair, another day's does not", async () => {
+    await writeBeforeLaunch([-1, -2, -3]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => result.current.remove(yesterday()));
+    expect(result.current.streakBreak).toEqual({ headline: 'restart', offer: null });
+
+    await act(async () => result.current.upsert(yesterday(), 'back'));
+    await act(async () => result.current.upsert(today(), 'today'));
+    await act(async () => result.current.remove(addDays(today(), -3)));
+    expect(result.current.streak).toBe(3);
+  });
+
+  test('an unreadable declined day still offers the repair', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    await AsyncStorage.setItem('streakRepair.declinedDay', 'garbage');
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.streakBreak.offer?.streakAfter).toBe(3);
+  });
+
+  test('a decline that cannot be saved still holds for this session', async () => {
+    await writeBeforeLaunch([-2, -3]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('disk full'));
+    await act(async () => result.current.declineRepair(yesterday()));
+    expect(result.current.streakBreak.offer).toBeNull();
+    await waitFor(() => expect(error).toHaveBeenCalled());
+    error.mockRestore();
+  });
+
+  test('seeding during a one-day lapse remembers the stretch before the gap', async () => {
+    await writeBeforeLaunch([-2, -3, -4, -5, -6, -7, -8, -9, -10, -11]);
+    const { result } = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    const repaired = [yesterday(), ...result.current.entries.map((e) => e.date)].sort().reverse();
+    const { celebration } = decideCelebration(repaired, today(), result.current.celebrationLedger);
+    expect(celebration).toBeNull();
+  });
+});

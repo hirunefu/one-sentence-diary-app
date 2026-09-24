@@ -1,4 +1,12 @@
-import { toDateString, fromDateString, today, yesterday, addDays, isFutureDay } from './date';
+import {
+  addDays,
+  fromDateString,
+  isFutureDay,
+  toDateString,
+  toJpDate,
+  today,
+  yesterday,
+} from './date';
 
 describe('toDateString', () => {
   test('formats local date as YYYY-MM-DD', () => {
@@ -105,5 +113,12 @@ describe('isFutureDay', () => {
     expect(isFutureDay('2027-01-01', '2026-12-31')).toBe(true);
     expect(isFutureDay('2026-05-15', '2026-05-15')).toBe(false);
     expect(isFutureDay('2026-05-14', '2026-05-15')).toBe(false);
+  });
+});
+
+describe('toJpDate', () => {
+  test('reads as a Japanese date', () => {
+    expect(toJpDate('2026-05-14')).toBe('2026年5月14日');
+    expect(toJpDate('2027-01-01')).toBe('2027年1月1日');
   });
 });

@@ -1,3 +1,4 @@
+import { addDays } from '../utils/date';
 import { highestMilestoneAtMost } from '../utils/milestone';
 import {
   currentStretch,
@@ -140,6 +141,18 @@ export function acknowledgeImport(
   const unchanged = before?.start === after?.start && before?.end === after?.end;
   if (unchanged) return { ...ledger, longest: asStretch(holderOf(stretches)) };
   return acknowledgeStretches(stretches, after, ledger);
+}
+
+// The ledger for a first launch, an update or an unreadable ledger: what is
+// already there counts as told. Acknowledged as of yesterday first, so the
+// stretch a Streak repair of yesterday would rejoin (it ends the day before
+// yesterday, while the Streak is 0 or 1) counts as told too.
+export function seedLedger(
+  sortedDescDates: readonly string[],
+  todayStr: string
+): CelebrationLedger {
+  const asOfYesterday = acknowledge(sortedDescDates, addDays(todayStr, -1), EMPTY_LEDGER);
+  return acknowledge(sortedDescDates, todayStr, asOfYesterday);
 }
 
 export function decideCelebration(
