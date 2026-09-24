@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { render, fireEvent, screen, within } from '@testing-library/react-native';
 
 jest.mock('../theme/useColors', () => {
   const { lightColors } = require('../theme/colors');
@@ -57,9 +58,8 @@ describe('EntryInput', () => {
     expect(onChange).toHaveBeenCalledWith(text);
   });
 
-  // TalkBack names an EditText by its text, or by its placeholder while it is
-  // empty, and not by its contentDescription; so the name comes from a label
-  // that stays on screen (labelFor) once the Prompt has gone.
+  // TalkBack reads an EditText's contentDescription instead of what is written
+  // in it (or of the Prompt), so the name comes from a label on screen.
   test('the field is named by its visible label, not by an invisible one', async () => {
     await renderInput();
     const input = screen.getByTestId('entry-input');
@@ -82,4 +82,29 @@ describe('EntryInput', () => {
     expect(screen.getByPlaceholderText('a？')).toHaveAccessibleName('今日の一文');
     expect(screen.getByPlaceholderText('b？')).toHaveAccessibleName('5月14日の一文');
   });
+
+  // Android draws a placeholder at the font's own line spacing and clips it to
+  // the height measured at the Entry's; so the Prompt is drawn as text, once.
+  test('the Prompt is drawn while the field is empty, and only once', async () => {
+    const onChange = jest.fn();
+    const view = await renderInput({ onChangeText: onChange });
+    const drawn = screen.getByTestId('entry-prompt', { includeHiddenElements: true });
+    expect(drawn).toHaveTextContent('今日、助かったことは？');
+    // At the Entry's own size and line spacing, breaking after 「、」.
+    const { fontSize, lineHeight } = StyleSheet.flatten(
+      screen.getByTestId('entry-input').props.style
+    );
+    const phrases = within(drawn).getAllByText(/./, { includeHiddenElements: true });
+    expect(phrases.map((p) => p.props.children)).toEqual(['今日、', '助かったことは？']);
+    for (const phrase of phrases) expect(phrase).toHaveStyle({ fontSize, lineHeight });
+    // Screen readers hear it from the field's placeholder, not twice.
+    expect(screen.queryByTestId('entry-prompt')).toBeNull();
+    expect(screen.getByTestId('entry-input').props.placeholderTextColor).toBe('transparent');
+
+    await view.rerender(
+      <EntryInput value="川" onChangeText={onChange} label="今日の一文" placeholder="今日、助かったことは？" />
+    );
+    expect(screen.queryByTestId('entry-prompt', { includeHiddenElements: true })).toBeNull();
+  });
 });
+

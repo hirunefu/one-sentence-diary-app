@@ -43,6 +43,19 @@ describe('EntryEditorModal', () => {
     const input = await screen.findByTestId('entry-input');
     const d = new Date(`${day()}T00:00:00`);
     expect(input.props.placeholder).toBe(`${d.getMonth() + 1}月${d.getDate()}日の一文を書く`);
+    expect(screen.queryByText('今日の一文')).toBeNull();
+  });
+
+  // TalkBack reads an EditText's contentDescription instead of what is
+  // written in it, so the field is named by a label on screen.
+  test('the field is named by a visible label for that day', async () => {
+    await open();
+    const input = await screen.findByTestId('entry-input');
+    const d = new Date(`${day()}T00:00:00`);
+    const name = `${d.getMonth() + 1}月${d.getDate()}日の一文`;
+    expect(screen.getByText(name)).toBeVisible();
+    expect(input).toHaveAccessibleName(name);
+    expect(input.props.accessibilityLabel).toBeUndefined();
   });
 
   test('names the day as a date, not as digits', async () => {

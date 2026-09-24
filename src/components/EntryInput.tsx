@@ -4,19 +4,21 @@ import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
 import { useColors } from '../theme/useColors';
 import { typography } from '../theme/typography';
+import { Phrases } from './Phrases';
 
-// What the field is called. TalkBack names an EditText by its text, or by its
-// placeholder while it is empty, and doesn't speak its contentDescription
-// (accessibilityLabel); a visible `label` names it through labelFor instead.
-type Naming =
-  | { label: string; accessibilityLabel?: never }
-  | { label?: never; accessibilityLabel: string };
-
-type Props = Naming & {
+type Props = {
   value: string;
   onChangeText: (text: string) => void;
+  // What the field is, shown above it. TalkBack reads an EditText's
+  // contentDescription (accessibilityLabel) instead of what is written in it,
+  // or of its placeholder; named by a label on screen (labelFor), it reads
+  // the text, or the placeholder while empty, and then the label.
+  label: string;
   placeholder: string;
   autoFocus?: boolean;
+  // Take all the height the parent gives, so any tap on the empty area
+  // starts writing.
+  fill?: boolean;
 };
 
 const WARNING_THRESHOLD = 20;
@@ -27,8 +29,8 @@ export function EntryInput({
   onChangeText,
   placeholder,
   autoFocus,
+  fill,
   label,
-  accessibilityLabel,
 }: Props) {
   const colors = useColors();
   // Unique per field: Home stays mounted under the Backfill editor, and
@@ -72,13 +74,11 @@ export function EntryInput({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, fill && styles.fill]}>
       <View style={styles.header}>
-        {label !== undefined && (
-          <Text nativeID={labelId} style={[styles.label, { color: colors.textMuted }]}>
-            {label}
-          </Text>
-        )}
+        <Text nativeID={labelId} style={[styles.label, { color: colors.textMuted }]}>
+          {label}
+        </Text>
         <Text
           testID="remaining-count"
           style={[styles.count, { color: countColor, fontWeight: countWeight }]}
@@ -86,19 +86,38 @@ export function EntryInput({
           残り {remaining} 字
         </Text>
       </View>
-      <TextInput
-        testID="entry-input"
-        value={value}
-        onChangeText={handleChange}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textPlaceholder}
-        autoFocus={autoFocus}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityLabelledBy={label !== undefined ? labelId : undefined}
-        multiline
-        textAlignVertical="top"
-        style={[styles.input, { color: colors.text }]}
-      />
+      <View style={fill && styles.fill}>
+        {/* The native placeholder stays for screen readers, but Android draws it
+            at the font's own line spacing and clips it to the height measured
+            at the Entry's. So the placeholder is drawn as text instead: at the
+            Entry's line height, breaking after 「、」. */}
+        <TextInput
+          testID="entry-input"
+          value={value}
+          onChangeText={handleChange}
+          placeholder={placeholder}
+          placeholderTextColor="transparent"
+          autoFocus={autoFocus}
+          accessibilityLabelledBy={labelId}
+          multiline
+          textAlignVertical="top"
+          style={[styles.input, fill && styles.fill, { color: colors.text }]}
+        />
+        {value === '' && (
+          <View
+            testID="entry-prompt"
+            pointerEvents="none"
+            importantForAccessibility="no-hide-descendants"
+            style={styles.placeholder}
+          >
+            <Phrases
+              text={placeholder}
+              align="left"
+              style={[styles.placeholderText, { color: colors.textPlaceholder }]}
+            />
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -107,10 +126,23 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
+  fill: {
+    flex: 1,
+  },
   input: {
     fontSize: typography.size.body,
     lineHeight: typography.size.body * typography.lineHeight.body,
     padding: 0,
+  },
+  placeholder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  placeholderText: {
+    fontSize: typography.size.body,
+    lineHeight: typography.size.body * typography.lineHeight.body,
   },
   // The label on the left, the counter on the right; they wrap at large font
   // sizes rather than overlap.

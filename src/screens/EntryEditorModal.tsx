@@ -119,8 +119,8 @@ export function EntryEditorModal({ route, navigation }: Props) {
         value={text}
         onChangeText={setText}
         autoFocus
-        accessibilityLabel={`${dayLabel}の一文`}
         // Names the day being written, not 「今日」.
+        label={`${dayLabel}の一文`}
         placeholder={`${dayLabel}の一文を書く`}
       />
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>

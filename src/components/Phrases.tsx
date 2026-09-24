@@ -19,7 +19,7 @@ export function Phrases({
   text: string;
   style: StyleProp<TextStyle>;
   boxStyle?: StyleProp<ViewStyle>;
-  align?: 'center' | 'right';
+  align?: 'left' | 'center' | 'right';
 }) {
   const phrases = text.replace(/、/g, '、\n').split('\n');
   const textAlign = { textAlign: align } as const;
@@ -31,7 +31,7 @@ export function Phrases({
       style={[
         boxStyle,
         styles.phrases,
-        { justifyContent: align === 'center' ? 'center' : 'flex-end' },
+        { justifyContent: JUSTIFY[align] },
       ]}
     >
       {phrases.map((phrase, i) => (
@@ -42,6 +42,8 @@ export function Phrases({
     </View>
   );
 }
+
+const JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' } as const;
 
 const styles = StyleSheet.create({
   phrases: {
