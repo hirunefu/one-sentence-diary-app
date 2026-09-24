@@ -378,6 +378,7 @@ describe('HomeScreen Prompt', () => {
   test("an empty day shows the day's Prompt, not a fixed instruction", async () => {
     await openHome();
     expect(await screen.findByPlaceholderText(promptFor(today()))).toBe(await input());
+    expect(await input()).toHaveDisplayValue('');
     expect(screen.queryByPlaceholderText('今日の一文を書く')).toBeNull();
   });
 
@@ -417,12 +418,20 @@ describe('HomeScreen Prompt', () => {
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
-    test('the Prompt turns over with the date', async () => {
+    // The Prompt follows the day Home writes to, not the clock: the two differ
+    // for a moment after midnight, until the date turns over on screen.
+    test('the Prompt turns over with the date, not before it', async () => {
       jest.setSystemTime(new Date(2026, 8, 25, 23, 59, 0));
       await openHome();
       expect(await input()).toHaveProp('placeholder', promptFor('2026-09-25'));
 
-      await act(async () => jest.advanceTimersByTime(2 * 60 * 1000));
+      await act(async () => jest.advanceTimersByTime(60 * 1000 + 500));
+      await fireEvent.changeText(await input(), 'a');
+      await fireEvent.changeText(await input(), '');
+      expect(screen.getByText(/9月25日/)).toBeTruthy();
+      expect(await input()).toHaveProp('placeholder', promptFor('2026-09-25'));
+
+      await act(async () => jest.advanceTimersByTime(60 * 1000));
       expect(screen.getByText(/9月26日/)).toBeTruthy();
       expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
       expect(promptFor('2026-09-26')).not.toBe(promptFor('2026-09-25'));

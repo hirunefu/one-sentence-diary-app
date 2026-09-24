@@ -359,6 +359,7 @@ export function HomeScreen() {
           onChangeText={handleChangeText}
           label="今日の一文"
           placeholder={promptFor(todayStr)}
+          fill
         />
       </View>
 
