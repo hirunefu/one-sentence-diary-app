@@ -34,8 +34,13 @@ function inTurn(pass: () => Promise<void>): Promise<void> {
   return run;
 }
 
+// Turning Reminders off also takes the ones already in the shade away: with
+// no pass to correct them, they would stay and go stale.
 export function cancelAllReminders(): Promise<void> {
-  return inTurn(cancelScheduledReminders);
+  return inTurn(async () => {
+    await cancelScheduledReminders();
+    await dismissShownReminders(() => true);
+  });
 }
 
 // Not queued: a pass calls it from inside its turn.
@@ -74,7 +79,15 @@ async function reschedule({
 
   const todayStr = today();
   const datesDesc = [...recordedDates].sort().reverse();
-  await dismissStaleReminders(todayStr, recordedDates, datesDesc);
+  // A Reminder in the shade stays until it is dismissed, and it says 今日. So it
+  // goes once its day has passed or has an Entry, or when its number is no
+  // longer the one Home shows (an Entry inside the Streak was deleted).
+  const plain = reminderFor(todayStr, null).body;
+  const current = reminderFor(todayStr, calculateStreak(datesDesc, todayStr)).body;
+  await dismissShownReminders(
+    (date, body) =>
+      date < todayStr || recordedDates.has(date) || (body !== plain && body !== current)
+  );
 
   const now = new Date();
   const tasks: Array<Promise<unknown>> = [];
@@ -122,28 +135,23 @@ async function ensureReminderChannel(): Promise<void> {
     name: REMINDER_CHANNEL_NAME,
     description: REMINDER_CHANNEL_DESCRIPTION,
     importance: lowered ? fallback.importance : Notifications.AndroidImportance.DEFAULT,
+    // Expo's channel vibrated; a sound set to None there stays off.
+    enableVibrate: fallback?.enableVibrate ?? true,
+    ...(fallback?.sound === null ? { sound: null } : {}),
   });
   // Only Reminders ever used it.
   if (fallback !== null) await Notifications.deleteNotificationChannelAsync(FALLBACK_CHANNEL_ID);
 }
 
-// A Reminder in the shade stays until it is dismissed, and it says 今日. So it
-// goes once its day has passed or has an Entry, or when its number is no
-// longer the one Home shows (an Entry inside the Streak was deleted).
-async function dismissStaleReminders(
-  todayStr: string,
-  recordedDates: ReadonlySet<string>,
-  datesDesc: readonly string[]
+async function dismissShownReminders(
+  isStale: (date: string, body: string | null) => boolean
 ): Promise<void> {
   const shown = await Notifications.getPresentedNotificationsAsync();
-  const plain = reminderFor(todayStr, null).body;
-  const current = reminderFor(todayStr, calculateStreak(datesDesc, todayStr)).body;
-  const stale = shown.filter(({ request: { identifier, content } }) => {
-    if (!identifier.startsWith(REMINDER_NOTIFICATION_ID_PREFIX)) return false;
-    const date = identifier.slice(REMINDER_NOTIFICATION_ID_PREFIX.length);
-    if (date < todayStr || recordedDates.has(date)) return true;
-    return content.body !== plain && content.body !== current;
-  });
+  const stale = shown.filter(
+    ({ request: { identifier, content } }) =>
+      identifier.startsWith(REMINDER_NOTIFICATION_ID_PREFIX) &&
+      isStale(identifier.slice(REMINDER_NOTIFICATION_ID_PREFIX.length), content.body)
+  );
   await Promise.all(
     stale.map((n) => Notifications.dismissNotificationAsync(n.request.identifier))
   );

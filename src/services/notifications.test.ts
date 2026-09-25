@@ -189,6 +189,19 @@ describe('notifications service', () => {
       }
     });
 
+    // Entries dated after today can exist from old versions.
+    test('only the nearest Reminder shows a number, even after future Entries', async () => {
+      await rescheduleReminders({
+        hour: 21,
+        minute: 0,
+        recordedDates: new Set(['2026-04-29', '2026-04-30', '2026-05-01']),
+        daysAhead: 6,
+      });
+      const bodies = Object.fromEntries(scheduled().map((n) => [dateOf(n.identifier), n.content.body]));
+      expect(bodies['2026-04-28']).toBe(promptFor('2026-04-28'));
+      expect(bodies['2026-05-02']).toBe(promptFor('2026-05-02'));
+    });
+
     test('below the minimum, the nearest Reminder shows only the Prompt', async () => {
       await rescheduleReminders({
         hour: 21,
@@ -246,6 +259,8 @@ describe('notifications service', () => {
         name: 'リマインダー',
         description: '記録のない日に、設定した時刻に届きます',
         importance: AndroidImportance.DEFAULT,
+        // As Expo's own channel did, so a phone on vibrate still feels it.
+        enableVibrate: true,
       });
       for (const { trigger } of scheduled()) expect(trigger.channelId).toBe('reminder');
       expect(mockSetChannel.mock.invocationCallOrder[0]).toBeLessThan(
@@ -257,6 +272,7 @@ describe('notifications service', () => {
     // turned down on the old channel stays down.
     test('a lowered importance on the old channel carries over, and the old channel goes', async () => {
       for (const [old, expected] of [
+        [AndroidImportance.NONE, AndroidImportance.NONE],
         [AndroidImportance.LOW, AndroidImportance.LOW],
         [AndroidImportance.HIGH, AndroidImportance.DEFAULT],
       ] as const) {
@@ -271,6 +287,26 @@ describe('notifications service', () => {
       mockDeleteChannel.mockClear();
       await rescheduleReminders({ hour: 21, minute: 0, recordedDates: new Set(), daysAhead: 1 });
       expect(mockDeleteChannel).not.toHaveBeenCalled();
+    });
+
+    test('a sound or vibration turned off on the old channel stays off', async () => {
+      mockGetChannel.mockResolvedValueOnce({
+        importance: AndroidImportance.HIGH,
+        sound: null,
+        enableVibrate: false,
+      });
+      await rescheduleReminders({ hour: 21, minute: 0, recordedDates: new Set(), daysAhead: 1 });
+      expect(mockSetChannel.mock.calls[0]?.[1]).toMatchObject({ sound: null, enableVibrate: false });
+
+      mockSetChannel.mockClear();
+      mockGetChannel.mockResolvedValueOnce({
+        importance: AndroidImportance.HIGH,
+        sound: 'default',
+        enableVibrate: true,
+      });
+      await rescheduleReminders({ hour: 21, minute: 0, recordedDates: new Set(), daysAhead: 1 });
+      expect(mockSetChannel.mock.calls[0]?.[1]).not.toHaveProperty('sound');
+      expect(mockSetChannel.mock.calls[0]?.[1].enableVibrate).toBe(true);
     });
   });
 
@@ -315,7 +351,32 @@ describe('notifications service', () => {
     });
   });
 
+  describe('turning Reminders off', () => {
+    test('also takes the Reminders already in the shade away', async () => {
+      mockPresented.mockResolvedValue([
+        shown('2026-04-27', `12日連続。${promptFor('2026-04-27')}`),
+        shown('2026-04-28', promptFor('2026-04-28')),
+        { request: { identifier: 'other', content: { title: 'x', body: 'y' } } },
+      ]);
+      await cancelAllReminders();
+      expect(mockDismiss.mock.calls.map((c) => c[0]).sort()).toEqual([
+        `${REMINDER_NOTIFICATION_ID_PREFIX}2026-04-27`,
+        `${REMINDER_NOTIFICATION_ID_PREFIX}2026-04-28`,
+      ]);
+    });
+  });
+
   describe('one pass at a time', () => {
+    test('a pass that fails does not stop the ones after it', async () => {
+      mockSetChannel.mockRejectedValueOnce(new Error('channel'));
+      await expect(
+        rescheduleReminders({ hour: 21, minute: 0, recordedDates: new Set(), daysAhead: 1 })
+      ).rejects.toThrow('channel');
+      await rescheduleReminders({ hour: 21, minute: 0, recordedDates: new Set(), daysAhead: 1 });
+      expect(mockSchedule).toHaveBeenCalledTimes(1);
+      await expect(cancelAllReminders()).resolves.toBeUndefined();
+    });
+
     test('a pass that starts later always writes last', async () => {
       const first = deferred();
       mockGetAll.mockReturnValueOnce(first.promise);
