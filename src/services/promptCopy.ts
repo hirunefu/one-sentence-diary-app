@@ -31,7 +31,7 @@ export const PROMPTS: readonly Prompt[] = [
   { text: '今日、心に残った言葉は？', theme: 'noticing/observation' },
   { text: '今日、少しうれしかったことは？', theme: 'savoring/small-good' },
   { text: '今日の自分にひとこと言うなら？', theme: 'care/mood-body' },
-  { text: '今日、はじめて知ったことは？', theme: 'noticing/change' },
+  { text: '今日、目にとまったものは？', theme: 'noticing/observation' },
   { text: '今日、続いてほしかった時間は？', theme: 'savoring/small-good' },
   { text: '今日、ていねいにしたことは？', theme: 'care/process' },
   { text: 'いまいる場所はどんな感じ？', theme: 'noticing/observation' },
@@ -50,7 +50,7 @@ export const PROMPTS: readonly Prompt[] = [
   { text: '今日、助かったことは？', theme: 'savoring/gratitude' },
   { text: '今日、ひと息ついたのはどんなとき？', theme: 'care/rest' },
   { text: '今日、久しぶりだったことは？', theme: 'noticing/change' },
-  { text: '今日、ぬくもりを感じたものは？', theme: 'savoring/small-good' },
+  { text: '今日、心地よかったものは？', theme: 'savoring/small-good' },
   { text: '今日、自分のためにしたことは？', theme: 'care/process' },
 ];
 
