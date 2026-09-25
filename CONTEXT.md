@@ -15,7 +15,7 @@ Writing or editing the Entry for a past day on a later day. A backfilled Entry i
 _Avoid_: late entry, catch-up
 
 **Prompt** (問いかけ):
-The question of the day shown in place of an empty Entry to help the user start writing. It is never saved as part of the Entry.
+The question of the day shown in place of an empty Entry, on Home and in that day's Reminder, to help the user start writing. It is never saved as part of the Entry.
 _Avoid_: hint, placeholder, topic
 
 ### Habit

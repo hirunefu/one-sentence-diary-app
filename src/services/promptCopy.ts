@@ -1,5 +1,6 @@
-// The Prompt (CONTEXT.md): the question of the day, shown only as the
-// placeholder of Home's empty Entry field, so it is never saved.
+// The Prompt (CONTEXT.md): the question of the day, shown as the placeholder
+// of Home's empty Entry field and as the body of that day's Reminder, so it is
+// never saved.
 // Writing rules (the checkable ones are tested in promptCopy.test.ts):
 // - one plain-form question about one small, concrete part of today, ending in
 //   「？」; ask what or when, never why (Eurich 2018; relive a good moment rather
