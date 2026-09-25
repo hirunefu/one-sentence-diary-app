@@ -10,7 +10,9 @@ import { cancelAllReminders, rescheduleReminders } from '../services/notificatio
 // 「未記録の日のみ通知が飛ぶ」状態を維持する。
 export function ReminderScheduler(): null {
   const { settings, ready: settingsReady } = useSettings();
-  const { entries, ready: entriesReady } = useEntries();
+  // todayStr follows midnight: a pass then dismisses yesterday's Reminder from
+  // the shade, whose 今日 now means another day.
+  const { entries, ready: entriesReady, todayStr } = useEntries();
   const [foregroundCount, setForegroundCount] = useState(0);
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export function ReminderScheduler(): null {
     settingsReady,
     entriesReady,
     foregroundCount,
+    todayStr,
   ]);
 
   return null;
