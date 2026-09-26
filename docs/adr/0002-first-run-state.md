@@ -21,5 +21,5 @@ There are no onboarding screens. Until the first Entry, Home explains itself in 
 ## Consequences
 
 - First-run state is per device: clearing app data on a phone with Entries seeds `returning`; on an empty phone it is a first-time user again.
-- On a small phone at a large font size, the lines give way to what the Entry field needs, by measured height (privacy line over the dot line, the offer over 「1日目」), and a line that gave way stays away for that window size and font scale.
+- On a small phone at a large font size, the lines give way to what the Entry field needs, by measured height (privacy line over the dot line, the offer over 「1日目」). A line that gave way stays away while the window, the lines that want to show and what the field needs stay the same, and is decided again when any of them changes.
 - The rules are pinned by `src/contexts/EntriesContext.test.tsx`, `src/repositories/firstRunRepository.test.ts` and `src/screens/HomeScreen.firstRun.test.tsx`.

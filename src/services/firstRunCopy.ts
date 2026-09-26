@@ -42,7 +42,7 @@ export function reminderTime(hour: number, minute: number): string {
   return minute === 0 ? `${hour}時` : `${hour}時${minute}分`;
 }
 export function reminderOfferLine(hour: number, minute: number): string {
-  return `記録のない日は、${reminderTime(hour, minute)}にお知らせしましょうか？`;
+  return `記録のない日の${reminderTime(hour, minute)}に、お知らせしましょうか？`;
 }
 export const REMINDER_OFFER_DECLINE = 'いらない';
 export const REMINDER_OFFER_DECLINE_HINT = 'リマインダーはオフのまま、この案内を閉じます';
@@ -55,7 +55,7 @@ export const REMINDER_OFFER_ACCEPT_HINT =
 // After 設定する turned Reminders on: what was set, and where to change it
 // (the 設定 tab).
 export function reminderSetCopy(hour: number, minute: number) {
-  const line = `記録のない日は、${reminderTime(hour, minute)}にお知らせします。`;
+  const line = `記録のない日の${reminderTime(hour, minute)}に、お知らせします。`;
   const note = '時刻は、設定で変えられます。';
   return { line, note, spoken: `${line}${note}` };
 }

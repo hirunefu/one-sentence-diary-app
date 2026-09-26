@@ -182,6 +182,8 @@ describe('HomeScreen first run', () => {
     mockReduceMotion = false;
     await open();
     await save();
+    // It fades rather than vanishing.
+    expect(shown('first-run-privacy')).toBe(true);
     expect(shown('first-run-dots')).toBe(true);
     await wait(FADE_MS);
     expect(shown('first-run-privacy')).toBe(false);
@@ -285,8 +287,8 @@ describe('HomeScreen Reminder offer', () => {
     expect(shown('reminder-offer')).toBe(false);
     await wait(1);
     expect(screen.getByTestId('reminder-offer')).toBeTruthy();
-    expect(screen.getByText('記録のない日は、')).toBeTruthy();
-    expect(screen.getByText('21時にお知らせしましょうか？')).toBeTruthy();
+    expect(screen.getByText('記録のない日の21時に、')).toBeTruthy();
+    expect(screen.getByText('お知らせしましょうか？')).toBeTruthy();
     expect(shown('first-day')).toBe(true);
   });
 
@@ -342,7 +344,7 @@ describe('HomeScreen Reminder offer', () => {
     await open();
     await save();
     await wait(SAVED_FEEDBACK_MS);
-    expect(screen.getByText('7時30分にお知らせしましょうか？')).toBeTruthy();
+    expect(screen.getByText('記録のない日の7時30分に、')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
     await flush();
@@ -353,7 +355,7 @@ describe('HomeScreen Reminder offer', () => {
     await flush();
     expect(shown('reminder-offer')).toBe(false);
     expect(screen.getByTestId('reminder-set')).toHaveAccessibleName(
-      '記録のない日は、7時30分にお知らせします。時刻は、設定で変えられます。'
+      '記録のない日の7時30分に、お知らせします。時刻は、設定で変えられます。'
     );
     expect(settings.settings.reminderEnabled).toBe(true);
     expect((await loadSettings()).reminderEnabled).toBe(true);
@@ -378,7 +380,9 @@ describe('HomeScreen Reminder offer', () => {
     await wait(SAVED_FEEDBACK_MS);
     await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
     await flush();
+    // Android's screen is up while the user reads it and answers.
     await emitAppState('background');
+    await wait(2000);
     await emitAppState('active');
     await act(async () => answer(false));
     await flush();
@@ -402,6 +406,84 @@ describe('HomeScreen Reminder offer', () => {
       expect.anything()
     );
     expect(shown('reminder-offer')).toBe(false);
+  });
+
+  // Android 13+ opens its permission screen even when it has nothing to ask,
+  // and closes it at once: the app goes away and back in a moment.
+  test('a permission screen that closes by itself is not an answer: the Alert explains', async () => {
+    let answer!: (v: boolean) => void;
+    mockRequest = () => new Promise((resolve) => (answer = resolve));
+    await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+    await flush();
+    await emitAppState('background');
+    await wait(30);
+    await emitAppState('active');
+    await act(async () => answer(false));
+    await flush();
+    expect(alert).toHaveBeenCalledWith(
+      '通知が許可されていません',
+      '設定アプリから通知を許可してください',
+      expect.anything()
+    );
+  });
+
+  describe('TalkBack after 設定する', () => {
+    const focusedOn = () =>
+      focus.mock.calls.map(([node]) => (node as { props: { accessibilityLabel?: string } }).props.accessibilityLabel);
+    beforeEach(() => {
+      mockScreenReader = true;
+    });
+
+    test('with no dialog, it goes to the confirmation once it has faded in', async () => {
+      await open();
+      await save();
+      await wait(SAVED_FEEDBACK_MS);
+      await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+      await flush();
+      await wait(FADE_MS - 1);
+      expect(focus).not.toHaveBeenCalled();
+      await wait(1);
+      expect(focusedOn()).toEqual([
+        '記録のない日の21時に、お知らせします。時刻は、設定で変えられます。',
+      ]);
+    });
+
+    test('after a refusal in Android\'s dialog, it goes to the Streak once the app is back', async () => {
+      let answer!: (v: boolean) => void;
+      mockRequest = () => new Promise((resolve) => (answer = resolve));
+      await open();
+      await save();
+      await wait(SAVED_FEEDBACK_MS);
+      await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+      await flush();
+      await emitAppState('background');
+      await wait(2000);
+      await emitAppState('active');
+      await act(async () => answer(false));
+      await flush();
+      await wait(STREAK_IN_PLACE_MS - 1);
+      expect(focus).not.toHaveBeenCalled();
+      await wait(1);
+      expect(focusedOn()).toHaveLength(1);
+      expect(focusedOn()[0]).toMatch(/^1日連続。/);
+    });
+
+    test('when Android shows no dialog, OK on the Alert takes it to the Streak', async () => {
+      mockRequest = async () => false;
+      await open();
+      await save();
+      await wait(SAVED_FEEDBACK_MS);
+      await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+      await flush();
+      expect(focus).not.toHaveBeenCalled();
+      const buttons = alert.mock.calls[0]?.[2] as Array<{ onPress?: () => void }>;
+      await act(async () => buttons[0]?.onPress?.());
+      expect(focusedOn()).toHaveLength(1);
+      expect(focusedOn()[0]).toMatch(/^1日連続。/);
+    });
   });
 
   test('is never shown when Reminders are already on, or blocked for good', async () => {
@@ -432,6 +514,62 @@ describe('HomeScreen Reminder offer', () => {
     await wait(SAVED_FEEDBACK_MS);
     expect(shown('reminder-offer')).toBe(false);
     expect(await loadFirstRun()).toEqual({ kind: 'new' });
+  });
+
+  test('a save on a day with a Streak repair offer does not open it', async () => {
+    await seedFirstRun({ kind: 'new' });
+    await writeBeforeLaunch([-2]);
+    await open();
+    expect(shown('streak-repair')).toBe(true);
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    expect(shown('reminder-offer')).toBe(false);
+    expect(await loadFirstRun()).toEqual({ kind: 'new' });
+  });
+
+  // Material: one banner at a time. A repair offer that came while Home was
+  // behind History counts for the visit that shows it.
+  test('never in the same visit as a Streak repair offer', async () => {
+    const view = await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    expect(shown('reminder-offer')).toBe(true);
+
+    mockFocused = false;
+    await view.rerender(app());
+    await act(async () => entries.upsert(addDays(today(), -2), 'two days ago'));
+    await flush();
+    mockFocused = true;
+    await view.rerender(app());
+    expect(shown('streak-repair')).toBe(true);
+    expect(shown('reminder-offer')).toBe(false);
+
+    await fireEvent.press(screen.getByTestId('streak-repair-close'));
+    await flush();
+    expect(shown('streak-repair')).toBe(false);
+    expect(shown('reminder-offer')).toBe(false);
+
+    // The next visit.
+    mockFocused = false;
+    await view.rerender(app());
+    mockFocused = true;
+    await view.rerender(app());
+    expect(shown('reminder-offer')).toBe(true);
+  });
+
+  test('the confirmation goes when Home is left', async () => {
+    const view = await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+    await flush();
+    expect(shown('reminder-set')).toBe(true);
+    mockFocused = false;
+    await view.rerender(app());
+    mockFocused = true;
+    await view.rerender(app());
+    expect(shown('reminder-set')).toBe(false);
+    expect(shown('reminder-offer')).toBe(false);
   });
 
   test('waits while a full-screen celebration is due, and appears after it closes', async () => {

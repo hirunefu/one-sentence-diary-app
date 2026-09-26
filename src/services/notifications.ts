@@ -20,14 +20,19 @@ export const FALLBACK_CHANNEL_ID = 'expo_notifications_fallback_notification_cha
 export async function requestNotificationPermission(): Promise<boolean> {
   // E2E build: pretend permission is granted, no OS dialog to drive.
   if (IS_E2E) return true;
+  // Android opens its permission screen even when there is nothing to ask,
+  // which pauses the app (and re-locks it behind the app lock).
+  if ((await Notifications.getPermissionsAsync()).status === 'granted') return true;
   const { status } = await Notifications.requestPermissionsAsync();
   return status === 'granted';
 }
 
 export type NotificationPermission = 'granted' | 'askable' | 'blocked';
-// 'blocked': this app's own request was refused for good. Expo records that
-// only when this app asked, so notifications turned off outside the app read
-// as 'askable' (asking then shows no dialog).
+// 'blocked': refused for good. On Android 13 and later Expo records that only
+// when this app asked, so a refusal from outside the app reads as 'askable'
+// (asking then shows nothing). On Android 12 and lower it means the app's
+// notifications are turned off in the system settings: not offered to
+// someone who turned them off.
 export async function notificationPermission(): Promise<NotificationPermission> {
   if (IS_E2E) return 'askable';
   const { status, canAskAgain } = await Notifications.getPermissionsAsync();
