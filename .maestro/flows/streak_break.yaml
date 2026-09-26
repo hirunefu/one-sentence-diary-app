@@ -50,6 +50,13 @@ appId: com.hirunefu.onesentencediary
     text: "1"
 - assertNotVisible:
     id: "streak-restart"
+# Starting again after a lapse is not a first day: no Reminder offer.
+- extendedWaitUntil:
+    visible:
+      id: "save-button"
+    timeout: 5000
+- assertNotVisible:
+    id: "reminder-offer"
 
 # With 05-13 too, only yesterday is missing: the Streak stays 1 (today is not
 # connected to 05-13), and writing yesterday is offered: 2 + 1 + today = 4.

@@ -4,6 +4,7 @@ jest.mock('expo-notifications', () => ({
   getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
   cancelAllScheduledNotificationsAsync: jest.fn().mockResolvedValue(undefined),
   requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted', canAskAgain: true }),
   getPresentedNotificationsAsync: jest.fn().mockResolvedValue([]),
   dismissNotificationAsync: jest.fn().mockResolvedValue(undefined),
   getNotificationChannelAsync: jest.fn().mockResolvedValue(null),
@@ -18,6 +19,7 @@ import {
   rescheduleReminders,
   cancelAllReminders,
   requestNotificationPermission,
+  notificationPermission,
   REMINDER_NOTIFICATION_ID_PREFIX,
   LEGACY_REMINDER_ID,
   FALLBACK_CHANNEL_ID,
@@ -407,6 +409,19 @@ describe('notifications service', () => {
     });
   });
 
+  describe('notificationPermission', () => {
+    const mockGetPerm = Notifications.getPermissionsAsync as jest.Mock;
+    test.each([
+      [{ status: 'granted', canAskAgain: true }, 'granted'],
+      [{ status: 'undetermined', canAskAgain: true }, 'askable'],
+      [{ status: 'denied', canAskAgain: true }, 'askable'],
+      [{ status: 'denied', canAskAgain: false }, 'blocked'],
+    ])('%p is %p', async (perm, expected) => {
+      mockGetPerm.mockResolvedValueOnce(perm);
+      expect(await notificationPermission()).toBe(expected);
+    });
+  });
+
   test('requestNotificationPermission returns true if granted', async () => {
     mockRequestPerm.mockResolvedValueOnce({ status: 'granted' });
     expect(await requestNotificationPermission()).toBe(true);
@@ -437,6 +452,15 @@ describe('notifications under E2E flag', () => {
     const { requestNotificationPermission } = require('./notifications');
     await expect(requestNotificationPermission()).resolves.toBe(true);
     expect(requestMock).not.toHaveBeenCalled();
+  });
+
+  test('notificationPermission() is askable without asking Android', async () => {
+    process.env.EXPO_PUBLIC_E2E = '1';
+    const getPerm = jest.fn();
+    jest.doMock('expo-notifications', () => ({ getPermissionsAsync: getPerm }));
+    const { notificationPermission } = require('./notifications');
+    await expect(notificationPermission()).resolves.toBe('askable');
+    expect(getPerm).not.toHaveBeenCalled();
   });
 
   test('rescheduleReminders() is a no-op', async () => {

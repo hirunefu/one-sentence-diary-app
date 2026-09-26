@@ -33,6 +33,7 @@ import {
   loadDeclinedRepairDay,
   saveDeclinedRepairDay,
 } from '../repositories/streakRepairRepository';
+import { loadFirstRun, saveFirstRun, type FirstRun } from '../repositories/firstRunRepository';
 import {
   acknowledgeImport,
   EMPTY_LEDGER,
@@ -74,6 +75,19 @@ type EntriesContextValue = {
   streakBreak: StreakBreak;
   // Closes the repair offer for that missing day (kept across restarts).
   declineRepair: (missingDay: string) => void;
+  // Where the user is in their first days (repositories/firstRunRepository,
+  // ADR 0002). Known before ready; null until then, which shows and asks
+  // nothing.
+  firstRun: FirstRun | null;
+  // A first-time user's first qualifying save on Home starts their first day;
+  // its Reminder offer opens unless it could not help.
+  startFirstDay: (offer: 'open' | 'closed') => void;
+  // Closes the Reminder offer for good. Does nothing unless it is open.
+  answerReminderOffer: () => void;
+  // After the offer turned Reminders on: Home's confirmation. Session only, so
+  // it outlives Home being remounted behind the app lock.
+  reminderSetShown: boolean;
+  setReminderSetShown: (shown: boolean) => void;
 };
 
 const EntriesContext = createContext<EntriesContextValue | null>(null);
@@ -86,6 +100,9 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
   const [celebrationLedger, setCelebrationLedger] = useState<CelebrationLedger>(EMPTY_LEDGER);
   const ledgerRef = useRef(celebrationLedger);
   const [declinedRepairDay, setDeclinedRepairDay] = useState<string | null>(null);
+  const [firstRun, setFirstRun] = useState<FirstRun | null>(null);
+  const firstRunRef = useRef<FirstRun | null>(null);
+  const [reminderSetShown, setReminderSetShown] = useState(false);
   // Follows the date past midnight and on returning to the app on a later day.
   const todayStr = useToday();
   const todayRef = useRef(todayStr);
@@ -98,6 +115,27 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     saveDeclinedRepairDay(missingDay).catch((e) => console.error('declined repair save failed', e));
   }, []);
 
+  // Kept in memory at once (also when the save fails) and saved in the background.
+  const commitFirstRun = useCallback((next: FirstRun) => {
+    firstRunRef.current = next;
+    setFirstRun(next);
+    saveFirstRun(next).catch((e) => console.error('first run save failed', e));
+  }, []);
+
+  const startFirstDay = useCallback(
+    (offer: 'open' | 'closed') => {
+      if (firstRunRef.current?.kind !== 'new') return;
+      commitFirstRun({ kind: 'started', day: todayRef.current, offer });
+    },
+    [commitFirstRun]
+  );
+
+  const answerReminderOffer = useCallback(() => {
+    const run = firstRunRef.current;
+    if (run?.kind !== 'started' || run.offer !== 'open') return;
+    commitFirstRun({ ...run, offer: 'closed' });
+  }, [commitFirstRun]);
+
   const commitCelebrationLedger = useCallback((next: CelebrationLedger) => {
     if (sameLedger(next, ledgerRef.current)) return;
     ledgerRef.current = next;
@@ -109,7 +147,7 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     setInitError(null);
     setReady(false);
     try {
-      const [opened, stored, declined] = await Promise.all([
+      const [opened, stored, declined, run] = await Promise.all([
         openDatabase(),
         loadCelebrationLedger().catch((e) => {
           console.error('celebration ledger load failed', e);
@@ -117,11 +155,23 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
         }),
         // Known before ready, so a declined offer never flashes.
         loadDeclinedRepairDay().catch(() => null),
+        loadFirstRun().catch(() => null),
       ]);
       const list = await getAllEntriesDesc(opened);
       setDb(opened);
       setEntries(list);
       setDeclinedRepairDay(declined);
+      if (run === null) {
+        // First launch of this version, or an unreadable state: whoever already
+        // has Entries is not a first-time user (Q19). A missed offer is
+        // preferred to a false one, as with the ledger.
+        commitFirstRun(list.length > 0 ? { kind: 'returning' } : { kind: 'new' });
+      } else if (run.kind === 'started' && run.day < todayRef.current) {
+        commitFirstRun({ kind: 'returning' });
+      } else {
+        firstRunRef.current = run;
+        setFirstRun(run);
+      }
       if (stored) {
         ledgerRef.current = stored;
         setCelebrationLedger(stored);
@@ -135,11 +185,16 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       console.error('DB init failed', e);
       setInitError('データベースを開けませんでした。アプリを再起動してください。');
     }
-  }, [commitCelebrationLedger]);
+  }, [commitCelebrationLedger, commitFirstRun]);
 
   useEffect(() => {
     init();
   }, [init]);
+
+  // The first day ends at midnight, also while the app stays open.
+  useEffect(() => {
+    if (firstRun?.kind === 'started' && todayStr > firstRun.day) commitFirstRun({ kind: 'returning' });
+  }, [firstRun, todayStr, commitFirstRun]);
 
   const refresh = useCallback(async (currentDb: DiaryDatabase) => {
     const list = await getAllEntriesDesc(currentDb);
@@ -185,9 +240,13 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       commitCelebrationLedger(
         acknowledgeImport(datesBefore, list.map((e) => e.date), today(), ledgerRef.current)
       );
+      // A restored backup is someone who has used the app before.
+      if (result.inserted + result.updated > 0 && firstRunRef.current?.kind !== 'returning') {
+        commitFirstRun({ kind: 'returning' });
+      }
       return result;
     },
-    [db, commitCelebrationLedger]
+    [db, commitCelebrationLedger, commitFirstRun]
   );
 
   const getByDate = useCallback(
@@ -233,6 +292,11 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       todayStr,
       streakBreak,
       declineRepair,
+      firstRun,
+      startFirstDay,
+      answerReminderOffer,
+      reminderSetShown,
+      setReminderSetShown,
     }),
     [
       ready,
@@ -250,6 +314,10 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       todayStr,
       streakBreak,
       declineRepair,
+      firstRun,
+      startFirstDay,
+      answerReminderOffer,
+      reminderSetShown,
     ]
   );
 

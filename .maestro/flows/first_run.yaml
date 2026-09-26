@@ -1,0 +1,63 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+# Before the first Entry: the Streak at 0 and the two quiet lines.
+- assertVisible:
+    id: "streak-number"
+    text: "0"
+- assertVisible:
+    id: "first-run-dots"
+- assertVisible:
+    id: "first-run-privacy"
+- assertNotVisible:
+    id: "reminder-offer"
+# While writing, they step aside; they come back when the keyboard closes.
+- tapOn:
+    id: "entry-input"
+- inputText: "first"
+- assertNotVisible:
+    id: "first-run-dots"
+- hideKeyboard
+- assertVisible:
+    id: "first-run-dots"
+- tapOn:
+    id: "save-button"
+# The privacy line leaves with the save; 1日目 takes the dot line's place.
+- extendedWaitUntil:
+    notVisible:
+      id: "first-run-privacy"
+    timeout: 2000
+- extendedWaitUntil:
+    visible:
+      id: "first-day"
+    timeout: 3000
+- assertNotVisible:
+    id: "first-run-dots"
+- assertVisible:
+    id: "streak-number"
+    text: "1"
+# After the saved feedback, the offer.
+- extendedWaitUntil:
+    visible:
+      id: "reminder-offer"
+    timeout: 5000
+- tapOn:
+    id: "reminder-offer-decline"
+- assertNotVisible:
+    id: "reminder-offer"
+- assertVisible:
+    id: "first-day"
+# The same day after a relaunch: 1日目 stays; the offer never comes back.
+- stopApp
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "first-day"
+- assertNotVisible:
+    id: "reminder-offer"
+- tapOn:
+    id: "tab-settings"
+- assertNotVisible:
+    id: "settings-reminder-time"

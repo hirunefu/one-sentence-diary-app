@@ -30,8 +30,13 @@ jest.mock('../hooks/useScreenReaderEnabled', () => ({
 let mockKeyboard = false;
 jest.mock('../hooks/useKeyboardShown', () => ({ useKeyboardShown: () => mockKeyboard }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
+jest.mock('../services/notifications', () => ({
+  requestNotificationPermission: async () => true,
+  notificationPermission: async () => 'askable',
+}));
 
 import { EntriesProvider, useEntries } from '../contexts/EntriesContext';
+import { SettingsProvider } from '../contexts/SettingsContext';
 import type { DiaryDatabase } from '../db/database';
 import { openTestDatabase } from '../db/testDatabase';
 import { getEntryByDate, upsertEntry } from '../repositories/entriesRepository';
@@ -64,9 +69,11 @@ async function writeBeforeLaunch(offsets: number[]) {
 
 const openHome = () =>
   render(
-    <EntriesProvider>
-      <HomeScreen />
-    </EntriesProvider>
+    <SettingsProvider>
+      <EntriesProvider>
+        <HomeScreen />
+      </EntriesProvider>
+    </SettingsProvider>
   );
 
 describe('HomeScreen save announcement', () => {
@@ -84,19 +91,26 @@ describe('HomeScreen save announcement', () => {
   };
 
   test('tells screen reader users when the save grew the Streak, and not otherwise', async () => {
-    await render(
-      <EntriesProvider>
-        <HomeScreen />
-      </EntriesProvider>
-    );
+    await writeBeforeLaunch([-1]);
+    await openHome();
 
     await save('Walked by the river');
-    await waitFor(() => expect(announce).toHaveBeenLastCalledWith('保存しました。1日連続'));
+    await waitFor(() => expect(announce).toHaveBeenLastCalledWith('保存しました。2日連続'));
 
     // Editing today's Entry again keeps the Streak where it was.
     await save('Walked by the river after work');
     await waitFor(() => expect(announce).toHaveBeenLastCalledWith('保存しました'));
     expect(announce).toHaveBeenCalledTimes(2);
+  });
+
+  // A first-time user's first Entry: what the Streak means (step 7).
+  test('the first save is told with the first day line, once', async () => {
+    await openHome();
+    await save('Walked by the river');
+    await waitFor(() =>
+      expect(announce).toHaveBeenLastCalledWith('保存しました。1日目。明日も書くと、つながります。')
+    );
+    expect(announce).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -198,10 +212,12 @@ describe('HomeScreen Streak break and repair', () => {
     return null;
   }
   const app = () => (
-    <EntriesProvider>
-      <HomeScreen />
-      <Capture />
-    </EntriesProvider>
+    <SettingsProvider>
+      <EntriesProvider>
+        <HomeScreen />
+        <Capture />
+      </EntriesProvider>
+    </SettingsProvider>
   );
   const range = (from: number, to: number) =>
     Array.from({ length: to - from + 1 }, (_, i) => -(from + i));

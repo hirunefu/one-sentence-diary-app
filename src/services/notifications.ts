@@ -24,6 +24,17 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return status === 'granted';
 }
 
+export type NotificationPermission = 'granted' | 'askable' | 'blocked';
+// 'blocked': this app's own request was refused for good. Expo records that
+// only when this app asked, so notifications turned off outside the app read
+// as 'askable' (asking then shows no dialog).
+export async function notificationPermission(): Promise<NotificationPermission> {
+  if (IS_E2E) return 'askable';
+  const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+  if (status === 'granted') return 'granted';
+  return canAskAgain ? 'askable' : 'blocked';
+}
+
 // Passes run one after another, in call order, so a pass built from older
 // Entries (or one that schedules after Reminders were turned off) never writes
 // last.

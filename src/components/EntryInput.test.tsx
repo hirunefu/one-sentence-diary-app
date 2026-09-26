@@ -106,5 +106,24 @@ describe('EntryInput', () => {
     );
     expect(screen.queryByTestId('entry-prompt', { includeHiddenElements: true })).toBeNull();
   });
+
+  // Home keeps its optional lines out of what the field needs (utils/room).
+  test('reports the whole Prompt as needed while empty, and one line once written', async () => {
+    const onNeed = jest.fn();
+    const layout = (height: number) => ({ nativeEvent: { layout: { x: 0, y: 0, width: 300, height } } });
+    const view = await render(
+      <EntryInput value="" onChangeText={() => {}} label="今日の一文" placeholder="今日、助かったことは？" onNeedHeight={onNeed} />
+    );
+    const hidden = { includeHiddenElements: true };
+    await fireEvent(screen.getByTestId('entry-label-row', hidden), 'layout', layout(20));
+    await fireEvent(screen.getByTestId('entry-prompt', hidden), 'layout', layout(75));
+    await fireEvent(screen.getByTestId('entry-line-sizer', hidden), 'layout', layout(37));
+    expect(onNeed).toHaveBeenLastCalledWith(20 + 6 + 75);
+
+    await view.rerender(
+      <EntryInput value="川" onChangeText={() => {}} label="今日の一文" placeholder="今日、助かったことは？" onNeedHeight={onNeed} />
+    );
+    expect(onNeed).toHaveBeenLastCalledWith(20 + 6 + 37);
+  });
 });
 

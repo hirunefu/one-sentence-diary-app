@@ -1,0 +1,45 @@
+appId: com.hirunefu.onesentencediary
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- tapOn:
+    id: "entry-input"
+- inputText: "first"
+- hideKeyboard
+- tapOn:
+    id: "save-button"
+- extendedWaitUntil:
+    visible:
+      id: "reminder-offer"
+    timeout: 5000
+# Unanswered, it stays for the rest of the day, also after a relaunch.
+- stopApp
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "reminder-offer"
+# The E2E build grants notifications without a system dialog.
+- tapOn:
+    id: "reminder-offer-accept"
+- extendedWaitUntil:
+    visible:
+      id: "reminder-set"
+    timeout: 3000
+- assertNotVisible:
+    id: "reminder-offer"
+- tapOn:
+    id: "tab-settings"
+- assertVisible:
+    id: "settings-reminder-time"
+- assertVisible: "21:00"
+# The confirmation goes once Home is left; the offer never returns.
+- tapOn:
+    id: "tab-home"
+- assertNotVisible:
+    id: "reminder-set"
+- stopApp
+- launchApp:
+    clearState: false
+- assertNotVisible:
+    id: "reminder-offer"

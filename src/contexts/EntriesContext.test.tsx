@@ -19,6 +19,7 @@ import {
 } from '../repositories/celebrationRepository';
 import { decideCelebration, EMPTY_LEDGER, type CelebrationLedger } from '../services/celebration';
 import { classifyEntries } from '../services/importService';
+import { loadFirstRun, saveFirstRun } from '../repositories/firstRunRepository';
 import { addDays, today } from '../utils/date';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -278,3 +279,144 @@ describe('EntriesProvider Streak break and repair', () => {
     expect(celebration).toBeNull();
   });
 });
+
+describe('EntriesProvider first run', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    mockSharedDb = openTestDatabase();
+  });
+  afterEach(() => {
+    mockSharedDb = null;
+  });
+
+  async function writeBeforeLaunch(offsets: number[]) {
+    const db = await mockSharedDb!;
+    for (const offset of offsets) {
+      await upsertEntry(db, { date: addDays(today(), offset), text: 'before', now: 1 });
+    }
+  }
+  const open = async () => {
+    const hook = await renderHook(() => useEntries(), { wrapper });
+    await waitFor(() => expect(hook.result.current.ready).toBe(true));
+    return hook;
+  };
+  const restored = (dates: string[]) =>
+    dates.map((date) => ({ date, text: 'restored', createdAt: 1, updatedAt: 1 }));
+
+  test('a first open with no Entries is a new user', async () => {
+    const { result } = await open();
+    expect(result.current.firstRun).toEqual({ kind: 'new' });
+    expect(await loadFirstRun()).toEqual({ kind: 'new' });
+  });
+
+  // An update: whoever already has Entries never sees any of it (Q19).
+  test('a first open with Entries is a returning user', async () => {
+    await writeBeforeLaunch([-3]);
+    const { result } = await open();
+    expect(result.current.firstRun).toEqual({ kind: 'returning' });
+  });
+
+  test('is known on the first render where ready is true, and null before', async () => {
+    const seen: Array<[boolean, unknown]> = [];
+    const { result } = await renderHook(
+      () => {
+        const v = useEntries();
+        seen.push([v.ready, v.firstRun]);
+        return v;
+      },
+      { wrapper }
+    );
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(seen.filter(([ready, run]) => ready && run === null)).toEqual([]);
+    expect(seen.filter(([ready, run]) => !ready && run !== null)).toEqual([]);
+  });
+
+  test('starting the first day keeps the day and the offer across a relaunch', async () => {
+    const first = await open();
+    await act(async () => first.result.current.startFirstDay('open'));
+    expect(first.result.current.firstRun).toEqual({ kind: 'started', day: today(), offer: 'open' });
+    await first.unmount();
+
+    const again = await open();
+    expect(again.result.current.firstRun).toEqual({ kind: 'started', day: today(), offer: 'open' });
+  });
+
+  test('answering the offer is kept, and does nothing unless it is open', async () => {
+    const first = await open();
+    await act(async () => first.result.current.answerReminderOffer());
+    expect(first.result.current.firstRun).toEqual({ kind: 'new' });
+
+    await act(async () => first.result.current.startFirstDay('open'));
+    await act(async () => first.result.current.answerReminderOffer());
+    await first.unmount();
+
+    const again = await open();
+    expect(again.result.current.firstRun).toEqual({ kind: 'started', day: today(), offer: 'closed' });
+  });
+
+  test('the first day ends at the first launch on a later day', async () => {
+    await saveFirstRun({ kind: 'started', day: addDays(today(), -1), offer: 'open' });
+    const { result } = await open();
+    expect(result.current.firstRun).toEqual({ kind: 'returning' });
+    expect(await loadFirstRun()).toEqual({ kind: 'returning' });
+  });
+
+  test('the first day ends at midnight while the app is open', async () => {
+    jest.useFakeTimers({ now: new Date(2026, 8, 26, 23, 59, 58) });
+    try {
+      const { result } = await open();
+      await act(async () => result.current.startFirstDay('open'));
+      expect(result.current.firstRun?.kind).toBe('started');
+
+      await act(async () => jest.advanceTimersByTime(5000));
+      expect(result.current.firstRun).toEqual({ kind: 'returning' });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('a returning user stays one after deleting every Entry', async () => {
+    await writeBeforeLaunch([-3]);
+    const { result } = await open();
+    await act(async () => result.current.remove(addDays(today(), -3)));
+    expect(result.current.entries).toEqual([]);
+    expect(result.current.firstRun).toEqual({ kind: 'returning' });
+  });
+
+  test('an unreadable state is seeded again from the Entries', async () => {
+    await AsyncStorage.setItem('firstRun.state', 'garbage');
+    await writeBeforeLaunch([-1]);
+    const { result } = await open();
+    expect(result.current.firstRun).toEqual({ kind: 'returning' });
+  });
+
+  test('an import that brings Entries makes a returning user', async () => {
+    const { result } = await open();
+    await act(async () => {
+      await result.current.bulkImport(
+        classifyEntries(restored([addDays(today(), -2)]), new Set(), today()),
+        'skip'
+      );
+    });
+    expect(result.current.firstRun).toEqual({ kind: 'returning' });
+  });
+
+  test('an import that brings nothing leaves a new user new', async () => {
+    const { result } = await open();
+    await act(async () => {
+      await result.current.bulkImport(classifyEntries([], new Set(), today()), 'skip');
+    });
+    expect(result.current.firstRun).toEqual({ kind: 'new' });
+  });
+
+  test('a state that cannot be saved still holds for this session', async () => {
+    const { result } = await open();
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('disk full'));
+    await act(async () => result.current.startFirstDay('closed'));
+    expect(result.current.firstRun).toEqual({ kind: 'started', day: today(), offer: 'closed' });
+    await waitFor(() => expect(error).toHaveBeenCalled());
+    error.mockRestore();
+  });
+});
+
