@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AccessibilityInfo,
   Alert,
+  AppState,
   Animated,
   LayoutAnimation,
   Platform,
@@ -20,14 +21,20 @@ import { STREAK_IN_PLACE_MS, StreakDisplay, StreakDay } from '../components/Stre
 import { CelebrationModal } from '../components/CelebrationModal';
 import { FADE_MS, LongestTodayLine } from '../components/LongestTodayLine';
 import { StreakRepairLine } from '../components/StreakRepairLine';
+import { FirstDayLine, FirstRunDotsLine, PrivacyLine } from '../components/FirstRunLines';
+import { ReminderOffer, ReminderSetLine } from '../components/ReminderOffer';
 import { PressableScale } from '../components/PressableScale';
 import { useEntries } from '../contexts/EntriesContext';
+import { NOTIFICATIONS_OFF_ALERT, useSettings } from '../contexts/SettingsContext';
 import { useCelebration } from '../hooks/useCelebration';
 import { useExportReminder } from '../hooks/useExportReminder';
 import { useKeyboardShown } from '../hooks/useKeyboardShown';
+import { useReminderOffer, type OfferAnswer } from '../hooks/useReminderOffer';
+import { useRoom } from '../hooks/useRoom';
 import { useReduceMotion } from '../hooks/useReduceMotion';
 import { useScreenReaderEnabled } from '../hooks/useScreenReaderEnabled';
 import { longestTodayCopy } from '../services/celebrationCopy';
+import { FIRST_SAVE_SPOKEN } from '../services/firstRunCopy';
 import { promptFor } from '../services/promptCopy';
 import { addDays } from '../utils/date';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -37,6 +44,8 @@ import { space } from '../theme/spacing';
 import { radius } from '../theme/radius';
 
 export const SAVED_FEEDBACK_MS = 1500;
+// The first-run lines drawn above the body (utils/room).
+const SLOT_ITEMS = ['dots', 'offer', 'first-day'];
 const BG_TRANSITION_MS = 250;
 const LAYOUT_TRANSITION_MS = 250;
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -77,13 +86,20 @@ export function HomeScreen() {
     todayStr,
     streakBreak,
     declineRepair,
+    firstRun,
+    startFirstDay,
+    setReminderSetShown,
   } = useEntries();
+  const { settings } = useSettings();
+  // A first-time user (ADR 0002): Home explains itself in place until the
+  // first Entry, and offers a Reminder once on the first day.
+  const firstTime = firstRun !== null && firstRun.kind !== 'returning';
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const screenReader = useScreenReaderEnabled();
-  // The repair offer steps aside while the keyboard is up; the text field
-  // moves with it smoothly rather than in one jump.
+  // The repair offer and the first-run content step aside while the keyboard
+  // is up; the text field moves with them smoothly rather than in one jump.
   const keyboardShown = useKeyboardShown(() => {
-    if (streakBreak.offer) animateButtonLayout(reduceMotion);
+    if (streakBreak.offer || firstTime) animateButtonLayout(reduceMotion);
   });
   const { remindAfterSave } = useExportReminder();
   const reduceMotion = useReduceMotion();
@@ -96,6 +112,15 @@ export function HomeScreen() {
   // The Streak just before the save in progress, so the announcement can say
   // when it grew.
   const streakBeforeSaveRef = useRef<number | null>(null);
+  // The save that makes a first-time user's first Entry: the privacy line
+  // leaves at once, and the dot line turns into 「1日目」 once the number has
+  // settled. The Reminder offer waits for the saved feedback to end.
+  const firstSaveRef = useRef(false);
+  const [firstSaveHold, setFirstSaveHold] = useState(false);
+  const [privacyLeaving, setPrivacyLeaving] = useState(false);
+  const [firstDayEnter, setFirstDayEnter] = useState(false);
+  const [offerHeld, setOfferHeld] = useState(false);
+  const firstSaveTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
   // 保存ボタンのアニメーション
   // bgPhase: 0 = primary (有効。保存しました の間も), 1 = disabled (空欄)
@@ -128,8 +153,10 @@ export function HomeScreen() {
   }, [ready, todayStr, getByDate]);
 
   useEffect(() => {
+    const timers = firstSaveTimers.current;
     return () => {
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
@@ -146,7 +173,11 @@ export function HomeScreen() {
     if (!justSaved || before === null) return;
     streakBeforeSaveRef.current = null;
     let message = streak > before && !celebrationDue ? `保存しました。${streak}日連続` : '保存しました';
-    if (streak > before && longestDue) {
+    if (firstSaveRef.current) {
+      // The first Entry: what the Streak means, in place of its count.
+      firstSaveRef.current = false;
+      message = FIRST_SAVE_SPOKEN;
+    } else if (streak > before && longestDue) {
       message += `。${longestTodayCopy(longestDue.previousLongest).spoken}`;
       longestAnnouncedRef.current = longestDue.key;
     }
@@ -158,11 +189,60 @@ export function HomeScreen() {
   const offer = keyboardShown ? null : streakBreak.offer;
   const streakRef = useRef<View>(null);
   const longestLineRef = useRef<View>(null);
+  const reminderSetRef = useRef<View>(null);
   const repairOpenedFor = useRef<string | null>(null);
   const focusLongestKey = useRef<string | null>(null);
   const focusOn = (ref: React.RefObject<View | null>) => {
     if (ref.current) AccessibilityInfo.sendAccessibilityEvent(ref.current, 'focus');
   };
+
+  // The Reminder offer (Q24). TalkBack goes to what is left once it closes;
+  // it never moves when the card appears (it would cut the save announcement).
+  const onOfferAnswered = (how: OfferAnswer, afterDialog: boolean) => {
+    if (how === 'unavailable') {
+      // Android showed nothing to answer: say why, as the Settings switch does.
+      Alert.alert(NOTIFICATIONS_OFF_ALERT.title, NOTIFICATIONS_OFF_ALERT.message, [
+        { text: 'OK', onPress: () => screenReader && focusOn(streakRef) },
+      ]);
+      return;
+    }
+    if (!screenReader) return;
+    const target = how === 'set' ? reminderSetRef : streakRef;
+    if (how === 'declined') {
+      requestAnimationFrame(() => focusOn(streakRef));
+    } else if (afterDialog) {
+      // Back from Android's screen, once the app is in front again.
+      const later = () => setTimeout(() => focusOn(target), STREAK_IN_PLACE_MS);
+      if (AppState.currentState === 'active') later();
+      else {
+        const sub = AppState.addEventListener('change', (state) => {
+          if (state !== 'active') return;
+          sub.remove();
+          later();
+        });
+      }
+    } else {
+      // Once it has faded in: TalkBack skips a view that is still transparent.
+      setTimeout(() => focusOn(target), FADE_MS);
+    }
+  };
+  const reminderOffer = useReminderOffer({
+    beforeChange: () => animateButtonLayout(reduceMotion),
+    onAnswered: onOfferAnswered,
+  });
+  const offerOpenRef = useRef(reminderOffer.open);
+  offerOpenRef.current = reminderOffer.open;
+
+  // At most one offer per visit to Home: the Reminder offer does not follow a
+  // Streak repair offer seen in the same visit (Material: one banner at a time).
+  const [repairSeenThisVisit, setRepairSeenThisVisit] = useState(false);
+  useEffect(() => {
+    if (isFocused) setRepairSeenThisVisit(false);
+    else setReminderSetShown(false);
+  }, [isFocused, setReminderSetShown]);
+  useEffect(() => {
+    if (offer) setRepairSeenThisVisit(true);
+  }, [offer]);
 
   const writeYesterday = () => {
     if (!offer) return;
@@ -252,6 +332,36 @@ export function HomeScreen() {
     }).start();
   }, [tapScale, reduceMotion]);
 
+  // What a first-time user sees (ADR 0002). Everything steps aside while the
+  // keyboard is up, and gives way where the field would lose what it needs.
+  const onlyToday = entries.length === 1 && entries[0]?.date === todayStr;
+  const wantDots = firstTime && !keyboardShown && (entries.length === 0 || firstSaveHold);
+  const wantPrivacy = firstTime && !keyboardShown && (entries.length === 0 || privacyLeaving);
+  const wantFirstDay = firstTime && !keyboardShown && !firstSaveHold && onlyToday;
+  const wantOffer =
+    reminderOffer.asking ||
+    (reminderOffer.open &&
+      firstRun?.kind === 'started' &&
+      firstRun.day === todayStr &&
+      !offerHeld &&
+      !keyboardShown &&
+      !celebration.due &&
+      !streakBreak.offer &&
+      !repairSeenThisVisit);
+  const wantSet = !wantOffer && reminderOffer.set !== null && !keyboardShown;
+  // Kept first: the privacy line over the dot line (the dots explain
+  // themselves at the first save), the offer over 「1日目」 (said in the save
+  // announcement too).
+  const room = useRoom(
+    [
+      ...(wantPrivacy ? ['privacy'] : []),
+      ...(wantDots ? ['dots'] : []),
+      ...(wantOffer || wantSet ? ['offer'] : []),
+      ...(wantFirstDay ? ['first-day'] : []),
+    ],
+    SLOT_ITEMS
+  );
+
   if (initError) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -284,12 +394,45 @@ export function HomeScreen() {
 
   const handleSave = async () => {
     if (text.trim().length === 0) return;
+    // A first-time user's first Entry (the lines give way to the result), and
+    // the first save that starts their first day on Home: a new day with no
+    // break before it (after a lapse the offer would read as a reproach).
+    const firstSave = firstTime && entries.length === 0;
+    const startsDay =
+      firstRun?.kind === 'new' &&
+      !entries.some((e) => e.date === todayStr) &&
+      streakBreak.headline === 'count' &&
+      !streakBreak.offer;
     try {
       // saving 中もラベルは "保存" のまま、disabled 状態だけが変わる (二重タップ防止)
       setSaving(true);
       streakBeforeSaveRef.current = streak;
       const headlineBeforeSave = streakBreak.headline;
+      if (firstSave) {
+        firstSaveRef.current = true;
+        setFirstSaveHold(true);
+        setPrivacyLeaving(true);
+      }
       await upsert(todayStr, text);
+      if (firstSave) {
+        firstSaveTimers.current.push(
+          setTimeout(() => setPrivacyLeaving(false), FADE_MS),
+          setTimeout(
+            () => {
+              animateButtonLayout(reduceMotion);
+              setFirstSaveHold(false);
+              setFirstDayEnter(true);
+            },
+            reduceMotion ? 0 : STREAK_IN_PLACE_MS
+          )
+        );
+      }
+      if (startsDay) {
+        startFirstDay(
+          settings.reminderEnabled || reminderOffer.permission === 'blocked' ? 'closed' : 'open'
+        );
+        setOfferHeld(true);
+      }
       // "保存" → "✓ 保存しました" の幅変化を滑らかに. Not when the Streak comes back
       // from 「また今日から」 or a blank in the same commit: the layout animation
       // would slide that row sideways, and the number's rise is the moment.
@@ -301,11 +444,20 @@ export function HomeScreen() {
         setJustSaved(false);
         // The backup reminder waits until the save has been celebrated (and a
         // full-screen celebration closed), so its dialog does not cover them.
-        // fire-and-forget: Alert 待ちで saving 状態を占有しない (エラーはフック内で処理)
-        celebration.afterCelebration(() => void remindAfterSave(todayStr));
+        // The Reminder offer comes then too, and the backup reminder does not
+        // come over it. fire-and-forget: Alert 待ちで saving 状態を占有しない
+        // (エラーはフック内で処理)
+        celebration.afterCelebration(() => {
+          animateButtonLayout(reduceMotion);
+          setOfferHeld(false);
+          if (!offerOpenRef.current) void remindAfterSave(todayStr);
+        });
       }, SAVED_FEEDBACK_MS);
     } catch (e) {
       streakBeforeSaveRef.current = null;
+      firstSaveRef.current = false;
+      setFirstSaveHold(false);
+      setPrivacyLeaving(false);
       console.error('save failed', e);
       Alert.alert('保存に失敗しました');
     } finally {
@@ -314,6 +466,7 @@ export function HomeScreen() {
   };
 
   const buttonDisabled = saving || justSaved || isEmpty;
+
 
   const animatedBg = bgPhase.interpolate({
     inputRange: [0, 1],
@@ -339,17 +492,49 @@ export function HomeScreen() {
         {/* Under the Streak, across the full width so it wraps well at large
             font sizes. */}
         {offer ? (
-          <StreakRepairLine
-            streakAfter={offer.streakAfter}
-            onWrite={writeYesterday}
-            onClose={closeOffer}
-          />
-        ) : longestToday ? (
-          <LongestTodayLine ref={longestLineRef} previousLongest={longestToday.previousLongest} />
-        ) : null}
+          <View style={styles.slotItem}>
+            <StreakRepairLine
+              streakAfter={offer.streakAfter}
+              onWrite={writeYesterday}
+              onClose={closeOffer}
+            />
+          </View>
+        ) : (
+          <>
+            {wantDots && room.fits('dots') && (
+              <View testID="first-run-dots-item" style={styles.slotItem} onLayout={room.measure('dots')}>
+                <FirstRunDotsLine />
+              </View>
+            )}
+            {wantFirstDay && room.fits('first-day') && (
+              <View style={styles.slotItem} onLayout={room.measure('first-day')}>
+                <FirstDayLine enter={firstDayEnter} />
+              </View>
+            )}
+            {!wantDots && !wantFirstDay && longestToday && (
+              <View style={styles.slotItem}>
+                <LongestTodayLine ref={longestLineRef} previousLongest={longestToday.previousLongest} />
+              </View>
+            )}
+            {(wantOffer || wantSet) && room.fits('offer') && (
+              <View style={styles.slotItem} onLayout={room.measure('offer')}>
+                {wantOffer ? (
+                  <ReminderOffer
+                    line={reminderOffer.line}
+                    asking={reminderOffer.asking}
+                    onDecline={reminderOffer.decline}
+                    onAccept={() => void reminderOffer.accept()}
+                  />
+                ) : (
+                  reminderOffer.set && <ReminderSetLine ref={reminderSetRef} copy={reminderOffer.set} />
+                )}
+              </View>
+            )}
+          </>
+        )}
       </View>
 
-      <View style={styles.body}>
+      <View testID="home-body" style={styles.body} onLayout={room.onBody}>
         {/* No autoFocus: the soft keyboard would hide the streak and the tab
             bar the moment Home opens. Tapping the input brings it up.
             The placeholder is the Prompt of the day (CONTEXT.md), so it is
@@ -360,7 +545,14 @@ export function HomeScreen() {
           label="今日の一文"
           placeholder={promptFor(todayStr)}
           fill
+          onNeedHeight={firstTime ? room.onNeed : undefined}
         />
+        {/* Just before the first save: where Entries are kept. */}
+        {wantPrivacy && room.fits('privacy') && (
+          <View testID="first-run-privacy-item" style={styles.slotItem} onLayout={room.measure('privacy')}>
+            <PrivacyLine leaving={privacyLeaving} />
+          </View>
+        )}
       </View>
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
@@ -432,8 +624,12 @@ const styles = StyleSheet.create({
     paddingBottom: space.lg + 2,
   },
   headerBlock: {
-    gap: space.sm,
     marginBottom: space.xl,
+  },
+  // Each line under the Streak brings its own spacing, so its measured height
+  // is all it takes from the body.
+  slotItem: {
+    paddingTop: space.sm,
   },
   header: {
     flexDirection: 'row',

@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useId, useRef } from 'react';
-import { AccessibilityInfo, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { AccessibilityInfo, StyleSheet, Text, TextInput, View, type LayoutChangeEvent } from 'react-native';
 import { countChars, stripNewlines } from '../utils/text';
 import { MAX_TEXT_LENGTH } from '../types';
 import { useColors } from '../theme/useColors';
@@ -19,7 +19,13 @@ type Props = {
   // Take all the height the parent gives, so any tap on the empty area
   // starts writing.
   fill?: boolean;
+  // The height the field needs to show its label and the whole Prompt while
+  // empty, or one line once written (Home's optional lines give way to it).
+  onNeedHeight?: (height: number) => void;
 };
+
+// styles.header's marginBottom, which onLayout does not include.
+const HEADER_GAP = 6;
 
 const WARNING_THRESHOLD = 20;
 const DANGER_THRESHOLD = 10;
@@ -31,6 +37,7 @@ export function EntryInput({
   autoFocus,
   fill,
   label,
+  onNeedHeight,
 }: Props) {
   const colors = useColors();
   // Unique per field: Home stays mounted under the Backfill editor, and
@@ -52,6 +59,18 @@ export function EntryInput({
   );
 
   const remaining = MAX_TEXT_LENGTH - countChars(value);
+
+  const [heights, setHeights] = useState<{ row?: number; prompt?: number; line?: number }>({});
+  const measure = (key: 'row' | 'prompt' | 'line') => (e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setHeights((prev) => (prev[key] === h ? prev : { ...prev, [key]: h }));
+  };
+  const { row, prompt, line } = heights;
+  const content = value === '' ? prompt : line;
+  const need = row !== undefined && content !== undefined ? row + HEADER_GAP + content : null;
+  useEffect(() => {
+    if (need !== null) onNeedHeight?.(need);
+  }, [need, onNeedHeight]);
 
   // The counter only changes colour, so announce the thresholds (and the
   // hard stop at 0, where further input is dropped) when crossing them.
@@ -75,7 +94,7 @@ export function EntryInput({
 
   return (
     <View style={[styles.container, fill && styles.fill]}>
-      <View style={styles.header}>
+      <View testID="entry-label-row" style={styles.header} onLayout={onNeedHeight && measure('row')}>
         <Text nativeID={labelId} style={[styles.label, { color: colors.textMuted }]}>
           {label}
         </Text>
@@ -109,6 +128,7 @@ export function EntryInput({
             pointerEvents="none"
             importantForAccessibility="no-hide-descendants"
             style={styles.placeholder}
+            onLayout={onNeedHeight && measure('prompt')}
           >
             <Phrases
               text={placeholder}
@@ -116,6 +136,17 @@ export function EntryInput({
               style={[styles.placeholderText, { color: colors.textPlaceholder }]}
             />
           </View>
+        )}
+        {onNeedHeight && (
+          // One line of text, measured for what a written field needs.
+          <Text
+            testID="entry-line-sizer"
+            importantForAccessibility="no-hide-descendants"
+            style={[styles.placeholderText, styles.sizer]}
+            onLayout={measure('line')}
+          >
+            一
+          </Text>
         )}
       </View>
     </View>
@@ -139,6 +170,10 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+  sizer: {
+    position: 'absolute',
+    opacity: 0,
   },
   placeholderText: {
     fontSize: typography.size.body,

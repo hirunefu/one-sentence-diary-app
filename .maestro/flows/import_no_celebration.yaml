@@ -42,6 +42,9 @@ appId: com.hirunefu.onesentencediary
     timeout: 5000
 - assertNotVisible:
     id: "celebration"
+# Someone restoring a backup has used the app before: no Reminder offer.
+- assertNotVisible:
+    id: "reminder-offer"
 - assertVisible: "8"
 
 - tapOn:
