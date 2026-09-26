@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AccessibilityInfo,
   Alert,
-  AppState,
   Animated,
   LayoutAnimation,
   Platform,
@@ -211,16 +210,9 @@ export function HomeScreen() {
     if (how === 'declined') {
       requestAnimationFrame(() => focusOn(streakRef));
     } else if (afterDialog) {
-      // Back from Android's screen, once the app is in front again.
-      const later = () => setTimeout(() => focusOn(target), STREAK_IN_PLACE_MS);
-      if (AppState.currentState === 'active') later();
-      else {
-        const sub = AppState.addEventListener('change', (state) => {
-          if (state !== 'active') return;
-          sub.remove();
-          later();
-        });
-      }
+      // Just back from Android's screen: TalkBack settles on the app first
+      // (as on the return from History).
+      setTimeout(() => focusOn(target), STREAK_IN_PLACE_MS);
     } else {
       // Once it has faded in: TalkBack skips a view that is still transparent.
       setTimeout(() => focusOn(target), FADE_MS);
@@ -235,14 +227,17 @@ export function HomeScreen() {
 
   // At most one offer per visit to Home: the Reminder offer does not follow a
   // Streak repair offer seen in the same visit (Material: one banner at a time).
+  // A visit ends when Home loses focus; a repair offer that came while Home was
+  // behind History counts for the visit that shows it.
   const [repairSeenThisVisit, setRepairSeenThisVisit] = useState(false);
   useEffect(() => {
-    if (isFocused) setRepairSeenThisVisit(false);
-    else setReminderSetShown(false);
+    if (isFocused) return;
+    setRepairSeenThisVisit(false);
+    setReminderSetShown(false);
   }, [isFocused, setReminderSetShown]);
   useEffect(() => {
-    if (offer) setRepairSeenThisVisit(true);
-  }, [offer]);
+    if (isFocused && offer) setRepairSeenThisVisit(true);
+  }, [isFocused, offer]);
 
   const writeYesterday = () => {
     if (!offer) return;

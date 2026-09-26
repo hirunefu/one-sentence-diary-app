@@ -46,8 +46,8 @@ describe('firstRunCopy', () => {
   });
 
   test('the offer says when a Reminder comes, at the time in the settings', () => {
-    expect(reminderOfferLine(21, 0)).toBe('記録のない日は、21時にお知らせしましょうか？');
-    expect(reminderOfferLine(7, 30)).toBe('記録のない日は、7時30分にお知らせしましょうか？');
+    expect(reminderOfferLine(21, 0)).toBe('記録のない日の21時に、お知らせしましょうか？');
+    expect(reminderOfferLine(7, 30)).toBe('記録のない日の7時30分に、お知らせしましょうか？');
   });
 
   test('times are written without spaces, minutes only when set', () => {
@@ -57,7 +57,7 @@ describe('firstRunCopy', () => {
 
   test('the confirmation says what was set and where to change it', () => {
     const copy = reminderSetCopy(21, 0);
-    expect(copy.line).toBe('記録のない日は、21時にお知らせします。');
+    expect(copy.line).toBe('記録のない日の21時に、お知らせします。');
     expect(copy.note).toBe('時刻は、設定で変えられます。');
     expect(copy.spoken).toBe(`${copy.line}${copy.note}`);
   });
@@ -89,9 +89,12 @@ describe('firstRunCopy', () => {
     }
   });
 
-  test('every visible phrase fits one line at 200% on a 360dp phone', () => {
-    for (const text of shown()) {
-      for (const phrase of phrases(text)) expect(width(phrase)).toBeLessThanOrEqual(14);
+  test('every visible phrase fits one line at 200% on a 360dp phone, at any time', () => {
+    const times = [0, 7, 12, 23].flatMap((h) => [0, 5, 30, 59].map((m) => [h, m] as const));
+    for (const [h, m] of times) {
+      for (const text of [...shown(), reminderOfferLine(h, m), reminderSetCopy(h, m).line]) {
+        for (const phrase of phrases(text)) expect(width(phrase)).toBeLessThanOrEqual(14);
+      }
     }
   });
 

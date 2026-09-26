@@ -68,6 +68,21 @@ describe('SettingsProvider', () => {
       error.mockRestore();
     });
 
+    // The offer's card waits on this answer: it must come even so.
+    test('reports on, as in memory, when the setting cannot be saved', async () => {
+      mockRequest.mockResolvedValue(true);
+      const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const { result } = await open();
+      jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('disk full'));
+      let on: boolean | undefined;
+      await act(async () => {
+        on = await result.current.enableReminders();
+      });
+      expect(on).toBe(true);
+      expect(result.current.settings.reminderEnabled).toBe(true);
+      error.mockRestore();
+    });
+
     test('keeps a setting changed just before it', async () => {
       mockRequest.mockResolvedValue(true);
       const { result } = await open();

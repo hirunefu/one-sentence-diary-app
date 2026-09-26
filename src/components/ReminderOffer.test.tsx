@@ -20,7 +20,7 @@ describe('ReminderOffer', () => {
       .getAllByRole(/.*/, { includeHiddenElements: false })
       .filter((n) => n.props.accessible)
       .map((n) => n.props.accessibilityLabel);
-    expect(names).toEqual(['記録のない日は、21時にお知らせしましょうか？', 'いらない', '設定する']);
+    expect(names).toEqual(['記録のない日の21時に、お知らせしましょうか？', 'いらない', '設定する']);
   });
 
   test('both buttons are 48dp targets that say what they do', async () => {
@@ -62,7 +62,7 @@ describe('ReminderSetLine', () => {
   test('says what was set and where to change it, read as one', async () => {
     await render(<ReminderSetLine copy={reminderSetCopy(7, 30)} />);
     expect(screen.getByTestId('reminder-set')).toHaveAccessibleName(
-      '記録のない日は、7時30分にお知らせします。時刻は、設定で変えられます。'
+      '記録のない日の7時30分に、お知らせします。時刻は、設定で変えられます。'
     );
   });
 });

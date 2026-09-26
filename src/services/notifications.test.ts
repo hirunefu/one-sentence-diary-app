@@ -422,14 +422,29 @@ describe('notifications service', () => {
     });
   });
 
-  test('requestNotificationPermission returns true if granted', async () => {
-    mockRequestPerm.mockResolvedValueOnce({ status: 'granted' });
-    expect(await requestNotificationPermission()).toBe(true);
-  });
+  describe('requestNotificationPermission', () => {
+    const mockGetPerm = Notifications.getPermissionsAsync as jest.Mock;
+    const notYet = { status: 'undetermined', canAskAgain: true };
 
-  test('requestNotificationPermission returns false if denied', async () => {
-    mockRequestPerm.mockResolvedValueOnce({ status: 'denied' });
-    expect(await requestNotificationPermission()).toBe(false);
+    test('returns true if granted', async () => {
+      mockGetPerm.mockResolvedValueOnce(notYet);
+      mockRequestPerm.mockResolvedValueOnce({ status: 'granted' });
+      expect(await requestNotificationPermission()).toBe(true);
+    });
+
+    test('returns false if denied', async () => {
+      mockGetPerm.mockResolvedValueOnce(notYet);
+      mockRequestPerm.mockResolvedValueOnce({ status: 'denied' });
+      expect(await requestNotificationPermission()).toBe(false);
+    });
+
+    // Android still opens its (invisible) permission screen, which pauses the
+    // app and so re-locks it behind the app lock.
+    test('does not ask again when notifications are already allowed', async () => {
+      mockGetPerm.mockResolvedValueOnce({ status: 'granted', canAskAgain: true });
+      expect(await requestNotificationPermission()).toBe(true);
+      expect(mockRequestPerm).not.toHaveBeenCalled();
+    });
   });
 });
 

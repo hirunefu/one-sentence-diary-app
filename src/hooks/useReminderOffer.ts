@@ -11,6 +11,11 @@ import { reminderOfferLine, reminderSetCopy } from '../services/firstRunCopy';
 // the app).
 export type OfferAnswer = 'declined' | 'set' | 'refused' | 'unavailable';
 
+// Android 13+ opens its permission screen even when there is nothing to ask
+// (a refusal it keeps, for instance) and closes it at once, so the app going
+// away is not enough: someone answering takes longer than this.
+const DIALOG_MIN_MS = 400;
+
 // The one Reminder offer of a first-time user's first day on Home (Q24, ADR
 // 0002): open until answered, for the rest of that day. Home adds where it may
 // show (keyboard, saved feedback, celebration, repair offer, room).
@@ -20,7 +25,8 @@ export function useReminderOffer({
 }: {
   // Runs just before the card leaves or turns into the confirmation.
   beforeChange: () => void;
-  // afterDialog: the app went to the background for Android's screen.
+  // Called with the app in front. afterDialog: it was away for Android's
+  // screen, and has just come back.
   onAnswered: (how: OfferAnswer, afterDialog: boolean) => void;
 }) {
   const { firstRun, answerReminderOffer, reminderSetShown, setReminderSetShown } = useEntries();
@@ -68,13 +74,23 @@ export function useReminderOffer({
     // Answered first, so a dialog interrupted by the app being killed never
     // brings the offer back. The card stays while asking.
     answerReminderOffer();
-    let sawDialog = false;
-    // Android pauses the app for its permission screen.
+    // How long the app was away for Android's permission screen.
+    let awayAt: number | null = null;
+    let away = 0;
+    let back: (() => void) | null = null;
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'background') sawDialog = true;
+      if (state === 'background') awayAt = Date.now();
+      else if (state === 'active' && awayAt !== null) {
+        away += Date.now() - awayAt;
+        awayAt = null;
+        back?.();
+      }
     });
     const on = await enableReminders();
+    // Answered while still away: the answer is told once the app is back.
+    if (awayAt !== null) await new Promise<void>((resolve) => (back = resolve));
     sub.remove();
+    const sawDialog = away >= DIALOG_MIN_MS;
     beforeChange();
     if (on) setReminderSetShown(true);
     setAsking(false);
