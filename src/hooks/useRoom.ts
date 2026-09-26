@@ -55,8 +55,12 @@ export function useRoom(wanting: readonly string[], inSlot: readonly string[]) {
     slotRef.current = shownSlot;
   });
   const onBody = useCallback(
-    (e: LayoutChangeEvent) =>
-      update((prev) => ({ ...prev, body: { height: e.nativeEvent.layout.height, slot: slotRef.current } })),
+    (e: LayoutChangeEvent) => {
+      // Read now: React Native may clear the event once this returns.
+      const height = e.nativeEvent.layout.height;
+      const slot = slotRef.current;
+      update((prev) => ({ ...prev, body: { height, slot } }));
+    },
     [update]
   );
 
