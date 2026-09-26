@@ -82,4 +82,23 @@ describe('useRoom', () => {
     expect(r().fits('privacy')).toBe(true);
     expect(r().fits('dots')).toBe(true);
   });
+
+  // React Native may clear a layout event once its handler returns.
+  test('reads a layout event at once', async () => {
+    const { r } = await setup(['privacy']);
+    await act(async () => {
+      // A pending update first, so React computes the next ones later.
+      r().onNeed(10);
+      for (const [handler, height] of [
+        [r().onBody, 200],
+        [r().measure('privacy'), 66],
+      ] as const) {
+        const e = layout(height) as { nativeEvent: unknown };
+        handler(e as LayoutChangeEvent);
+        e.nativeEvent = null;
+      }
+    });
+    expect(r().fits('privacy')).toBe(true);
+  });
 });
+
