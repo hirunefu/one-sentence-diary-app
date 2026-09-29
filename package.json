@@ -39,7 +39,7 @@
     "@react-native/jest-preset": "0.86.3",
     "@resvg/resvg-js": "^2.6.2",
     "@testing-library/react-native": "^14.0.1",
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.10",
     "better-sqlite3": "^13.0.3",
