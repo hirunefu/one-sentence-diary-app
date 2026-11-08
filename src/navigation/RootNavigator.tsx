@@ -1,5 +1,11 @@
 import React from 'react';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+  createNavigationContainerRef,
+  type NavigatorScreenParams,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,9 +20,10 @@ import { useAuthLock } from '../contexts/AuthLockContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useColors, useIsDark } from '../theme/useColors';
 import { View, Text } from 'react-native';
+import { useReminderTap } from './reminderTap';
 
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: NavigatorScreenParams<MainTabsParamList> | undefined;
   EntryEditor: { date: string };
   Licenses: undefined;
   LicenseDetail: { name: string; version: string };
@@ -27,6 +34,8 @@ export type MainTabsParamList = {
   History: undefined;
   Settings: undefined;
 };
+
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabsParamList>();
@@ -104,6 +113,7 @@ export function RootNavigator() {
   const isDark = useIsDark();
   const { isLocked } = useAuthLock();
   const { ready } = useSettings();
+  useReminderTap(navigationRef);
 
   if (!ready) {
     return (
@@ -120,7 +130,7 @@ export function RootNavigator() {
   const navTheme = buildNavTheme(isDark, colors);
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.surface },
