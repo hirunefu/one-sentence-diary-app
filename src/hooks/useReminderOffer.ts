@@ -5,6 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useAppActive } from './useAppActive';
 import { notificationPermission, type NotificationPermission } from '../services/notifications';
 import { reminderOfferLine, reminderSetCopy } from '../services/firstRunCopy';
+import { today } from '../utils/date';
 
 // 'set': Reminders are on. 'refused': Android's dialog said no (or was swiped
 // away). 'unavailable': no dialog could appear (notifications are off outside
@@ -29,7 +30,7 @@ export function useReminderOffer({
   // screen, and has just come back.
   onAnswered: (how: OfferAnswer, afterDialog: boolean) => void;
 }) {
-  const { firstRun, answerReminderOffer, reminderSetShown, setReminderSetShown } = useEntries();
+  const { firstRun, answerReminderOffer, reminderSetDay, setReminderSetDay } = useEntries();
   const { settings, ready: settingsReady, enableReminders } = useSettings();
   const active = useAppActive();
   const [permission, setPermission] = useState<NotificationPermission | null>(null);
@@ -92,10 +93,11 @@ export function useReminderOffer({
     sub.remove();
     const sawDialog = away >= DIALOG_MIN_MS;
     beforeChange();
-    if (on) setReminderSetShown(true);
+    // Confirmed on the day the answer came, also after midnight.
+    if (on) setReminderSetDay(today());
     setAsking(false);
     onAnswered(on ? 'set' : sawDialog ? 'refused' : 'unavailable', sawDialog);
-  }, [asking, answerReminderOffer, enableReminders, beforeChange, setReminderSetShown, onAnswered]);
+  }, [asking, answerReminderOffer, enableReminders, beforeChange, setReminderSetDay, onAnswered]);
 
   return {
     open,
@@ -104,6 +106,7 @@ export function useReminderOffer({
     line: reminderOfferLine(settings.reminderHour, settings.reminderMinute),
     decline,
     accept,
-    set: reminderSetShown ? reminderSetCopy(settings.reminderHour, settings.reminderMinute) : null,
+    set:
+      reminderSetDay !== null ? reminderSetCopy(settings.reminderHour, settings.reminderMinute) : null,
   };
 }

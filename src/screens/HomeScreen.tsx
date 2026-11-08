@@ -87,7 +87,8 @@ export function HomeScreen() {
     declineRepair,
     firstRun,
     startFirstDay,
-    setReminderSetShown,
+    reminderSetDay,
+    setReminderSetDay,
   } = useEntries();
   const { settings } = useSettings();
   // A first-time user (ADR 0002): Home explains itself in place until the
@@ -249,8 +250,8 @@ export function HomeScreen() {
   useEffect(() => {
     if (isFocused) return;
     setRepairSeenThisVisit(false);
-    setReminderSetShown(false);
-  }, [isFocused, setReminderSetShown]);
+    setReminderSetDay(null);
+  }, [isFocused, setReminderSetDay]);
   useEffect(() => {
     if (isFocused && offer) setRepairSeenThisVisit(true);
   }, [isFocused, offer]);
@@ -359,13 +360,9 @@ export function HomeScreen() {
       !celebration.due &&
       !streakBreak.offer &&
       !repairSeenThisVisit);
-  // The confirmation is first-day content too: it goes at that day's midnight.
+  // The confirmation is for the day it was given: it goes at that midnight.
   const wantSet =
-    !wantOffer &&
-    reminderOffer.set !== null &&
-    firstRun?.kind === 'started' &&
-    firstRun.day === todayStr &&
-    !keyboardShown;
+    !wantOffer && reminderOffer.set !== null && reminderSetDay === todayStr && !keyboardShown;
   // Kept first: the privacy line over the dot line (the dots explain
   // themselves at the first save), the offer over 「1日目」 (said in the save
   // announcement too).

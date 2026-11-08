@@ -84,10 +84,10 @@ type EntriesContextValue = {
   startFirstDay: (offer: 'open' | 'closed') => void;
   // Closes the Reminder offer for good. Does nothing unless it is open.
   answerReminderOffer: () => void;
-  // After the offer turned Reminders on: Home's confirmation. Session only, so
-  // it outlives Home being remounted behind the app lock.
-  reminderSetShown: boolean;
-  setReminderSetShown: (shown: boolean) => void;
+  // After the offer turned Reminders on: the day Home confirms it on, or null.
+  // Session only, so it outlives Home being remounted behind the app lock.
+  reminderSetDay: string | null;
+  setReminderSetDay: (day: string | null) => void;
 };
 
 const EntriesContext = createContext<EntriesContextValue | null>(null);
@@ -107,7 +107,7 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
   const [declinedRepairDay, setDeclinedRepairDay] = useState<string | null>(null);
   const [firstRun, setFirstRun] = useState<FirstRun | null>(null);
   const firstRunRef = useRef<FirstRun | null>(null);
-  const [reminderSetShown, setReminderSetShown] = useState(false);
+  const [reminderSetDay, setReminderSetDay] = useState<string | null>(null);
   // Follows the date past midnight and on returning to the app on a later day.
   const todayStr = useToday();
   const todayRef = useRef(todayStr);
@@ -309,8 +309,8 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       firstRun,
       startFirstDay,
       answerReminderOffer,
-      reminderSetShown,
-      setReminderSetShown,
+      reminderSetDay,
+      setReminderSetDay,
     }),
     [
       ready,
@@ -331,7 +331,7 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
       firstRun,
       startFirstDay,
       answerReminderOffer,
-      reminderSetShown,
+      reminderSetDay,
     ]
   );
 
