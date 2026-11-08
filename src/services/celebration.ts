@@ -30,8 +30,9 @@ export type StretchMemory = {
 
 export type CelebrationLedger = {
   // Newest end first, at most MAX_REMEMBERED_STRETCHES. Memories that carry
-  // nothing are not kept, and when full the least telling one goes first, so a
-  // Streak repair that rejoins an old stretch still finds what it told.
+  // nothing are not kept. What lives on in the stretch just before the Streak
+  // always stays, so a Streak repair finds what it told. When full, of the
+  // others the least telling goes first.
   stretches: readonly StretchMemory[];
   // The Streak's stretch at the last acknowledgement.
   seen: Stretch | null;
@@ -65,6 +66,7 @@ const overlaps = (a: Range, b: Range) => a.start <= b.end && b.start <= a.end;
 const byEndDesc = (a: Range, b: Range) => (a.end < b.end ? 1 : a.end > b.end ? -1 : 0);
 const byImportance = (a: StretchMemory, b: StretchMemory) =>
   b.milestone - a.milestone || b.held - a.held || byEndDesc(a, b);
+const carries = (m: StretchMemory) => m.milestone > 0 || m.held > 0;
 const max0 = (values: number[]) => values.reduce((a, v) => Math.max(a, v), 0);
 const asStretch = (s: Stretch | null): Stretch | null =>
   s ? { start: s.start, end: s.end, length: s.length } : null;
@@ -106,11 +108,18 @@ function acknowledgeStretches(
     ),
     held: current.length > otherBest ? Math.max(heldBefore, current.length) : heldBefore,
   };
-  const rest = ledger.stretches
-    .filter((m) => !inherited.includes(m) && (m.milestone > 0 || m.held > 0))
-    .sort(byImportance)
-    .slice(0, MAX_REMEMBERED_STRETCHES - 1);
-  const remembered = [memory, ...rest].sort(byEndDesc);
+  const others = ledger.stretches.filter(
+    (m) => !inherited.includes(m) && carries(m)
+  );
+  // The stretch just before the Streak is the one a Streak repair, or a
+  // Backfill of the gap, joins to it, so what lives on in it keeps its place
+  // whatever it told; the other memories go least telling first.
+  const prior = stretches.find((s) => s !== current) ?? null;
+  const joinable = others.filter((m) => prior && continuationOf(m, stretches) === prior);
+  const older = others.filter((m) => !joinable.includes(m)).sort(byImportance);
+  const own = carries(memory) ? [memory] : [];
+  const rest = [...joinable, ...older].slice(0, MAX_REMEMBERED_STRETCHES - own.length);
+  const remembered = [...own, ...rest].sort(byEndDesc);
   return { stretches: remembered, seen: asStretch(current), longest };
 }
 
