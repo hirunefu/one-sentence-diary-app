@@ -198,14 +198,17 @@ export function acknowledgeImport(
   if (!unchanged) return acknowledgeStretches(stretches, after, remembered);
   // The Streak keeps what is due, so `seen` stays; the memories are cut as of
   // today, like an acknowledgement would. The Longest streak moves only to a
-  // longer stretch the import brought, never to the Streak itself, so a new
-  // Longest streak that is due stays due.
+  // stretch other than the Streak that is longer than the one acknowledged and
+  // that the Streak has not passed, so a new Longest streak that is due stays
+  // due, and none is added for a stretch the Streak was already longer than.
   const kept = ranked(remembered.stretches, stretches)
     .slice(0, MAX_REMEMBERED_STRETCHES)
     .sort(byEndDesc);
   const bestOther = holderOf(stretches.filter((s) => s !== after));
   const longest =
-    bestOther && bestOther.length > (ledger.longest?.length ?? 0)
+    bestOther &&
+    bestOther.length > (ledger.longest?.length ?? 0) &&
+    (after === null || bestOther.length >= after.length)
       ? asStretch(bestOther)
       : ledger.longest;
   return { ...remembered, stretches: kept, longest };

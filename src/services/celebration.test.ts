@@ -762,6 +762,23 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual(['-/10@11']);
   });
 
+  test('an import that changes nothing adds no Longest streak the Streak had already passed', () => {
+    // B: 8 days ending 2 days ago; C and D: 7 days each, a missed day between.
+    const diary = new Diary(TODAY, [
+      ...daysBefore(addDays(TODAY, -2), 0, 7),
+      ...daysBefore(addDays(TODAY, -40), 0, 6),
+      ...daysBefore(addDays(TODAY, -48), 0, 6),
+    ]);
+    diary.write(0);
+    for (let i = 1; i < 11; i++) diary.nextDay().write(0);
+    expect(diary.told()).toEqual(['3/-@3', '7/-@7', '-/8@9']);
+    // In History: join B to the Streak (20, so 14 is due), then join C and D (15).
+    diary.toHistory().write(-11).write(-57);
+    diary.importDates([diary.day(0), diary.day(-5)]);
+    diary.toHome();
+    expect(diary.told()).toEqual(['14/-@20']);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);
