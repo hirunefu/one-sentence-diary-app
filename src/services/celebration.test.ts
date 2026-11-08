@@ -625,6 +625,43 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  // Eight 3-day stretches, a missed day between each, each told 3: the last is
+  // the Streak and the ledger is full.
+  function eightShortStretches(): Diary {
+    const diary = new Diary(TODAY);
+    for (let k = 0; k < 8; k++) {
+      if (k) diary.nextDay(2);
+      diary.write(0).nextDay().write(0).nextDay().write(0);
+    }
+    expect(diary.told()).toHaveLength(8);
+    return diary;
+  }
+  const gaps = [3, 7, 11, 15, 19, 23, 27].map((d) => addDays(TODAY, d));
+  const fiftyBefore = daysBefore(addDays(TODAY, -2), 0, 49);
+
+  test('an import that joins the remembered stretches keeps the stretch it brings before them', () => {
+    const diary = eightShortStretches();
+    diary.importDates([...gaps, ...fiftyBefore]);
+    expect(diary.streak()).toBe(31);
+    expect(diary.told()).toEqual([]);
+    diary.toHistory().write(-31).toHome();
+    expect(diary.streak()).toBe(82);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('an import keeps an older stretch it brings when what it joins merges into few', () => {
+    const diary = eightShortStretches();
+    // Every gap but the middle one: four stretches join into the Streak and
+    // four into the stretch before it.
+    diary.importDates([...gaps.filter((_, i) => i !== 3), ...fiftyBefore]);
+    expect(diary.told()).toEqual([]);
+    diary.toHistory().write(-15).toHome();
+    expect(diary.told()).toEqual(['30/-@31']);
+    diary.toHistory().write(-31).toHome();
+    expect(diary.streak()).toBe(82);
+    expect(diary.told()).toEqual([]);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);
