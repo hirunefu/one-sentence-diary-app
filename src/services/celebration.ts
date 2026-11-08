@@ -31,8 +31,8 @@ export type StretchMemory = {
 export type CelebrationLedger = {
   // Newest end first, at most MAX_REMEMBERED_STRETCHES. Memories that carry
   // nothing are not kept. When cut, what lives on in the Streak and then in the
-  // stretch just before it stays first (see `ranked`), so a Streak repair finds
-  // what it told; then the most telling.
+  // nearest older stretch with a memory stays first (see `ranked`), so a Streak
+  // repair finds what it told; then the most telling.
   stretches: readonly StretchMemory[];
   // The Streak's stretch at the last acknowledgement.
   seen: Stretch | null;
@@ -89,20 +89,22 @@ function inheritedBy(
   return ledger.stretches.filter((m) => continuationOf(m, stretches) === stretch);
 }
 
-// The order memories keep their place in when the ledger is cut: what lives on
-// in the Streak, then in the stretch just before it (the one a Streak repair,
-// or a Backfill of the gap, joins to it), whatever they told; then the most
-// telling first.
+// The order memories keep their place in when the ledger is cut, whatever they
+// told: what lives on in the newest stretch (the Streak, or the stretch a
+// Streak repair turns into it), then in the nearest older stretch that has a
+// memory (the one a repair or a Backfill of the gap joins next; stretches too
+// short to carry anything in between do not hide it); then the most telling.
 function ranked(
   memories: readonly StretchMemory[],
-  stretches: readonly Stretch[],
-  streak: Stretch | null,
-  beforeStreak: Stretch | null
+  stretches: readonly Stretch[]
 ): StretchMemory[] {
-  const livesIn = (s: Stretch | null) => (m: StretchMemory) =>
-    s !== null && continuationOf(m, stretches) === s;
-  const first = memories.filter(livesIn(streak));
-  const second = memories.filter((m) => !first.includes(m) && livesIn(beforeStreak)(m));
+  const home = new Map(memories.map((m) => [m, continuationOf(m, stretches)]));
+  const lead = stretches[0] ?? null;
+  const first = memories.filter((m) => lead !== null && home.get(m) === lead);
+  const next = stretches.find(
+    (s) => s !== lead && memories.some((m) => home.get(m) === s)
+  );
+  const second = memories.filter((m) => next !== undefined && home.get(m) === next);
   const rest = memories.filter((m) => !first.includes(m) && !second.includes(m));
   return [first, second, rest].flatMap((group) => [...group].sort(byImportance));
 }
@@ -115,8 +117,7 @@ function acknowledgeStretches(
 ): CelebrationLedger {
   const longest = asStretch(holderOf(stretches));
   if (!current) {
-    // With no Streak, the newest stretch is the one a Streak repair joins.
-    const kept = ranked(ledger.stretches, stretches, null, stretches[0] ?? null);
+    const kept = ranked(ledger.stretches, stretches);
     return { stretches: kept.slice(0, cap).sort(byEndDesc), seen: null, longest };
   }
   const inherited = inheritedBy(current, stretches, ledger);
@@ -135,10 +136,7 @@ function acknowledgeStretches(
     (m) => !inherited.includes(m) && carries(m)
   );
   const own = carries(memory) ? [memory] : [];
-  const prior = stretches.find((s) => s !== current) ?? null;
-  const remembered = ranked([...own, ...others], stretches, current, prior)
-    .slice(0, cap)
-    .sort(byEndDesc);
+  const remembered = ranked([...own, ...others], stretches).slice(0, cap).sort(byEndDesc);
   return { stretches: remembered, seen: asStretch(current), longest };
 }
 
@@ -178,8 +176,7 @@ function rememberAsTold(
 
 // An import restores Entries the user did not write here: every stretch it
 // brings or changes counts as told. A Streak it leaves as it was keeps a
-// celebration that is due but not yet shown; only the Longest streak shown is
-// updated.
+// celebration that is due but not yet shown, a new Longest streak included.
 export function acknowledgeImport(
   sortedDescDatesBefore: readonly string[],
   sortedDescDatesAfter: readonly string[],
@@ -196,12 +193,18 @@ export function acknowledgeImport(
   const unchanged = before?.start === after?.start && before?.end === after?.end;
   if (!unchanged) return acknowledgeStretches(stretches, after, remembered);
   // The Streak keeps what is due, so `seen` stays; the memories are cut as of
-  // today, like an acknowledgement would.
-  const near = after ? (stretches.find((s) => s !== after) ?? null) : (stretches[0] ?? null);
-  const kept = ranked(remembered.stretches, stretches, after, near)
+  // today, like an acknowledgement would. The Longest streak moves only to a
+  // longer stretch the import brought, never to the Streak itself, so a new
+  // Longest streak that is due stays due.
+  const kept = ranked(remembered.stretches, stretches)
     .slice(0, MAX_REMEMBERED_STRETCHES)
     .sort(byEndDesc);
-  return { ...remembered, stretches: kept, longest: asStretch(holderOf(stretches)) };
+  const bestOther = holderOf(stretches.filter((s) => s !== after));
+  const longest =
+    bestOther && bestOther.length > (ledger.longest?.length ?? 0)
+      ? asStretch(bestOther)
+      : ledger.longest;
+  return { ...remembered, stretches: kept, longest };
 }
 
 // The ledger for a first launch, an update or an unreadable ledger: what is
