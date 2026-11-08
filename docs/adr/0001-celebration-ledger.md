@@ -15,9 +15,9 @@ A Milestone or a new Longest streak is told once per stretch (a maximal run of c
 
 ## Consequences
 
-- Celebration memory is per device: a Streak restored on a new phone counts as already told.
+- Celebration memory is per device: a Streak restored on a new phone counts as already told. An import that leaves the Streak as it was keeps what is due, a new Longest streak included.
 - Clearing app data, an unreadable ledger or a version bump re-seeds silently, so a celebration that was due but not yet seen can be missed.
-- The ledger keeps at most 8 stretches. Stretches that carry nothing are not kept. When it is cut, what lives on in the Streak stays first, then what lives on in the stretch just before it (the one a Streak repair or a Backfill of the gap joins), then the most telling memories. An import cuts once, as of today, so it keeps all of these unless it brings more than 56 stretches that reached a Milestone. A Backfill that rejoins an older stretch dropped long ago could tell its Milestone again.
+- The ledger keeps at most 8 stretches. Stretches that carry nothing are not kept. When it is cut, what lives on in the newest stretch (the Streak, or the stretch a Streak repair turns into it) stays first, then what lives on in the nearest older stretch that has a memory (the one a Streak repair or a Backfill of the gap joins next; days too few to carry anything in between do not hide it), then the most telling memories. An import cuts once, as of today, so it keeps all of these unless it brings more than 56 stretches that reached a Milestone. A Backfill that rejoins an older stretch dropped long ago could tell its Milestone again.
 - The Entries (SQLite) and the ledger (AsyncStorage) are not written in one transaction; a failed ledger save is only logged.
 - Changing the identity rule or the import rule means a new ADR that supersedes this one and a bump of the ledger version.
 

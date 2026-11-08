@@ -662,6 +662,57 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  // Eight older stretches of `days`, a missed day between each, ending at `end`.
+  const olderStretches = (end: number, days: number) =>
+    range(0, 7).flatMap((k) => daysBefore(addDays(TODAY, end - (days + 1) * k), 0, days - 1));
+
+  test('seeding keeps the newest Milestone stretch behind a short one', () => {
+    // A 7-day stretch ending 4 days ago, a missed day, one day, a missed day.
+    const diary = new Diary(TODAY, [
+      ...olderStretches(-12, 14),
+      ...daysBefore(addDays(TODAY, -4), 0, 6),
+      addDays(TODAY, -2),
+    ]);
+    diary.write(0).write(-1);
+    expect(diary.told()).toEqual(['3/-@3']);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(11);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('seeding with no Streak keeps the Milestone stretch before the newest one', () => {
+    const diary = new Diary(TODAY, [
+      ...olderStretches(-8, 7),
+      ...daysBefore(addDays(TODAY, -4), 0, 2),
+      addDays(TODAY, -2),
+    ]);
+    diary.write(-1);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(6);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('an import with no Streak keeps the Milestone stretch before the newest one', () => {
+    const diary = new Diary(TODAY, [addDays(TODAY, -2)]);
+    diary.importDates([...olderStretches(-8, 7), ...daysBefore(addDays(TODAY, -4), 0, 2)]);
+    diary.write(-1);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(6);
+    expect(diary.told()).toEqual([]);
+  });
+
+  // A Streak an import leaves as it was keeps what is due, the Longest streak too.
+  test('an import that leaves the Streak as it was keeps a due Longest streak', () => {
+    const diary = savedDaily(10);
+    diary.nextDay(2).write(0);
+    for (let i = 1; i < 10; i++) diary.nextDay().write(0);
+    diary.told();
+    diary.nextDay().toHistory().write(0);
+    diary.importDates([diary.day(-1)]);
+    diary.toHome();
+    expect(diary.told()).toEqual(['-/10@11']);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);
