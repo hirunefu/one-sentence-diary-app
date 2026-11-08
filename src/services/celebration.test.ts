@@ -573,6 +573,39 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  test('when more memories live on in the stretch before the Streak than fit, the least telling go', () => {
+    const diary = savedDaily(50);
+    // Seven 3-day stretches, each after a missed day, then a 1-day Streak.
+    for (let k = 0; k < 7; k++) diary.nextDay(2).write(0).nextDay().write(0).nextDay().write(0);
+    diary.nextDay(2).write(0);
+    diary.told();
+    // Fill the gaps between the 50 and the seventh 3-day stretch.
+    diary.toHistory();
+    for (const offset of [-5, -9, -13, -17, -21, -25, -29]) diary.write(offset);
+    diary.toHome();
+    expect(diary.told()).toEqual([]);
+    // The Streak reaches 3, so its own memory takes a place.
+    diary.nextDay().write(0).nextDay().write(0);
+    expect(diary.told()).toEqual(['3/-@3']);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(82);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('an import of older stretches keeps the stretch a repair joins', () => {
+    // An 8-day stretch (7 told), a missed day, and a 3-day Streak (3 told).
+    const diary = savedDaily(8);
+    diary.nextDay(2).write(0).nextDay().write(0).nextDay().write(0);
+    diary.told();
+    // A backup with eight 14-day stretches from long before.
+    const old = range(0, 7).flatMap((k) => daysBefore(diary.day(-100 - 15 * k), 0, 13));
+    diary.importDates(old);
+    expect(diary.told()).toEqual([]);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(12);
+    expect(diary.told()).toEqual([]);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);
