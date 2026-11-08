@@ -498,6 +498,42 @@ describe('HomeScreen draft across a date change', () => {
     expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
   });
 
+  // Only a new sentence is carried over: an unsaved edit of an Entry that
+  // exists would otherwise be filed under the new day as a copy.
+  test("an unsaved edit of the day's Entry is not carried to the new day", async () => {
+    await upsertEntry(await mockDb, { date: '2026-09-25', text: 'A', now: 1 });
+    await openHome();
+    await fireEvent.changeText(await input(), 'AB');
+    await passMidnight();
+    expect(await input()).toHaveDisplayValue('');
+    expect(await savedOn('2026-09-26')).toBeUndefined();
+  });
+
+  test('a save still running when the date turns over stays with its own day', async () => {
+    const db = await mockDb;
+    await openHome();
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const run = db.runAsync.bind(db);
+    db.runAsync = (async (...args: Parameters<typeof run>) => {
+      await gate;
+      return run(...args);
+    }) as typeof db.runAsync;
+    // The save waits on the database while the date turns over. fireEvent's
+    // own act() ends once the handler has started; the save goes on after it.
+    const saving = fireEvent.press(screen.getByTestId('save-button'));
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    await passMidnight();
+    await act(async () => {
+      release();
+      await saving;
+    });
+    expect(await savedOn('2026-09-25')).toBe('川沿いを歩いた');
+    expect(await input()).toHaveDisplayValue('');
+    expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
+  });
+
   test('a draft gives way to an Entry the new day already has', async () => {
     // Versions before 1.3.0 could write future days.
     await upsertEntry(await mockDb, { date: '2026-09-26', text: '前から', now: 1 });

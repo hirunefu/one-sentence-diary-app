@@ -142,10 +142,12 @@ export function HomeScreen() {
     });
   }, [entries, todayStr]);
 
-  // What the field held when it was last loaded or saved. Text that differs is
-  // an unsaved draft: it stays when the date turns over (at midnight, or on a
-  // resume the next morning), so the save goes to the new day, unless that day
-  // already has an Entry.
+  // The day the field belongs to, and what it held when last loaded or saved.
+  // A new sentence typed on a day without an Entry and not yet saved stays when
+  // the date turns over (at midnight, or on a resume the next morning), so the
+  // save goes to the new day, unless that day already has an Entry. An unsaved
+  // edit of an existing Entry is not carried over: it would file a copy.
+  const fieldDayRef = useRef<string | null>(null);
   const storedTextRef = useRef('');
   useEffect(() => {
     if (!ready) return;
@@ -154,9 +156,10 @@ export function HomeScreen() {
       const e = await getByDate(todayStr);
       if (cancelled) return;
       const stored = e?.text ?? '';
-      const before = storedTextRef.current;
+      const newSentence = storedTextRef.current === '';
+      fieldDayRef.current = todayStr;
       storedTextRef.current = stored;
-      setText((current) => (!e && current !== before ? current : stored));
+      setText((current) => (!e && newSentence ? current : stored));
       setLoaded(true);
     })();
     return () => {
@@ -428,7 +431,14 @@ export function HomeScreen() {
         setPrivacyLeaving(true);
       }
       await upsert(todayStr, text);
-      storedTextRef.current = text;
+      if (fieldDayRef.current === todayStr) {
+        storedTextRef.current = text;
+      } else {
+        // The date turned over while saving: the sentence is now saved to the
+        // day before, so the field gives way to the new day's.
+        const newDay = storedTextRef.current;
+        setText((current) => (current === text ? newDay : current));
+      }
       if (firstSave) {
         firstSaveTimers.current.push(
           setTimeout(() => setPrivacyLeaving(false), FADE_MS),
