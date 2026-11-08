@@ -454,3 +454,56 @@ describe('HomeScreen Prompt', () => {
     });
   });
 });
+
+// A sentence typed before midnight and not yet saved is the user's; the date
+// turning over must not take it away (a save after midnight goes to the new day).
+describe('HomeScreen draft across a date change', () => {
+  const input = () => screen.findByTestId('entry-input');
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 25, 23, 58, 0));
+  });
+  afterEach(() => jest.useRealTimers());
+  // Lets the database and storage promises settle without moving the clock.
+  const flush = () =>
+    act(async () => {
+      for (let i = 0; i < 30; i++) await Promise.resolve();
+    });
+  const savedOn = async (date: string) => (await getEntryByDate(await mockDb, date))?.text;
+  const passMidnight = async () => {
+    await act(async () => jest.advanceTimersByTime(3 * 60 * 1000));
+    await waitFor(() => expect(screen.getByText(/9月26日/)).toBeTruthy());
+  };
+
+  test('an unsaved draft stays, and its save goes to the new day', async () => {
+    await openHome();
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    await passMidnight();
+    expect(await input()).toHaveDisplayValue('川沿いを歩いた');
+
+    await fireEvent.press(screen.getByTestId('save-button'));
+    await flush();
+    expect(await savedOn('2026-09-26')).toBe('川沿いを歩いた');
+    expect(await savedOn('2026-09-25')).toBeUndefined();
+  });
+
+  test("a saved Entry gives way to the new day's empty field", async () => {
+    await openHome();
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    await fireEvent.press(screen.getByTestId('save-button'));
+    await flush();
+    expect(await savedOn('2026-09-25')).toBe('川沿いを歩いた');
+    await passMidnight();
+    expect(await input()).toHaveDisplayValue('');
+    expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
+  });
+
+  test('a draft gives way to an Entry the new day already has', async () => {
+    // Versions before 1.3.0 could write future days.
+    await upsertEntry(await mockDb, { date: '2026-09-26', text: '前から', now: 1 });
+    await openHome();
+    await fireEvent.changeText(await input(), '川沿いを歩いた');
+    await passMidnight();
+    expect(await input()).toHaveDisplayValue('前から');
+  });
+});

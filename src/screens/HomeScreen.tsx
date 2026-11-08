@@ -142,13 +142,26 @@ export function HomeScreen() {
     });
   }, [entries, todayStr]);
 
+  // What the field held when it was last loaded or saved. Text that differs is
+  // an unsaved draft: it stays when the date turns over (at midnight, or on a
+  // resume the next morning), so the save goes to the new day, unless that day
+  // already has an Entry.
+  const storedTextRef = useRef('');
   useEffect(() => {
     if (!ready) return;
+    let cancelled = false;
     (async () => {
       const e = await getByDate(todayStr);
-      setText(e?.text ?? '');
+      if (cancelled) return;
+      const stored = e?.text ?? '';
+      const before = storedTextRef.current;
+      storedTextRef.current = stored;
+      setText((current) => (!e && current !== before ? current : stored));
       setLoaded(true);
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [ready, todayStr, getByDate]);
 
   useEffect(() => {
@@ -409,6 +422,7 @@ export function HomeScreen() {
         setPrivacyLeaving(true);
       }
       await upsert(todayStr, text);
+      storedTextRef.current = text;
       if (firstSave) {
         firstSaveTimers.current.push(
           setTimeout(() => setPrivacyLeaving(false), FADE_MS),
