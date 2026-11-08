@@ -98,8 +98,11 @@ export function HomeScreen() {
   const screenReader = useScreenReaderEnabled();
   // The repair offer and the first-run content step aside while the keyboard
   // is up; the text field moves with them smoothly rather than in one jump.
+  // A first-run line can still show: first-time content, or the Reminder
+  // confirmation, which may outlast the first day when answered after midnight.
+  const firstRunLines = firstTime || reminderSetDay !== null;
   const keyboardShown = useKeyboardShown(() => {
-    if (streakBreak.offer || firstTime) animateButtonLayout(reduceMotion);
+    if (streakBreak.offer || firstRunLines) animateButtonLayout(reduceMotion);
   });
   const { remindAfterSave } = useExportReminder();
   const reduceMotion = useReduceMotion();
@@ -370,8 +373,13 @@ export function HomeScreen() {
       !streakBreak.offer &&
       !repairSeenThisVisit);
   // The confirmation is for the day it was given: it goes at that midnight.
+  // That day can be ahead of todayStr, which follows the clock a second late.
   const wantSet =
-    !wantOffer && reminderOffer.set !== null && reminderSetDay === todayStr && !keyboardShown;
+    !wantOffer &&
+    reminderOffer.set !== null &&
+    reminderSetDay !== null &&
+    reminderSetDay >= todayStr &&
+    !keyboardShown;
   // Kept first: the privacy line over the dot line (the dots explain
   // themselves at the first save), the offer over 「1日目」 (said in the save
   // announcement too).
@@ -576,7 +584,7 @@ export function HomeScreen() {
           label="今日の一文"
           placeholder={promptFor(todayStr)}
           fill
-          onNeedHeight={firstTime ? room.onNeed : undefined}
+          onNeedHeight={firstRunLines ? room.onNeed : undefined}
         />
         {/* Just before the first save: where Entries are kept. */}
         {wantPrivacy && room.fits('privacy') && (
