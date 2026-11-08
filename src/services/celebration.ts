@@ -31,8 +31,8 @@ export type StretchMemory = {
 export type CelebrationLedger = {
   // Newest end first, at most MAX_REMEMBERED_STRETCHES. Memories that carry
   // nothing are not kept. What lives on in the stretch just before the Streak
-  // always stays, so a Streak repair finds what it told. When full, of the
-  // others the least telling goes first.
+  // is kept before the rest, so a Streak repair finds what it told. When full,
+  // the least telling memory goes first.
   stretches: readonly StretchMemory[];
   // The Streak's stretch at the last acknowledgement.
   seen: Stretch | null;
@@ -89,10 +89,13 @@ function inheritedBy(
   return ledger.stretches.filter((m) => continuationOf(m, stretches) === stretch);
 }
 
+// `keep` marks memories that hold their place like those of the stretch before
+// the Streak (an import works on frames that cannot see the recent stretches).
 function acknowledgeStretches(
   stretches: readonly Stretch[],
   current: Stretch | null,
-  ledger: CelebrationLedger
+  ledger: CelebrationLedger,
+  keep: (m: StretchMemory) => boolean = () => false
 ): CelebrationLedger {
   const longest = asStretch(holderOf(stretches));
   if (!current) return { stretches: ledger.stretches, seen: null, longest };
@@ -115,7 +118,9 @@ function acknowledgeStretches(
   // Backfill of the gap, joins to it, so what lives on in it keeps its place
   // whatever it told; the other memories go least telling first.
   const prior = stretches.find((s) => s !== current) ?? null;
-  const joinable = others.filter((m) => prior && continuationOf(m, stretches) === prior);
+  const joinable = others
+    .filter((m) => keep(m) || (prior && continuationOf(m, stretches) === prior))
+    .sort(byImportance);
   const older = others.filter((m) => !joinable.includes(m)).sort(byImportance);
   const own = carries(memory) ? [memory] : [];
   const rest = [...joinable, ...older].slice(0, MAX_REMEMBERED_STRETCHES - own.length);
@@ -128,10 +133,11 @@ function acknowledgeStretches(
 export function acknowledge(
   sortedDescDates: readonly string[],
   todayStr: string,
-  ledger: CelebrationLedger
+  ledger: CelebrationLedger,
+  keep?: (m: StretchMemory) => boolean
 ): CelebrationLedger {
   const stretches = stretchesOf(sortedDescDates, todayStr);
-  return acknowledgeStretches(stretches, currentStretch(stretches, todayStr), ledger);
+  return acknowledgeStretches(stretches, currentStretch(stretches, todayStr), ledger, keep);
 }
 
 // Remembers each given stretch (oldest first) as told, as of its own last day,
@@ -140,12 +146,13 @@ export function acknowledge(
 function rememberAsTold(
   sortedDescDates: readonly string[],
   stretches: readonly Stretch[],
-  ledger: CelebrationLedger
+  ledger: CelebrationLedger,
+  keep?: (m: StretchMemory) => boolean
 ): CelebrationLedger {
   let next = ledger;
   for (const s of [...stretches].reverse()) {
     if (highestMilestoneAtMost(s.length) === null) continue;
-    next = { ...acknowledge(sortedDescDates, s.end, next), seen: next.seen };
+    next = { ...acknowledge(sortedDescDates, s.end, next, keep), seen: next.seen };
   }
   return next;
 }
@@ -164,9 +171,16 @@ export function acknowledgeImport(
   const stretches = stretchesOf(sortedDescDatesAfter, todayStr);
   const known = new Set(beforeStretches.map((s) => `${s.start}|${s.end}`));
   const changed = stretches.filter((s) => !known.has(`${s.start}|${s.end}`));
-  const remembered = rememberAsTold(sortedDescDatesAfter, changed, ledger);
   const before = currentStretch(beforeStretches, todayStr);
   const after = currentStretch(stretches, todayStr);
+  // The frames of older imported stretches cannot see the Streak or the
+  // stretch a repair joins to it, so what lives on in those keeps its place.
+  const near = after ? (stretches.find((s) => s !== after) ?? null) : (stretches[0] ?? null);
+  const recent = (m: StretchMemory) => {
+    const c = continuationOf(m, stretches);
+    return c !== null && (c === after || c === near);
+  };
+  const remembered = rememberAsTold(sortedDescDatesAfter, changed, ledger, recent);
   const unchanged = before?.start === after?.start && before?.end === after?.end;
   if (unchanged) return { ...remembered, longest: asStretch(holderOf(stretches)) };
   return acknowledgeStretches(stretches, after, remembered);
