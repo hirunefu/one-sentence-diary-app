@@ -528,6 +528,51 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  // Seven stretches of 14 days, each after a missed day: enough memories that
+  // outrank a short recent stretch to fill the ledger.
+  function sevenFortnights(): Diary {
+    const diary = new Diary(TODAY);
+    for (let k = 0; k < 7; k++) {
+      if (k) diary.nextDay(2);
+      diary.write(0);
+      for (let i = 1; i < 14; i++) diary.nextDay().write(0);
+    }
+    return diary;
+  }
+  function stretchAfterMissedDay(diary: Diary, days: number): Diary {
+    diary.nextDay(2).write(0);
+    for (let i = 1; i < days; i++) diary.nextDay().write(0);
+    return diary;
+  }
+
+  test('writing today after a missed day keeps the stretch a repair of yesterday rejoins', () => {
+    const diary = stretchAfterMissedDay(sevenFortnights(), 4);
+    diary.told();
+    // Yesterday is missing; today is saved on Home first, then the repair.
+    diary.nextDay(2).write(0);
+    expect(diary.told()).toEqual([]);
+    diary.toHistory().write(-1).toHome();
+    expect(diary.streak()).toBe(6);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('deleting yesterday and writing it back tells nothing, with a full ledger', () => {
+    const diary = stretchAfterMissedDay(sevenFortnights(), 5);
+    diary.told();
+    diary.toHistory().delete(-1).write(-1).toHome();
+    expect(diary.streak()).toBe(5);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test('a Backfill that joins the stretch before the Streak tells nothing it had told', () => {
+    // An 8-day stretch (7 told), a missed day, and a 3-day Streak (3 told).
+    const diary = stretchAfterMissedDay(stretchAfterMissedDay(sevenFortnights(), 8), 3);
+    diary.told();
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(12);
+    expect(diary.told()).toEqual([]);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);
