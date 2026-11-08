@@ -8,8 +8,8 @@ There are no onboarding screens. Until the first Entry, Home explains itself in 
 
 - Seeded when missing or unreadable: `returning` if there are Entries (an update, Q19), otherwise `new`. A missed offer is preferred to a false one.
 - `new` → `started` at a first-time user's first save on Home that creates today's Entry on a day with no break before it (after a lapse the offer would read as a reproach). A Backfill or an import never starts it.
-- The offer closes when answered (設定する closes it before Android's dialog, so an interrupted dialog never brings it back), when Reminders are already on, or when this app's permission request was refused for good. Unanswered, it stays for the rest of that day only.
-- `started` → `returning` at the first launch or the midnight after that day; any state → `returning` on an import that brings Entries.
+- The offer closes when answered (設定する closes it before Android's dialog, so an interrupted dialog never brings it back), when Reminders are already on, or when this app's permission request was refused for good. Unanswered, it stays for the rest of that day only. The confirmation that 設定する shows also ends with that day, or earlier when Home is left.
+- `started` → `returning` at the first launch or the midnight after that day; `new` → `returning` once an Entry was written on an earlier day (someone who writes only from History never starts a first day on Home, but already uses the app); any state → `returning` on an import that brings Entries.
 - The explanatory lines follow the Entries (shown while there is none) for as long as the user is not `returning`; 「1日目」 shows while that day's Entry is the only one.
 
 ## Considered options

@@ -356,7 +356,13 @@ export function HomeScreen() {
       !celebration.due &&
       !streakBreak.offer &&
       !repairSeenThisVisit);
-  const wantSet = !wantOffer && reminderOffer.set !== null && !keyboardShown;
+  // The confirmation is first-day content too: it goes at that day's midnight.
+  const wantSet =
+    !wantOffer &&
+    reminderOffer.set !== null &&
+    firstRun?.kind === 'started' &&
+    firstRun.day === todayStr &&
+    !keyboardShown;
   // Kept first: the privacy line over the dot line (the dots explain
   // themselves at the first save), the offer over 「1日目」 (said in the save
   // announcement too).

@@ -125,10 +125,13 @@ async function save(text = 'first') {
   await fireEvent.press(screen.getByTestId('save-button'));
   await flush();
 }
-async function writeBeforeLaunch(offsets: number[]) {
+// Entries for those days, written today (a first-time user's Backfill) unless
+// `writtenDaysAgo` says they were written on an earlier day.
+async function writeBeforeLaunch(offsets: number[], writtenDaysAgo = 0) {
   const db = await mockDb;
+  const now = Date.now() - writtenDaysAgo * 24 * 60 * 60 * 1000;
   for (const offset of offsets) {
-    await upsertEntry(db, { date: addDays(today(), offset), text: 'before', now: 1 });
+    await upsertEntry(db, { date: addDays(today(), offset), text: 'before', now });
   }
 }
 const seedFirstRun = (state: FirstRun) => saveFirstRun(state);
@@ -506,6 +509,31 @@ describe('HomeScreen Reminder offer', () => {
     }
   });
 
+  // Someone who has been writing from History is not a first-time user, even
+  // though no save on Home started their first day (ADR 0002).
+  test('someone who wrote on an earlier day is not greeted as new', async () => {
+    await seedFirstRun({ kind: 'new' });
+    await writeBeforeLaunch([-1, -2, -3], 1);
+    await open();
+    expect(await loadFirstRun()).toEqual({ kind: 'returning' });
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    for (const id of ['first-run-dots', 'first-run-privacy', 'first-day', 'reminder-offer']) {
+      expect(shown(id)).toBe(false);
+    }
+  });
+
+  test('writing only from History on the first day ends it at midnight', async () => {
+    jest.setSystemTime(new Date(2026, 8, 25, 23, 50, 0));
+    await open();
+    await act(async () => entries.upsert('2026-09-25', 'from History'));
+    await flush();
+    expect(await loadFirstRun()).toEqual({ kind: 'new' });
+    await wait(11 * 60 * 1000);
+    await flush();
+    expect(await loadFirstRun()).toEqual({ kind: 'returning' });
+  });
+
   test("a save on a 「また今日から」 day does not open it", async () => {
     await seedFirstRun({ kind: 'new' });
     await writeBeforeLaunch([-3]);
@@ -555,6 +583,20 @@ describe('HomeScreen Reminder offer', () => {
     mockFocused = true;
     await view.rerender(app());
     expect(shown('reminder-offer')).toBe(true);
+  });
+
+  // ADR 0002: the first day's content ends at its midnight.
+  test('the confirmation goes when the first day ends', async () => {
+    jest.setSystemTime(new Date(2026, 8, 25, 23, 50, 0));
+    await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+    await flush();
+    expect(shown('reminder-set')).toBe(true);
+    await wait(11 * 60 * 1000);
+    expect(screen.getByText(/9月26日/)).toBeTruthy();
+    expect(shown('reminder-set')).toBe(false);
   });
 
   test('the confirmation goes when Home is left', async () => {
