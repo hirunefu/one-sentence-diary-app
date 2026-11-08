@@ -701,6 +701,55 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  // A new user's first day or two hold the Longest streak at 1 or 2, which can
+  // never matter (a Longest streak is told from 7): such a stretch must not
+  // take the place of the Milestone stretch behind it.
+  const fortnightsBefore = (diary: Diary, end: number, count: number) =>
+    range(0, count - 1).flatMap((k) => daysBefore(diary.day(end - 15 * k), 0, 13));
+
+  test("a new user's first day does not hide an imported Milestone stretch", () => {
+    const diary = new Diary(TODAY).write(0).nextDay(2).write(0);
+    diary.toHistory();
+    // A 7-day stretch ending 2 days before the first Entry, and seven fortnights.
+    diary.importDates([...daysBefore(diary.day(-4), 0, 6), ...fortnightsBefore(diary, -12, 7)]);
+    diary.toHome();
+    expect(diary.told()).toEqual([]);
+    diary.write(-1);
+    expect(diary.told()).toEqual(['3/-@3']);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.streak()).toBe(11);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test("a new user's first day does not hide it when the Streak later reaches 3", () => {
+    const diary = new Diary(TODAY).write(0);
+    diary.importDates([...daysBefore(diary.day(-2), 0, 6), ...fortnightsBefore(diary, -10, 6)]);
+    diary.nextDay(2).write(0).nextDay().write(0).nextDay().write(0);
+    expect(diary.told()).toEqual(['3/-@3']);
+    diary.toHistory().write(-3).toHome();
+    expect(diary.told()).toEqual([]);
+    diary.toHistory().write(-5).toHome();
+    expect(diary.streak()).toBe(13);
+    expect(diary.told()).toEqual([]);
+  });
+
+  test("a new user's first day does not hide it among record-setting stretches", () => {
+    const diary = new Diary(TODAY).write(0).nextDay(2).write(0);
+    const before = (from: number, to: number) => daysBefore(diary.today, from, to);
+    diary.importDates([
+      ...before(4, 10),
+      ...before(52, 64),
+      ...before(90, 101),
+      ...before(121, 131),
+      ...before(219, 228),
+      ...before(254, 262),
+      ...before(334, 341),
+      ...before(360, 366),
+    ]);
+    diary.write(-1).write(-3);
+    expect(diary.told()).toEqual(['3/-@3']);
+  });
+
   // A Streak an import leaves as it was keeps what is due, the Longest streak too.
   test('an import that leaves the Streak as it was keeps a due Longest streak', () => {
     const diary = savedDaily(10);

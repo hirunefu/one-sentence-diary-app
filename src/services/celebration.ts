@@ -66,7 +66,10 @@ const overlaps = (a: Range, b: Range) => a.start <= b.end && b.start <= a.end;
 const byEndDesc = (a: Range, b: Range) => (a.end < b.end ? 1 : a.end > b.end ? -1 : 0);
 const byImportance = (a: StretchMemory, b: StretchMemory) =>
   b.milestone - a.milestone || b.held - a.held || byEndDesc(a, b);
-const carries = (m: StretchMemory) => m.milestone > 0 || m.held > 0;
+// A memory matters if it told a Milestone or could stop a Longest streak being
+// told again. A held below LONGEST_FLOOR never can (a Longest streak is told
+// from LONGEST_FLOOR), so a new user's first day or two carry nothing.
+const carries = (m: StretchMemory) => m.milestone > 0 || m.held >= LONGEST_FLOOR;
 const max0 = (values: number[]) => values.reduce((a, v) => Math.max(a, v), 0);
 const asStretch = (s: Stretch | null): Stretch | null =>
   s ? { start: s.start, end: s.end, length: s.length } : null;
@@ -95,9 +98,10 @@ function inheritedBy(
 // memory (the one a repair or a Backfill of the gap joins next; stretches too
 // short to carry anything in between do not hide it); then the most telling.
 function ranked(
-  memories: readonly StretchMemory[],
+  stored: readonly StretchMemory[],
   stretches: readonly Stretch[]
 ): StretchMemory[] {
+  const memories = stored.filter(carries);
   const home = new Map(memories.map((m) => [m, continuationOf(m, stretches)]));
   const lead = stretches[0] ?? null;
   const first = memories.filter((m) => lead !== null && home.get(m) === lead);
