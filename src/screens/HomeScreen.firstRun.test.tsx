@@ -129,7 +129,8 @@ async function save(text = 'first') {
 // `writtenDaysAgo` says they were written on an earlier day.
 async function writeBeforeLaunch(offsets: number[], writtenDaysAgo = 0) {
   const db = await mockDb;
-  const now = Date.now() - writtenDaysAgo * 24 * 60 * 60 * 1000;
+  const d = new Date();
+  const now = new Date(d.getFullYear(), d.getMonth(), d.getDate() - writtenDaysAgo, 12).getTime();
   for (const offset of offsets) {
     await upsertEntry(db, { date: addDays(today(), offset), text: 'before', now });
   }
@@ -597,6 +598,26 @@ describe('HomeScreen Reminder offer', () => {
     await wait(11 * 60 * 1000);
     expect(screen.getByText(/9月26日/)).toBeTruthy();
     expect(shown('reminder-set')).toBe(false);
+  });
+
+  // The answer to 設定する is confirmed on the day it comes, even when
+  // Android's screen was answered after midnight.
+  test('a permission screen answered after midnight is still confirmed', async () => {
+    jest.setSystemTime(new Date(2026, 8, 25, 23, 58, 0));
+    let answer!: (v: boolean) => void;
+    mockRequest = () => new Promise((resolve) => (answer = resolve));
+    await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+    await flush();
+    await emitAppState('background');
+    await wait(3 * 60 * 1000);
+    await emitAppState('active');
+    await act(async () => answer(true));
+    await flush();
+    expect(screen.getByText(/9月26日/)).toBeTruthy();
+    expect(shown('reminder-set')).toBe(true);
   });
 
   test('the confirmation goes when Home is left', async () => {
