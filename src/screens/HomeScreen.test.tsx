@@ -534,6 +534,40 @@ describe('HomeScreen draft across a date change', () => {
     expect(await input()).toHaveProp('placeholder', promptFor('2026-09-26'));
   });
 
+  describe("after today's Entry was deleted from History", () => {
+    let entries!: ReturnType<typeof useEntries>;
+    function Capture() {
+      entries = useEntries();
+      return null;
+    }
+    const openWithA = async () => {
+      await upsertEntry(await mockDb, { date: '2026-09-25', text: 'A', now: 1 });
+      await render(
+        <SettingsProvider>
+          <EntriesProvider>
+            <HomeScreen />
+            <Capture />
+          </EntriesProvider>
+        </SettingsProvider>
+      );
+      expect(await input()).toHaveDisplayValue('A');
+      await act(async () => entries.remove('2026-09-25'));
+    };
+
+    test('a new sentence typed then is kept', async () => {
+      await openWithA();
+      await fireEvent.changeText(await input(), '新しい一文');
+      await passMidnight();
+      expect(await input()).toHaveDisplayValue('新しい一文');
+    });
+
+    test("the deleted Entry's text left untouched is not carried", async () => {
+      await openWithA();
+      await passMidnight();
+      expect(await input()).toHaveDisplayValue('');
+    });
+  });
+
   test('a draft gives way to an Entry the new day already has', async () => {
     // Versions before 1.3.0 could write future days.
     await upsertEntry(await mockDb, { date: '2026-09-26', text: '前から', now: 1 });
