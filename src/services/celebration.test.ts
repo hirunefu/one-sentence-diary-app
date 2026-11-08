@@ -606,6 +606,25 @@ describe('the ledger', () => {
     expect(diary.told()).toEqual([]);
   });
 
+  test("an import keeps the Streak's own memory when the ledger is full of recent ones", () => {
+    // Seven fortnights joined by Backfills into one stretch, a missed day, and
+    // a 3-day Streak (3 told): the ledger is full of memories that matter now.
+    const diary = sevenFortnights();
+    diary.nextDay(2).write(0).nextDay().write(0).nextDay().write(0);
+    diary.told();
+    diary.toHistory();
+    for (let k = 1; k < 7; k++) diary.write(-3 - 15 * k);
+    diary.toHome();
+    expect(diary.told()).toEqual([]);
+    expect(diary.ledger!.stretches).toHaveLength(MAX_REMEMBERED_STRETCHES);
+    // Today's Entry is deleted, then an old backup is imported.
+    diary.toHistory().delete(0).toHome();
+    diary.importDates(daysBefore(diary.day(-300), 0, 13));
+    diary.write(0);
+    expect(diary.streak()).toBe(3);
+    expect(diary.told()).toEqual([]);
+  });
+
   test(`remembers at most ${MAX_REMEMBERED_STRETCHES} stretches`, () => {
     const diary = new Diary(TODAY);
     for (let k = 0; k < 20; k++) diary.write(0).nextDay().write(0).nextDay().write(0).nextDay(2);

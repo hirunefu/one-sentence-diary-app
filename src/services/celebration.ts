@@ -116,15 +116,20 @@ function acknowledgeStretches(
   );
   // The stretch just before the Streak is the one a Streak repair, or a
   // Backfill of the gap, joins to it, so what lives on in it keeps its place
-  // whatever it told; the other memories go least telling first.
+  // whatever it told; the other memories go least telling first. What `keep`
+  // protects came from a ledger that fit, so it goes before all of these.
   const prior = stretches.find((s) => s !== current) ?? null;
+  const kept = others.filter(keep).sort(byImportance);
   const joinable = others
-    .filter((m) => keep(m) || (prior && continuationOf(m, stretches) === prior))
+    .filter((m) => !kept.includes(m) && prior && continuationOf(m, stretches) === prior)
     .sort(byImportance);
-  const older = others.filter((m) => !joinable.includes(m)).sort(byImportance);
+  const older = others
+    .filter((m) => !kept.includes(m) && !joinable.includes(m))
+    .sort(byImportance);
   const own = carries(memory) ? [memory] : [];
-  const rest = [...joinable, ...older].slice(0, MAX_REMEMBERED_STRETCHES - own.length);
-  const remembered = [...own, ...rest].sort(byEndDesc);
+  const remembered = [...kept, ...own, ...joinable, ...older]
+    .slice(0, MAX_REMEMBERED_STRETCHES)
+    .sort(byEndDesc);
   return { stretches: remembered, seen: asStretch(current), longest };
 }
 
