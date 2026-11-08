@@ -620,6 +620,25 @@ describe('HomeScreen Reminder offer', () => {
     expect(shown('reminder-set')).toBe(true);
   });
 
+  // useToday moves the date a second after midnight; an answer in between is
+  // still confirmed, and stays on the day it came.
+  test('an answer in the second after midnight is confirmed at once', async () => {
+    jest.setSystemTime(new Date(2026, 8, 25, 23, 58, 0));
+    mockRequest = async () => true;
+    await open();
+    await save();
+    await wait(SAVED_FEEDBACK_MS);
+    jest.setSystemTime(new Date(2026, 8, 26, 0, 0, 0, 300));
+    await fireEvent.press(screen.getByTestId('reminder-offer-accept'));
+    await flush();
+    expect(screen.getByText(/9月25日/)).toBeTruthy();
+    expect(shown('reminder-set')).toBe(true);
+    // The midnight timer set at 23:58 fires.
+    await wait(3 * 60 * 1000);
+    expect(screen.getByText(/9月26日/)).toBeTruthy();
+    expect(shown('reminder-set')).toBe(true);
+  });
+
   test('the confirmation goes when Home is left', async () => {
     const view = await open();
     await save();
