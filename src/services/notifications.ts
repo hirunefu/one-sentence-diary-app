@@ -98,6 +98,11 @@ async function reschedule({
   // A Reminder in the shade stays until it is dismissed, and it says 今日. So it
   // goes once its day has passed or has an Entry, or when its number is no
   // longer the one Home shows (an Entry inside the Streak was deleted).
+  // Known limit: this only runs in a pass, and passes need the app in front
+  // (JS timers pause in the background). A Reminder left in the shade stays
+  // into the next day, with its 「N日連続。」, until the app is next opened.
+  // Expiring it at its midnight would need NotificationCompat's
+  // setTimeoutAfter, which expo-notifications does not expose.
   const plain = reminderFor(todayStr, null).body;
   const current = reminderFor(todayStr, calculateStreak(datesDesc, todayStr)).body;
   await dismissShownReminders(
