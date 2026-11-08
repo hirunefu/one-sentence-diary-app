@@ -48,7 +48,7 @@ import {
   stretchesOf,
   type StreakBreak,
 } from '../utils/streak';
-import { addDays, isFutureDay, today } from '../utils/date';
+import { addDays, isFutureDay, toDateString, today } from '../utils/date';
 
 type EntriesContextValue = {
   ready: boolean;
@@ -91,6 +91,11 @@ type EntriesContextValue = {
 };
 
 const EntriesContext = createContext<EntriesContextValue | null>(null);
+
+// Someone who wrote an Entry on an earlier day already uses the app, whether
+// or not a save on Home started their first day (ADR 0002).
+const wroteBefore = (list: readonly Entry[], day: string) =>
+  list.some((e) => toDateString(new Date(e.createdAt)) < day);
 
 export function EntriesProvider({ children }: { children: React.ReactNode }) {
   const [db, setDb] = useState<DiaryDatabase | null>(null);
@@ -166,7 +171,10 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
         // has Entries is not a first-time user (Q19). A missed offer is
         // preferred to a false one, as with the ledger.
         commitFirstRun(list.length > 0 ? { kind: 'returning' } : { kind: 'new' });
-      } else if (run.kind === 'started' && run.day < todayRef.current) {
+      } else if (
+        (run.kind === 'started' && run.day < todayRef.current) ||
+        (run.kind === 'new' && wroteBefore(list, todayRef.current))
+      ) {
         commitFirstRun({ kind: 'returning' });
       } else {
         firstRunRef.current = run;
@@ -191,10 +199,16 @@ export function EntriesProvider({ children }: { children: React.ReactNode }) {
     init();
   }, [init]);
 
-  // The first day ends at midnight, also while the app stays open.
+  // The first day ends at midnight, also while the app stays open, and so does
+  // a first-time user's day of writing only from History.
   useEffect(() => {
-    if (firstRun?.kind === 'started' && todayStr > firstRun.day) commitFirstRun({ kind: 'returning' });
-  }, [firstRun, todayStr, commitFirstRun]);
+    if (
+      (firstRun?.kind === 'started' && todayStr > firstRun.day) ||
+      (firstRun?.kind === 'new' && wroteBefore(entries, todayStr))
+    ) {
+      commitFirstRun({ kind: 'returning' });
+    }
+  }, [firstRun, todayStr, entries, commitFirstRun]);
 
   const refresh = useCallback(async (currentDb: DiaryDatabase) => {
     const list = await getAllEntriesDesc(currentDb);
