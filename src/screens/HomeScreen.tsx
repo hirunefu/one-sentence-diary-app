@@ -150,6 +150,12 @@ export function HomeScreen() {
   // edit of an existing Entry is not carried over: it would file a copy.
   const fieldDayRef = useRef<string | null>(null);
   const storedTextRef = useRef('');
+  // Whether the field's day has an Entry is read now, not when it was loaded:
+  // today's Entry may have been deleted from History since.
+  const entriesRef = useRef(entries);
+  useEffect(() => {
+    entriesRef.current = entries;
+  }, [entries]);
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
@@ -157,10 +163,13 @@ export function HomeScreen() {
       const e = await getByDate(todayStr);
       if (cancelled) return;
       const stored = e?.text ?? '';
-      const newSentence = storedTextRef.current === '';
+      const before = storedTextRef.current;
+      const day = fieldDayRef.current;
+      const dayHasEntry = entriesRef.current.some((x) => x.date === day);
       fieldDayRef.current = todayStr;
       storedTextRef.current = stored;
-      setText((current) => (!e && newSentence ? current : stored));
+      // Untouched text (the same as when loaded or saved) is not a draft.
+      setText((current) => (!e && !dayHasEntry && current !== before ? current : stored));
       setLoaded(true);
     })();
     return () => {
