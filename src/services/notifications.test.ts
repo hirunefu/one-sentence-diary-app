@@ -10,6 +10,7 @@ jest.mock('expo-notifications', () => ({
   getNotificationChannelAsync: jest.fn().mockResolvedValue(null),
   setNotificationChannelAsync: jest.fn().mockResolvedValue(null),
   deleteNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
+  setNotificationHandler: jest.fn(),
   SchedulableTriggerInputTypes: { DAILY: 'daily', DATE: 'date' },
   AndroidImportance: { UNKNOWN: 0, UNSPECIFIED: 1, NONE: 2, MIN: 3, LOW: 4, DEFAULT: 5, HIGH: 6, MAX: 7 },
 }));
@@ -39,6 +40,8 @@ const mockGetChannel = Notifications.getNotificationChannelAsync as jest.Mock;
 const mockSetChannel = Notifications.setNotificationChannelAsync as jest.Mock;
 const mockDeleteChannel = Notifications.deleteNotificationChannelAsync as jest.Mock;
 const { AndroidImportance } = Notifications;
+// Read before any test clears the mocks: what loading the service did.
+const handlersSetOnLoad = (Notifications.setNotificationHandler as jest.Mock).mock.calls.slice();
 
 type Scheduled = {
   identifier: string;
@@ -58,6 +61,14 @@ const deferred = () => {
   const promise = new Promise<unknown[]>((resolve) => (release = () => resolve([])));
   return { promise, release };
 };
+
+describe('while the app is open', () => {
+  test('a Reminder that comes due is not shown: Home is already in front', () => {
+    // No handler at all: on Android, expo-notifications then shows nothing
+    // while the app is in front, and has no timeout that would show it anyway.
+    expect(handlersSetOnLoad).toEqual([[null]]);
+  });
+});
 
 describe('notifications service', () => {
   beforeEach(() => {
@@ -462,6 +473,7 @@ describe('notifications under E2E flag', () => {
       getAllScheduledNotificationsAsync: jest.fn(),
       cancelScheduledNotificationAsync: jest.fn(),
       scheduleNotificationAsync: jest.fn(),
+      setNotificationHandler: jest.fn(),
       SchedulableTriggerInputTypes: { DATE: 'date' },
     }));
     const { requestNotificationPermission } = require('./notifications');
@@ -472,7 +484,10 @@ describe('notifications under E2E flag', () => {
   test('notificationPermission() is askable without asking Android', async () => {
     process.env.EXPO_PUBLIC_E2E = '1';
     const getPerm = jest.fn();
-    jest.doMock('expo-notifications', () => ({ getPermissionsAsync: getPerm }));
+    jest.doMock('expo-notifications', () => ({
+      getPermissionsAsync: getPerm,
+      setNotificationHandler: jest.fn(),
+    }));
     const { notificationPermission } = require('./notifications');
     await expect(notificationPermission()).resolves.toBe('askable');
     expect(getPerm).not.toHaveBeenCalled();
@@ -493,6 +508,7 @@ describe('notifications under E2E flag', () => {
     jest.doMock('expo-notifications', () => ({
       ...mocks,
       requestPermissionsAsync: jest.fn(),
+      setNotificationHandler: jest.fn(),
       SchedulableTriggerInputTypes: { DATE: 'date' },
       AndroidImportance: { NONE: 2, DEFAULT: 5 },
     }));

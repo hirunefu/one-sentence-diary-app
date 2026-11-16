@@ -15,6 +15,7 @@ jest.mock('expo-notifications', () => ({
       },
     };
   },
+  setNotificationHandler: () => undefined,
 }));
 let mockLocked = false;
 jest.mock('../contexts/AuthLockContext', () => ({ useAuthLock: () => ({ isLocked: mockLocked }) }));
