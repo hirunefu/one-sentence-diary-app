@@ -17,6 +17,14 @@ export const REMINDER_CHANNEL_DESCRIPTION = '記録のない日に、設定し�
 // Expo's own channel ("Miscellaneous", HIGH), which Reminders used before.
 export const FALLBACK_CHANNEL_ID = 'expo_notifications_fallback_notification_channel';
 
+// A Reminder that comes due while the app is open is not shown: the app is
+// already in front, and the Reminder would only repeat what Home asks.
+// expo-notifications (SDK 58+) installs a handler that shows everything as
+// soon as it is imported; with no handler at all, Android shows nothing while
+// the app is in front (the behavior before SDK 58). This module is loaded at
+// startup (App → ReminderScheduler), after expo-notifications.
+Notifications.setNotificationHandler(null);
+
 export async function requestNotificationPermission(): Promise<boolean> {
   // E2E build: pretend permission is granted, no OS dialog to drive.
   if (IS_E2E) return true;
