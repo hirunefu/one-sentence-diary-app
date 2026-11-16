@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Phrases } from './Phrases';
@@ -84,7 +85,7 @@ function CelebrationScreen({
   // cannot close a celebration nobody has seen. Back always works.
   const [closable, setClosable] = useState(false);
   const entranceRef = useRef<Animated.CompositeAnimation | null>(null);
-  const messageRef = useRef<View>(null);
+  const messageRef = useRef<ViewInstance>(null);
   const onSettledRef = useRef(onSettled);
   useEffect(() => {
     onSettledRef.current = onSettled;

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View, type ViewInstance } from 'react-native';
 import { Phrases } from './Phrases';
 import { FADE_MS } from './LongestTodayLine';
 import { FIRST_DAY_LINE, FIRST_RUN_DOTS, PRIVACY_LINE } from '../services/firstRunCopy';
@@ -38,7 +38,7 @@ export function PrivacyLine({ leaving }: { leaving: boolean }) {
 
 // Under the Streak for the rest of the first day. It fades in when it takes
 // the dot line's place, and is simply there after a relaunch.
-export function FirstDayLine({ enter, ref }: { enter: boolean; ref?: React.Ref<View> }) {
+export function FirstDayLine({ enter, ref }: { enter: boolean; ref?: React.Ref<ViewInstance> }) {
   const colors = useColors();
   const opacity = useFade(1, enter ? 0 : 1);
   return (

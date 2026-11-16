@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, type View } from 'react-native';
+import { Animated, Easing, StyleSheet, type ViewInstance } from 'react-native';
 import { Phrases } from './Phrases';
 import { longestTodayCopy } from '../services/celebrationCopy';
 import { useColors } from '../theme/useColors';
@@ -16,7 +16,7 @@ export function LongestTodayLine({
 }: {
   previousLongest: number;
   // For moving screen-reader focus to the line.
-  ref?: React.Ref<View>;
+  ref?: React.Ref<ViewInstance>;
 }) {
   const colors = useColors();
   const copy = longestTodayCopy(previousLongest);

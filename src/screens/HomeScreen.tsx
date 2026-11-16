@@ -11,6 +11,7 @@ import {
   Text,
   UIManager,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -215,12 +216,12 @@ export function HomeScreen() {
   // Streak repair. The offer steps aside while the keyboard is up: Home does
   // not scroll, and it asks for nothing while today is being written.
   const offer = keyboardShown ? null : streakBreak.offer;
-  const streakRef = useRef<View>(null);
-  const longestLineRef = useRef<View>(null);
-  const reminderSetRef = useRef<View>(null);
+  const streakRef = useRef<ViewInstance>(null);
+  const longestLineRef = useRef<ViewInstance>(null);
+  const reminderSetRef = useRef<ViewInstance>(null);
   const repairOpenedFor = useRef<string | null>(null);
   const focusLongestKey = useRef<string | null>(null);
-  const focusOn = (ref: React.RefObject<View | null>) => {
+  const focusOn = (ref: React.RefObject<ViewInstance | null>) => {
     if (ref.current) AccessibilityInfo.sendAccessibilityEvent(ref.current, 'focus');
   };
 
