@@ -31,7 +31,7 @@ export async function exportEntries(
     file.delete();
   }
   file.create();
-  file.write(json);
+  await file.write(json);
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
     dialogTitle: '一口日記をエクスポート',
