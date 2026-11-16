@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View, type ViewInstance } from 'react-native';
 import { useColors } from '../theme/useColors';
 import type { Colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -24,7 +24,7 @@ type Props = {
   // while a Streak repair is offered (blank). A 0 is never shown then.
   headline?: StreakHeadline;
   // The accessible block, for moving screen-reader focus to the Streak.
-  ref?: React.Ref<View>;
+  ref?: React.Ref<ViewInstance>;
 };
 
 // The day's dot fills first ("today is recorded"), then the number rolls

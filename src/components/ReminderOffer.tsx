@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View, type ViewInstance } from 'react-native';
 import { Phrases } from './Phrases';
 import { OutlinedButton } from './OutlinedButton';
 import { useFade } from './FirstRunLines';
@@ -62,7 +62,7 @@ export function ReminderSetLine({
   ref,
 }: {
   copy: ReturnType<typeof reminderSetCopy>;
-  ref?: React.Ref<View>;
+  ref?: React.Ref<ViewInstance>;
 }) {
   const colors = useColors();
   const opacity = useFade(1, 0);
